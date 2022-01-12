@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use App\Traits\Uuid;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, Uuid;
+    use HasApiTokens, HasFactory, Notifiable, Uuid, HasRoles;
 
     public $incrementing = false;
 
