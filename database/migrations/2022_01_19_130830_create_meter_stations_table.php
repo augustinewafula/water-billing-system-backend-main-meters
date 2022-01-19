@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\MeterStationType;
 
 class CreateMeterStationsTable extends Migration
 {
@@ -16,6 +17,7 @@ class CreateMeterStationsTable extends Migration
         Schema::create('meter_stations', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->tinyInteger('type')->unsigned()->default(MeterStationType::Manual);
             $table->timestamps();
         });
     }
