@@ -13,13 +13,14 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
-        //TODO::Add meter column
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->uuid('meter_id')->nullable();
+            $table->string('first_bill')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
