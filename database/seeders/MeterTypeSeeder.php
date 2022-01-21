@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\MeterType;
+use Illuminate\Database\Seeder;
 
 class MeterTypeSeeder extends Seeder
 {
