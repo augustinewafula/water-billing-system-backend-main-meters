@@ -13,4 +13,6 @@ class Meter extends Model
     public $incrementing = false;
 
     protected $keyType = 'uuid';
+
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type'];
 }
