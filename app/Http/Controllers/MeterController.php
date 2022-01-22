@@ -16,8 +16,8 @@ class MeterController extends Controller
      */
     public function index()
     {
-        $meter = Meter::all();
-        return response()->json($meter);
+        $meters = Meter::all();
+        return response()->json($meters);
     }
 
     /**
