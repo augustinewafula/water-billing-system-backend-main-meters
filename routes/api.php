@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\MeterController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,11 +31,12 @@ Route::prefix('v1')->group(function () {
             Route::post('login', [AuthController::class, 'initiateUserLogin']);
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
             Route::group(['middleware' => 'role:user'], function () {
-                Route::group(['middleware' => 'auth:api'], function(){
+                Route::group(['middleware' => 'auth:api'], function () {
                     Route::get('profile', [AuthController::class, 'user']);
                     Route::get('logout', [AuthController::class, 'logout']);
                 });
             });
         });
     });
+    Route::apiResource('meters', MeterController::class);
 });
