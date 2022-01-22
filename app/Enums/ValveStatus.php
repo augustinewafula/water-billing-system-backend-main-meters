@@ -10,6 +10,6 @@ use BenSampo\Enum\Enum;
  */
 final class ValveStatus extends Enum
 {
-    const Closed =   0;
-    const Open =   1;
+    public const Closed = 0;
+    public const Open = 1;
 }
