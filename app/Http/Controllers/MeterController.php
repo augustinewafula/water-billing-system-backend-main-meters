@@ -6,7 +6,6 @@ use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 
 class MeterController extends Controller
 {
@@ -61,10 +60,11 @@ class MeterController extends Controller
      * Remove the specified resource from storage.
      *
      * @param Meter $meter
-     * @return Response
+     * @return JsonResponse
      */
     public function destroy(Meter $meter)
     {
-        //
+        $meter->delete();
+        return response()->json('deleted');
     }
 }
