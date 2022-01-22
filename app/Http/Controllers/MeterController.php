@@ -13,11 +13,12 @@ class MeterController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return Response
+     * @return JsonResponse
      */
     public function index()
     {
-        //
+        $meter = Meter::all();
+        return response()->json($meter, 200);
     }
 
     /**
@@ -36,11 +37,11 @@ class MeterController extends Controller
      * Display the specified resource.
      *
      * @param Meter $meter
-     * @return Response
+     * @return JsonResponse
      */
     public function show(Meter $meter)
     {
-        //
+        return response()->json($meter, 200);
     }
 
     /**
