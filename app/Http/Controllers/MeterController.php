@@ -6,7 +6,6 @@ use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class MeterController extends Controller
@@ -25,7 +24,7 @@ class MeterController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param CreateMeterRequest $request
      * @return JsonResponse
      */
     public function store(CreateMeterRequest $request)
