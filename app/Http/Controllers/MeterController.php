@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateMeterRequest;
 use App\Models\Meter;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -23,11 +24,12 @@ class MeterController extends Controller
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
     public function store(CreateMeterRequest $request)
     {
-        //
+        $meter = Meter::create($request->validated());
+        return response()->json($meter, 201);
     }
 
     /**
