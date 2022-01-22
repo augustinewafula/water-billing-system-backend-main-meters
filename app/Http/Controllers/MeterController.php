@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateMeterRequest;
+use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,13 +48,14 @@ class MeterController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
+     * @param UpdateMeterRequest $request
      * @param Meter $meter
-     * @return Response
+     * @return JsonResponse
      */
-    public function update(Request $request, Meter $meter)
+    public function update(UpdateMeterRequest $request, Meter $meter)
     {
-        //
+        $meter->update($request->validated());
+        return response()->json($meter, 201);
     }
 
     /**
