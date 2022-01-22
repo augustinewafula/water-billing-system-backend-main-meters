@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\MeterStationType;
 use App\Models\MeterStation;
 use Illuminate\Database\Seeder;
 
@@ -15,14 +16,21 @@ class MeterStationSeeder extends Seeder
     public function run()
     {
         $meterStations = [
-            'Acc 1',
-            'Acc 2',
-            'Acc 3'
+            [
+                'name' => 'Acc 1',
+                'type' => MeterStationType::Manual
+            ],
+            [
+                'name' => 'Acc 2',
+                'type' => MeterStationType::Manual
+            ],
+            [
+                'name' => 'Acc 3',
+                'type' => MeterStationType::Automatic
+            ]
         ];
-        foreach ($meterStations as $value){
-            $MeterStation = new MeterStation();
-            $MeterStation->name = $value;
-            $MeterStation->save();
-        }
+        collect($meterStations)->each(function ($meterStation) {
+            MeterStation::create($meterStation);
+        });
     }
 }
