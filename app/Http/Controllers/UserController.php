@@ -22,10 +22,9 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
-        $users = User::whereHas("roles",
-            static function ($q) {
-                $q->where("name", "user");
-            })->get(['id', 'name', 'email', 'meter_id', 'first_bill']);
+        $users = User::role('user')
+            ->with('meter')
+            ->get(['id', 'name', 'email', 'meter_id', 'first_bill']);
         return response()->json($users);
     }
 
