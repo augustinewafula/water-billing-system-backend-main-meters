@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
@@ -51,11 +51,11 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the meter associated with the user.
-     * @return HasOne
+     * Get the user that owns the meter.
+     * @return belongsTo
      */
-    public function meter(): HasOne
+    public function meter(): belongsTo
     {
-        return $this->hasOne(Meter::class);
+        return $this->belongsTo(Meter::class);
     }
 }
