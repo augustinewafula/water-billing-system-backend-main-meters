@@ -68,7 +68,7 @@ class UserController extends Controller
      * @param User $user
      * @return JsonResponse
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
         $user->update($request->validated());
         return response()->json($user);
@@ -80,7 +80,7 @@ class UserController extends Controller
      * @param User $user
      * @return JsonResponse
      */
-    public function destroy(User $user)
+    public function destroy(User $user): JsonResponse
     {
         $user->delete();
         return response()->json('deleted');
