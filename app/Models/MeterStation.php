@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MeterStation extends Model
 {
@@ -13,4 +15,22 @@ class MeterStation extends Model
     public $incrementing = false;
 
     protected $keyType = 'uuid';
+
+    /**
+     * Get the meters for the meter station.
+     * @return HasMany
+     */
+    public function meters(): HasMany
+    {
+        return $this->hasMany(Meter::class);
+    }
+
+    /**
+     * Get the use that owns the meter
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }
