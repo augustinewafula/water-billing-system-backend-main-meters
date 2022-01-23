@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateUserRequest;
 use App\Models\User;
+use App\Traits\GeneratePassword;
+use Exception;
+use Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class UserController extends Controller
 {
+    use GeneratePassword;
+
     /**
      * Display a listing of the resource.
      *
@@ -26,12 +32,21 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
-     * @return Response
+     * @param CreateUserRequest $request
+     * @return JsonResponse
+     * @throws Exception
      */
-    public function store(Request $request)
+    public function store(CreateUserRequest $request): JsonResponse
     {
-        //
+        $password = $this->generatePassword(10);
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->password = Hash::make($password);
+        $user->save();
+
+        return response()->json($user, 201);
     }
 
     /**
