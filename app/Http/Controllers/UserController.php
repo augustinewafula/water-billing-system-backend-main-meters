@@ -9,6 +9,7 @@ use App\Traits\GeneratePassword;
 use Exception;
 use Hash;
 use Illuminate\Http\JsonResponse;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -44,6 +45,7 @@ class UserController extends Controller
         $user->phone = $request->phone;
         $user->meter_id = $request->meter_id;
         $user->password = Hash::make($password);
+        $user->assignRole(Role::findByName('user'));
         $user->save();
 
         return response()->json($user, 201);
