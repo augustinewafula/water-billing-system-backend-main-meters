@@ -42,6 +42,7 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
+        $user->meter_id = $request->meter_id;
         $user->password = Hash::make($password);
         $user->save();
 
