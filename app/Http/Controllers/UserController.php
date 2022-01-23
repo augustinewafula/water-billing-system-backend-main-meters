@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use App\Traits\GeneratePassword;
 use Exception;
 use Hash;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class UserController extends Controller
@@ -52,24 +52,25 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param int $id
-     * @return Response
+     * @param User $user
+     * @return JsonResponse
      */
-    public function show($id)
+    public function show(User $user): JsonResponse
     {
-        //
+        return response()->json($user);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param int $id
-     * @return Response
+     * @param UpdateUserRequest $request
+     * @param User $user
+     * @return JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        //
+        $user->update($request->validated());
+        return response()->json($user);
     }
 
     /**
