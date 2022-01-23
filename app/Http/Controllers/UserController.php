@@ -9,7 +9,6 @@ use App\Traits\GeneratePassword;
 use Exception;
 use Hash;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 
 class UserController extends Controller
 {
@@ -76,11 +75,12 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param int $id
-     * @return Response
+     * @param User $user
+     * @return JsonResponse
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return response()->json('deleted');
     }
 }
