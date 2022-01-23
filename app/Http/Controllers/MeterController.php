@@ -14,7 +14,7 @@ class MeterController extends Controller
      *
      * @return JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $meters = Meter::all();
         return response()->json($meters);
@@ -26,7 +26,7 @@ class MeterController extends Controller
      * @param CreateMeterRequest $request
      * @return JsonResponse
      */
-    public function store(CreateMeterRequest $request)
+    public function store(CreateMeterRequest $request): JsonResponse
     {
         $meter = Meter::create($request->validated());
         return response()->json($meter, 201);
@@ -38,7 +38,7 @@ class MeterController extends Controller
      * @param Meter $meter
      * @return JsonResponse
      */
-    public function show(Meter $meter)
+    public function show(Meter $meter): JsonResponse
     {
         return response()->json($meter);
     }
@@ -50,7 +50,7 @@ class MeterController extends Controller
      * @param Meter $meter
      * @return JsonResponse
      */
-    public function update(UpdateMeterRequest $request, Meter $meter)
+    public function update(UpdateMeterRequest $request, Meter $meter): JsonResponse
     {
         $meter->update($request->validated());
         return response()->json($meter, 201);
@@ -62,7 +62,7 @@ class MeterController extends Controller
      * @param Meter $meter
      * @return JsonResponse
      */
-    public function destroy(Meter $meter)
+    public function destroy(Meter $meter): JsonResponse
     {
         $meter->delete();
         return response()->json('deleted');
