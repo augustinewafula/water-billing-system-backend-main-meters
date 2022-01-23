@@ -16,7 +16,7 @@ class CreateMetersTable extends Migration
     {
         Schema::create('meters', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('number');
+            $table->string('number')->unique();
             $table->tinyInteger('valve_status')->unsigned()->default(ValveStatus::Open);
             $table->uuid('station_id');
             $table->foreign('station_id')->references('id')->on('meter_stations');
