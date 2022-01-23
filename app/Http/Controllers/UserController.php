@@ -24,7 +24,7 @@ class UserController extends Controller
     {
         $users = User::role('user')
             ->with('meter')
-            ->get(['id', 'name', 'email', 'meter_id', 'first_bill']);
+            ->get();
         return response()->json($users);
     }
 
