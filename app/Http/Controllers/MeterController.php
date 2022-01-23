@@ -53,7 +53,7 @@ class MeterController extends Controller
     public function update(UpdateMeterRequest $request, Meter $meter): JsonResponse
     {
         $meter->update($request->validated());
-        return response()->json($meter, 201);
+        return response()->json($meter);
     }
 
     /**
