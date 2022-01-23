@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Meter extends Model
 {
@@ -34,5 +35,14 @@ class Meter extends Model
     public function meter_type(): HasMany
     {
         return $this->hasMany(MeterType::class);
+    }
+
+    /**
+     * Get the user associated with the user.
+     * @return HasOne
+     */
+    public function user(): HasOne
+    {
+        return $this->HasOne(User::class);
     }
 }
