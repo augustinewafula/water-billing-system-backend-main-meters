@@ -16,7 +16,7 @@ class MeterController extends Controller
      */
     public function index(): JsonResponse
     {
-        $meters = Meter::with('user')
+        $meters = Meter::with('user', 'station', 'type')
             ->get();
         return response()->json($meters);
     }
