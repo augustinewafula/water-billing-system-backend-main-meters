@@ -20,7 +20,7 @@ class CreateMetersTable extends Migration
             $table->tinyInteger('valve_status')->unsigned()->default(ValveStatus::Open);
             $table->uuid('station_id');
             $table->foreign('station_id')->references('id')->on('meter_stations');
-            $table->string('type')->nullable();
+            $table->string('type_id')->nullable();
             $table->timestamps();
         });
     }

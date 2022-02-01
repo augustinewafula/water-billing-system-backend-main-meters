@@ -6,7 +6,6 @@ use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Meter extends Model
@@ -17,24 +16,24 @@ class Meter extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['number', 'valve_status', 'station_id', 'type'];
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id'];
 
     /**
      * Get meter station that owns the meter
      * @return BelongsTo
      */
-    public function meter_station(): BelongsTo
+    public function station(): BelongsTo
     {
         return $this->belongsTo(MeterStation::class);
     }
 
     /**
      * Get the meter associated with the user.
-     * @return HasMany
+     * @return BelongsTo
      */
-    public function meter_type(): HasMany
+    public function type(): BelongsTo
     {
-        return $this->hasMany(MeterType::class);
+        return $this->BelongsTo(MeterType::class);
     }
 
     /**
