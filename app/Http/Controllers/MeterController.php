@@ -6,6 +6,7 @@ use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class MeterController extends Controller
 {
@@ -14,10 +15,14 @@ class MeterController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $meters = Meter::with('user', 'station', 'type')
-            ->get();
+        $station_id = $request->query('station_id');
+        $meters = Meter::with('user', 'station', 'type');
+        if ($request->has('station_id')) {
+            $meters->where('station_id', $station_id);
+        }
+        $meters = $meters->get();
         return response()->json($meters);
     }
 
