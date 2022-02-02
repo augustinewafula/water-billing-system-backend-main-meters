@@ -9,6 +9,7 @@ use App\Traits\GeneratePassword;
 use Exception;
 use Hash;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -20,11 +21,17 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $users = User::role('user')
-            ->with('meter')
-            ->get();
+        $station_id = $request->query('station_id');
+        $users = User::role('user');
+        if ($request->has('station_id')) {
+            $users->whereHas('meter', function ($query) use ($station_id) {
+                $query->where('station_id', $station_id);
+            });
+        }
+        $users->with('meter');
+        $users = $users->get();
         return response()->json($users);
     }
 
