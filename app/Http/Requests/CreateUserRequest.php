@@ -27,7 +27,7 @@ class CreateUserRequest extends FormRequest
             'name' => ['required', 'string'],
             'email' => ['required', 'email', 'unique:users'],
             'phone' => ['required', 'numeric'],
-            'meter_id' => ['required', 'exists:meters,id']
+            'meter_id' => ['required', 'exists:meters,id', 'unique:users,meter_id']
         ];
     }
 }
