@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\MeterMode;
 use App\Enums\ValveStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -20,6 +21,7 @@ class CreateMetersTable extends Migration
             $table->tinyInteger('valve_status')->unsigned()->default(ValveStatus::Open);
             $table->uuid('station_id');
             $table->foreign('station_id')->references('id')->on('meter_stations');
+            $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
             $table->string('type_id')->nullable();
             $table->timestamps();
         });
