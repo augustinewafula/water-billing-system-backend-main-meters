@@ -8,8 +8,8 @@ use BenSampo\Enum\Enum;
  * @method static static Manual()
  * @method static static Automatic()
  */
-final class MeterStationType extends Enum
+final class MeterMode extends Enum
 {
-    public const Manual =   0;
-    public const Automatic =   1;
+    public const Manual = 0;
+    public const Automatic = 1;
 }
