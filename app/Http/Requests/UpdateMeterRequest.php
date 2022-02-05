@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\MeterMode;
 use App\Enums\ValveStatus;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
@@ -29,7 +30,8 @@ class UpdateMeterRequest extends FormRequest
             'number' => ['required', 'numeric'],
             'valve_status' => ['required', new EnumValue(ValveStatus::class, false)],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
-            'type' => ['sometimes', 'required', 'exists:meter_types,id']
+            'type' => ['sometimes', 'required', 'exists:meter_types,id'],
+            'mode' => ['required', new EnumValue(MeterMode::class, false)]
         ];
     }
 }
