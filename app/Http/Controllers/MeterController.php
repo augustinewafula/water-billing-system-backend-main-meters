@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
+use App\Models\MeterType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,6 +26,18 @@ class MeterController extends Controller
         }
         $meters = $meters->get();
         return response()->json($meters);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function typeIndex(Request $request): JsonResponse
+    {
+        $meter_types = MeterType::all();
+        return response()->json($meter_types);
     }
 
     /**
