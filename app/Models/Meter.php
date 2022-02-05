@@ -16,7 +16,7 @@ class Meter extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id'];
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode'];
 
     /**
      * Get meter station that owns the meter
