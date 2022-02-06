@@ -44,6 +44,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::get('meter-stations', [MeterStationController::class, 'index']);
     Route::get('meter-types', [MeterController::class, 'typeIndex']);
+    Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
     Route::fallback(static function () {
         return response()->json([
             'message' => 'Page Not Found. If error persists, contact the website administrator'], 404);
