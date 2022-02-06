@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MeterMode;
+use App\Enums\ValveStatus;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use App\Models\MeterType;
+use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -82,6 +84,24 @@ class MeterController extends Controller
     public function update(UpdateMeterRequest $request, Meter $meter): JsonResponse
     {
         $meter->update($request->validated());
+        return response()->json($meter);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param Request $request
+     * @param Meter $meter
+     * @return JsonResponse
+     */
+    public function updateValveStatus(Request $request, Meter $meter): JsonResponse
+    {
+        $request->validate([
+            'valve_status' => ['required', new EnumValue(ValveStatus::class, false)],
+        ]);
+        $meter->update([
+            'valve_status' => $request->valve_status
+        ]);
         return response()->json($meter);
     }
 
