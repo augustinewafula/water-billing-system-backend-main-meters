@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MeterMode;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
@@ -48,7 +49,15 @@ class MeterController extends Controller
      */
     public function store(CreateMeterRequest $request): JsonResponse
     {
-        $meter = Meter::create($request->validated());
+        if ($request->mode === MeterMode::Automatic) {
+            $meter = Meter::create($request->validated());
+            return response()->json($meter, 201);
+        }
+        $meter = Meter::create([
+            'number' => $request->number,
+            'station_id' => $request->station_id,
+            'mode' => $request->mode
+        ]);
         return response()->json($meter, 201);
     }
 
