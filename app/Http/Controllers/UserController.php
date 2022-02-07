@@ -60,11 +60,14 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param User $user
+     * @param $id
      * @return JsonResponse
      */
-    public function show(User $user): JsonResponse
+    public function show($id): JsonResponse
     {
+        $user = User::with('meter')
+            ->where('id', $id)
+            ->first();
         return response()->json($user);
     }
 
