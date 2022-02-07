@@ -71,6 +71,8 @@ class MeterController extends Controller
      */
     public function show(Meter $meter): JsonResponse
     {
+        $meter = $meter::with('user', 'station', 'type')
+            ->first();
         return response()->json($meter);
     }
 
