@@ -66,12 +66,13 @@ class MeterController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Meter $meter
+     * @param $id
      * @return JsonResponse
      */
-    public function show(Meter $meter): JsonResponse
+    public function show($id): JsonResponse
     {
-        $meter = $meter::with('user', 'station', 'type')
+        $meter = Meter::with('user', 'station', 'type')
+            ->where('id', $id)
             ->first();
         return response()->json($meter);
     }
