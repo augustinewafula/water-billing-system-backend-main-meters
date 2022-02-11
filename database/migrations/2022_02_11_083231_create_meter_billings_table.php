@@ -14,7 +14,7 @@ class CreateMeterBillingsTable extends Migration
     public function up()
     {
         Schema::create('meter_billings', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->uuid('meter_reading_id');
             $table->foreign('meter_reading_id')->references('id')->on('meter_readings');
             $table->decimal('amount_paid', 15);
