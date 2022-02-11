@@ -16,6 +16,7 @@ class CreateMeterBillingReportsTable extends Migration
         Schema::create('meter_billing_reports', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('meter_id');
+            $table->foreign('meter_id')->references('id')->on('meters');
             $table->string('jan')->nullable();
             $table->string('feb')->nullable();
             $table->string('mar')->nullable();
