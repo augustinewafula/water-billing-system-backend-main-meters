@@ -16,6 +16,8 @@ class CreateMeterReadingsTable extends Migration
     {
         Schema::create('meter_readings', function (Blueprint $table) {
             $table->id();
+            $table->uuid('meter_id');
+            $table->foreign('meter_id')->references('id')->on('meters');
             $table->integer('previous_reading');
             $table->integer('current_reading');
             $table->string('month');
