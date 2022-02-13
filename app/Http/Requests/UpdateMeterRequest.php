@@ -27,10 +27,10 @@ class UpdateMeterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => ['required', 'numeric'],
             'valve_status' => ['required_if:mode,1', new EnumValue(ValveStatus::class, false)],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
+            'last_reading' => ['required', 'numeric'],
             'mode' => ['required', new EnumValue(MeterMode::class, false)]
         ];
     }
