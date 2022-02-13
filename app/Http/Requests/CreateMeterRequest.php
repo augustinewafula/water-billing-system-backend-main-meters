@@ -31,6 +31,7 @@ class CreateMeterRequest extends FormRequest
             'mode' => ['required', new EnumValue(MeterMode::class, false)],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
             'valve_status' => ['required_if:mode,1', new EnumValue(ValveStatus::class, false)],
+            'last_reading' => ['required', 'numeric'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id']
         ];
     }
