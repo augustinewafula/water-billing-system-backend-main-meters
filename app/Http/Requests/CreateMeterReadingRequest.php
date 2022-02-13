@@ -24,7 +24,7 @@ class CreateMeterReadingRequest extends FormRequest
     public function rules()
     {
         return [
-            'meter_id' => ['required', 'string', 'exists:meter_id,id'],
+            'meter_id' => ['required', 'string', 'exists:meters,id'],
             'current_reading' => ['required', 'numeric'],
             'month' => ['required', 'string'],
         ];
