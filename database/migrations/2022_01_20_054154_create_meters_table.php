@@ -22,6 +22,7 @@ class CreateMetersTable extends Migration
             $table->foreign('station_id')->references('id')->on('meter_stations');
             $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
             $table->string('type_id')->nullable();
+            $table->integer('last_reading');
             $table->timestamp('last_reading_date')->nullable();
             $table->timestamp('last_billing_date')->nullable();
             $table->timestamps();
