@@ -58,6 +58,7 @@ class MeterController extends Controller
         $meter = Meter::create([
             'number' => $request->number,
             'station_id' => $request->station_id,
+            'last_reading' => $request->last_reading,
             'mode' => $request->mode
         ]);
         return response()->json($meter, 201);
