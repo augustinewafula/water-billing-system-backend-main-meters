@@ -36,21 +36,23 @@ class MeterReadingController extends Controller
      */
     public function store(CreateMeterReadingRequest $request)
     {
-        $previous_reading = Meter::find($request->meter_id)
-            ->first()
-            ->last_reading;
-        $bill = $this->calculateBill($previous_reading, $request->current_reading);
+        $meter = Meter::find($request->meter_id)
+            ->first();
+        $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
 
         try {
-            DB::transaction(static function () use ($request, $bill, $previous_reading) {
+            DB::transaction(static function () use ($request, $bill, $meter) {
                 MeterReading::create([
                     'meter_id' => $request->meter_id,
-                    'previous_reading' => $previous_reading,
+                    'previous_reading' => $meter->last_reading,
                     'current_reading' => $request->current_reading,
                     'month' => $request->month,
                     'bill' => $bill
                 ]);
             });
+            $meter->update([
+                'last_reading' => $request->current_reading,
+            ]);
         } catch (Throwable $th) {
             Log::error($th);
             $response = ['message' => 'Something went wrong, please contact website admin for help'];
