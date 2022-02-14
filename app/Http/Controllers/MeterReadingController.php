@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateMeterReadingRequest;
+use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
 use App\Models\MeterCharge;
 use App\Models\MeterReading;
@@ -10,7 +11,6 @@ use DB;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Log;
 use Throwable;
@@ -71,6 +71,12 @@ class MeterReadingController extends Controller
             + $meter_charges->service_charge;
     }
 
+    public function calculateBillUpdate($previous_reading, $current_reading, $previous_bill)
+    {
+        return (
+            ($current_reading * $previous_bill) / $previous_reading);
+    }
+
     /**
      * Display the specified resource.
      *
@@ -85,13 +91,40 @@ class MeterReadingController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
+     * @param UpdateMeterReadingRequest $request
      * @param MeterReading $meterReading
-     * @return Response
+     * @return Application|ResponseFactory|JsonResponse|Response
      */
-    public function update(Request $request, MeterReading $meterReading)
+    public function update(UpdateMeterReadingRequest $request, MeterReading $meterReading)
     {
-        //
+        if ($request->current_reading == $meterReading->current_reading) {
+            $meterReading->update($request->validated());
+            return response()->json($meterReading);
+        }
+
+        $meter = Meter::find($request->meter_id)
+            ->first();
+        $bill = $this->calculateBillUpdate($meter->last_reading, $request->current_reading, $meterReading->bill);
+
+        try {
+            DB::transaction(static function () use ($request, $bill, $meter, $meterReading) {
+                $meterReading->update([
+                    'meter_id' => $request->meter_id,
+                    'previous_reading' => $meter->last_reading,
+                    'current_reading' => $request->current_reading,
+                    'month' => $request->month,
+                    'bill' => $bill
+                ]);
+            });
+            $meter->update([
+                'last_reading' => $request->current_reading,
+            ]);
+        } catch (Throwable $th) {
+            Log::error($th);
+            $response = ['message' => 'Something went wrong, please contact website admin for help'];
+            return response($response, 422);
+        }
+        return response()->json($bill);
     }
 
     /**
