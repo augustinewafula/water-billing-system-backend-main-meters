@@ -145,10 +145,11 @@ class MeterReadingController extends Controller
      * Remove the specified resource from storage.
      *
      * @param MeterReading $meterReading
-     * @return Response
+     * @return JsonResponse
      */
-    public function destroy(MeterReading $meterReading)
+    public function destroy(MeterReading $meterReading): JsonResponse
     {
-        //
+        $meterReading->delete();
+        return response()->json('deleted');
     }
 }
