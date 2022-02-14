@@ -91,12 +91,15 @@ class MeterReadingController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param MeterReading $meterReading
-     * @return Response
+     * @param $id
+     * @return JsonResponse
      */
-    public function show(MeterReading $meterReading)
+    public function show($id): JsonResponse
     {
-        //
+        $meter_reading = MeterReading::with('meter')
+            ->where('id', $id)
+            ->first();
+        return response()->json($meter_reading);
     }
 
     /**
