@@ -39,7 +39,7 @@ class CreateMeterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'required_if' => 'The type field is required when mode is automatic',
+            'required_if' => 'The :attribute field is required when mode is automatic',
             'unique' => 'The :attribute already exists'
         ];
     }
