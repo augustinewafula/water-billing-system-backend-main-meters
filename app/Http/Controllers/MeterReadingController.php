@@ -11,6 +11,7 @@ use DB;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Log;
 use Throwable;
@@ -20,11 +21,21 @@ class MeterReadingController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return Response
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $station_id = $request->query('station_id');
+        $meter_readings = MeterReading::query();
+        if ($request->has('station_id')) {
+            $meter_readings->whereHas('meter', function ($query) use ($station_id) {
+                $query->where('station_id', $station_id);
+            });
+        }
+        $meter_readings->with('meter');
+        $meter_readings = $meter_readings->get();
+        return response()->json($meter_readings);
     }
 
     /**
