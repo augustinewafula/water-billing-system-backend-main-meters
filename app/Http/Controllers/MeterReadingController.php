@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
 use App\Models\MeterCharge;
 use App\Models\MeterReading;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -47,8 +48,7 @@ class MeterReadingController extends Controller
      */
     public function store(CreateMeterReadingRequest $request)
     {
-        $meter = Meter::find($request->meter_id)
-            ->first();
+        $meter = Meter::find($request->meter_id);
         $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
 
         try {
@@ -60,10 +60,11 @@ class MeterReadingController extends Controller
                     'month' => $request->month,
                     'bill' => $bill
                 ]);
+                $meter->update([
+                    'last_reading' => $request->current_reading,
+                    'last_reading_date' => Carbon::now()->toDateTimeString(),
+                ]);
             });
-            $meter->update([
-                'last_reading' => $request->current_reading,
-            ]);
         } catch (Throwable $th) {
             Log::error($th);
             $response = ['message' => 'Something went wrong, please contact website admin for help'];
@@ -116,8 +117,7 @@ class MeterReadingController extends Controller
             return response()->json($meterReading);
         }
 
-        $meter = Meter::find($request->meter_id)
-            ->first();
+        $meter = Meter::find($request->meter_id);
         $bill = $this->calculateBillUpdate($meter->last_reading, $request->current_reading, $meterReading->bill);
 
         try {
@@ -129,10 +129,10 @@ class MeterReadingController extends Controller
                     'month' => $request->month,
                     'bill' => $bill
                 ]);
+                $meter->update([
+                    'last_reading' => $request->current_reading,
+                ]);
             });
-            $meter->update([
-                'last_reading' => $request->current_reading,
-            ]);
         } catch (Throwable $th) {
             Log::error($th);
             $response = ['message' => 'Something went wrong, please contact website admin for help'];
