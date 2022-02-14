@@ -29,6 +29,8 @@ class User extends Authenticatable
         'email',
         'meter_id',
         'password',
+        'first_bill',
+        'account_balance'
     ];
 
     /**
