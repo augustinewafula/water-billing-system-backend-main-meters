@@ -23,8 +23,8 @@ class CreateMetersTable extends Migration
             $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
             $table->string('type_id')->nullable();
             $table->integer('last_reading');
-            $table->timestamp('last_reading_date')->nullable();
-            $table->timestamp('last_billing_date')->nullable();
+            $table->dateTime('last_reading_date')->nullable();
+            $table->dateTime('last_billing_date')->nullable();
             $table->timestamps();
         });
     }
