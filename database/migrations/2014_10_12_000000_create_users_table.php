@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->uuid('meter_id')->nullable();
             $table->string('first_bill')->nullable();
+            $table->decimal('account_balance', 15)->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
