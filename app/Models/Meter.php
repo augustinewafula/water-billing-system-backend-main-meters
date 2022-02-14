@@ -16,7 +16,17 @@ class Meter extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading'];
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date'];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'last_reading_date' => 'datetime',
+        'last_billing_date' => 'datetime',
+    ];
 
     /**
      * Get meter station that owns the meter
