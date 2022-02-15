@@ -43,7 +43,7 @@ class Meter extends Model
      */
     public function type(): BelongsTo
     {
-        return $this->BelongsTo(MeterType::class);
+        return $this->belongsTo(MeterType::class);
     }
 
     /**
