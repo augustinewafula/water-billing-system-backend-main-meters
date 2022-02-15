@@ -52,6 +52,6 @@ class Meter extends Model
      */
     public function user(): HasOne
     {
-        return $this->HasOne(User::class);
+        return $this->hasOne(User::class);
     }
 }
