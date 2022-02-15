@@ -51,7 +51,7 @@ class MeterController extends Controller
      */
     public function store(CreateMeterRequest $request): JsonResponse
     {
-        if ($request->mode === MeterMode::Automatic) {
+        if ((int)$request->mode === MeterMode::Automatic) {
             $meter = Meter::create($request->validated());
             return response()->json($meter, 201);
         }
