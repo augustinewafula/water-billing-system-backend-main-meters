@@ -8,12 +8,14 @@ use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
 use App\Models\MeterReading;
+use App\Models\MpesaTransaction;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use JsonException;
 use Log;
 use Str;
 use Throwable;
@@ -28,6 +30,34 @@ class MeterBillingController extends Controller
     public function index()
     {
         //
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function mpesaConfirmation(Request $request): Response
+    {
+        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
+        $mpesa_transaction = new MpesaTransaction();
+        $mpesa_transaction->TransactionType = $content->TransactionType;
+        $mpesa_transaction->TransID = $content->TransID;
+        $mpesa_transaction->TransTime = $content->TransTime;
+        $mpesa_transaction->TransAmount = $content->TransAmount;
+        $mpesa_transaction->BusinessShortCode = $content->BusinessShortCode;
+        $mpesa_transaction->BillRefNumber = $content->BillRefNumber;
+        $mpesa_transaction->InvoiceNumber = $content->InvoiceNumber;
+        $mpesa_transaction->OrgAccountBalance = $content->OrgAccountBalance;
+        $mpesa_transaction->ThirdPartyTransID = $content->ThirdPartyTransID;
+        $mpesa_transaction->MSISDN = $content->MSISDN;
+        $mpesa_transaction->FirstName = $content->FirstName;
+        $mpesa_transaction->MiddleName = $content->MiddleName;
+        $mpesa_transaction->LastName = $content->LastName;
+        $mpesa_transaction->save();
+
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
+        $response->setContent(json_encode(['C2BPaymentConfirmationResult' => 'Success'], JSON_THROW_ON_ERROR));
+        return $response;
     }
 
     /**
