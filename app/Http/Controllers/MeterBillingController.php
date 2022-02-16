@@ -146,6 +146,10 @@ class MeterBillingController extends Controller
                         'status' => MeterReadingStatus::Paid,
                     ]);
                     $user_bill_balance = 0;
+                } else {
+                    $meter_reading->update([
+                        'status' => MeterReadingStatus::Balance,
+                    ]);
                 }
                 MeterBilling::updateOrCreate([
                     'meter_reading_id' => $meter_reading->id,
