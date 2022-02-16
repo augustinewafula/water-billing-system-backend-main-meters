@@ -18,6 +18,7 @@ class CreateMeterBillingsTable extends Migration
             $table->uuid('meter_reading_id');
             $table->foreign('meter_reading_id')->references('id')->on('meter_readings');
             $table->decimal('amount_paid', 15);
+            $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained();
             $table->decimal('balance', 15)->default(0);
             $table->string('date_paid')->nullable();
             $table->timestamps();
