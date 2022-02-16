@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\MeterBillingController;
 use App\Http\Controllers\MeterController;
 use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
@@ -46,6 +47,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::get('meter-stations', [MeterStationController::class, 'index']);
     Route::get('meter-types', [MeterController::class, 'typeIndex']);
+    Route::post('mpesa/transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
     Route::fallback(static function () {
         return response()->json([
