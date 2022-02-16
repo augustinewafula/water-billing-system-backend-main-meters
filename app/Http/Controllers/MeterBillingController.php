@@ -38,9 +38,7 @@ class MeterBillingController extends Controller
      */
     public function store(CreateMeterBillingRequest $request): JsonResponse
     {
-        $meter_reading = MeterReading::find($request->meter_reading_id);
-
-        $pending_meter_readings = MeterReading::where('meter_id', $meter_reading->meter_id)
+        $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
             ->where(function ($query) {
                 $query->where('status', MeterReadingStatus::NotPaid);
                 $query->orWhere('status', MeterReadingStatus::Balance);
@@ -48,7 +46,7 @@ class MeterBillingController extends Controller
             ->orderBy('created_at', 'ASC')->get();
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
-            $user = User::where('meter_id', $meter_reading->meter_id)->first();
+            $user = User::where('meter_id', $request->meter_id)->first();
 
             if (!$user) {
                 //save to unresolved money
@@ -70,7 +68,7 @@ class MeterBillingController extends Controller
                 $request->amount_paid,
                 $balance,
                 $user,
-                $meter_reading);
+                $pending_meter_reading);
 
         }
 

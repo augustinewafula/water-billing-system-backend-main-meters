@@ -24,7 +24,7 @@ class CreateMeterBillingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'meter_reading_id' => ['required', 'string', 'exists:meter_readings,id'],
+            'meter_id' => ['required', 'string', 'exists:meters,id'],
             'amount_paid' => ['required', 'numeric']
         ];
     }
