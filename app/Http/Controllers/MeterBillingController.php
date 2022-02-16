@@ -155,7 +155,7 @@ class MeterBillingController extends Controller
                 ]);
                 $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m', $meter_reading->month)->format('M'));
                 $bill_year = Carbon::createFromFormat('Y-m', $meter_reading->month)->format('Y');
-                MeterBillingReport::updateOrCreate([
+                $this->saveMeterBillingReport([
                     'meter_id' => $meter->id,
                     $bill_month_name => $user_bill_balance,
                     'year' => $bill_year,
@@ -166,5 +166,16 @@ class MeterBillingController extends Controller
             Log::error($th);
             return false;
         }
+    }
+
+    public function saveMeterBillingReport($report): void
+    {
+        $meter_billing_report = MeterBillingReport::where('meter_id', $report['meter_id'])
+            ->where('year', $report['year'])->first();
+        if ($meter_billing_report) {
+            $meter_billing_report->update($report);
+            return;
+        }
+        MeterBillingReport::create($report);
     }
 }
