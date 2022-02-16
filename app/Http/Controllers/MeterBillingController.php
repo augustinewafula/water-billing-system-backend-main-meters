@@ -55,7 +55,7 @@ class MeterBillingController extends Controller
 
             $user_total_amount = $request->amount_paid;
             if ($user->account_balance > 0) {
-                $user_total_amount += $request->amount_paid;
+                $user_total_amount += $user->account_balance;
             }
 
             $bill_to_pay = $pending_meter_reading->bill;
@@ -64,7 +64,6 @@ class MeterBillingController extends Controller
             }
             $balance = $bill_to_pay - $user_total_amount;
             $this->saveBillingInfo(
-                $user->account_balance,
                 $request->amount_paid,
                 $balance,
                 $user,
@@ -115,30 +114,28 @@ class MeterBillingController extends Controller
     }
 
     /**
-     * @param $user_account_balance
      * @param $amount_paid
      * @param $balance
      * @param $user
      * @param $meter_reading
      * @return bool
      */
-    public function saveBillingInfo($user_account_balance,
-                                    $amount_paid,
-                                    $balance,
-                                    $user,
-                                    $meter_reading): bool
+    public function saveBillingInfo(
+        $amount_paid,
+        $balance,
+        $user,
+        $meter_reading): bool
     {
         try {
-            DB::transaction(function () use ($user_account_balance, $amount_paid, $balance, $user, $meter_reading) {
+            DB::transaction(function () use ($amount_paid, $balance, $user, $meter_reading) {
                 $meter = Meter::find($meter_reading->meter_id);
                 $meter->update([
                     'last_billing_date' => Carbon::now()->toDateTimeString(),
                 ]);
                 $user_bill_balance = $balance;
                 if ($this->userHasFullyPaid($balance)) {
-                    $new_user_balance = $user_account_balance + abs($balance);
                     $user->update([
-                        'account_balance' => $new_user_balance
+                        'account_balance' => abs($balance)
                     ]);
                     $meter_reading->update([
                         'status' => MeterReadingStatus::Paid,
