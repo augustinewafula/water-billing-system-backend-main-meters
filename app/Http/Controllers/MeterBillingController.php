@@ -69,19 +69,20 @@ class MeterBillingController extends Controller
                 'mpesa_transaction_id' => $mpesa_transaction_id,
                 'reason' => UnresolvedMpesaTransactionReason::MeterReadingNotFound
             ]);
-            return response()->json('created', 422);
+            return response()->json('Meter reading not found', 422);
+        }
+
+        $user = User::where('meter_id', $request->meter_id)->first();
+
+        if (!$user) {
+            UnresolvedMpesaTransaction::create([
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'reason' => UnresolvedMpesaTransactionReason::UserNotFound
+            ]);
+            return response()->json('No user assigned to this meter', 422);
         }
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
-            $user = User::where('meter_id', $request->meter_id)->first();
-
-            if (!$user) {
-                UnresolvedMpesaTransaction::create([
-                    'mpesa_transaction_id' => $mpesa_transaction_id,
-                    'reason' => UnresolvedMpesaTransactionReason::UserNotFound
-                ]);
-                break;
-            }
 
             $user_total_amount = $request->amount_paid;
             if ($user->account_balance > 0) {
