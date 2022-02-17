@@ -244,6 +244,7 @@ class MeterBillingController extends Controller
             return;
         }
         $request = new CreateMeterBillingRequest();
+        $request->setMethod('POST');
         $request->request->add([
             'meter_id' => $meter->id,
             'amount_paid' => $content->TransAmount
