@@ -19,7 +19,7 @@ class MpesaTransactions extends Migration
             $table->string('MiddleName')->nullable();
             $table->string('LastName')->nullable();
             $table->string('TransactionType')->nullable();
-            $table->string('TransID')->nullable();
+            $table->string('TransID')->unique();
             $table->string('TransTime')->nullable();
             $table->string('BusinessShortCode')->nullable();
             $table->string('BillRefNumber')->nullable();
