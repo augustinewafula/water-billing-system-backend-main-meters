@@ -91,7 +91,10 @@ class MeterBillingController extends Controller
 
             $bill_to_pay = $pending_meter_reading->bill;
             if ($pending_meter_reading->status === MeterReadingStatus::Balance) {
-                $bill_to_pay = MeterBilling::where('meter_reading_id', $pending_meter_reading->id)->first()->balance;
+                $bill_to_pay = MeterBilling::where('meter_reading_id', $pending_meter_reading->id)
+                    ->latest()
+                    ->first()
+                    ->balance;
             }
             $balance = $bill_to_pay - $user_total_amount;
             $this->saveBillingInfo(
