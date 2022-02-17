@@ -13,4 +13,6 @@ class UnresolvedMpesaTransaction extends Model
     public $incrementing = false;
 
     protected $keyType = 'uuid';
+
+    protected $fillable = ['mpesa_transaction_id', 'reason'];
 }
