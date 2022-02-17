@@ -12,4 +12,5 @@ final class UnresolvedMpesaTransactionReason extends Enum
 {
     public const InvalidAccountNumber = 0;
     public const MeterReadingNotFound = 1;
+    public const UserNotFound = 2;
 }
