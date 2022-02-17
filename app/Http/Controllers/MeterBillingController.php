@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MeterReadingStatus;
+use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
 use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
+use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
@@ -35,24 +37,11 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException
      */
-    public function mpesaConfirmation(Request $request): Response
+    public function mpesaConfirmation(Request $content): Response
     {
-        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
-        $mpesa_transaction = new MpesaTransaction();
-        $mpesa_transaction->TransactionType = $content->TransactionType;
-        $mpesa_transaction->TransID = $content->TransID;
-        $mpesa_transaction->TransTime = $content->TransTime;
-        $mpesa_transaction->TransAmount = $content->TransAmount;
-        $mpesa_transaction->BusinessShortCode = $content->BusinessShortCode;
-        $mpesa_transaction->BillRefNumber = $content->BillRefNumber;
-        $mpesa_transaction->InvoiceNumber = $content->InvoiceNumber;
-        $mpesa_transaction->OrgAccountBalance = $content->OrgAccountBalance;
-        $mpesa_transaction->ThirdPartyTransID = $content->ThirdPartyTransID;
-        $mpesa_transaction->MSISDN = $content->MSISDN;
-        $mpesa_transaction->FirstName = $content->FirstName;
-        $mpesa_transaction->MiddleName = $content->MiddleName;
-        $mpesa_transaction->LastName = $content->LastName;
-        $mpesa_transaction->save();
+//        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
+        $mpesa_transaction_id = $this->storeMpesaTransaction($content);
+        $this->processMpesaTransaction($content, $mpesa_transaction_id);
 
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
@@ -206,5 +195,47 @@ class MeterBillingController extends Controller
             return;
         }
         MeterBillingReport::create($report);
+    }
+
+    /**
+     * @param Request $content
+     * @return String
+     */
+    public function storeMpesaTransaction(Request $content): string
+    {
+        $mpesa_transaction = new MpesaTransaction();
+        $mpesa_transaction->TransactionType = $content->TransactionType;
+        $mpesa_transaction->TransID = $content->TransID;
+        $mpesa_transaction->TransTime = $content->TransTime;
+        $mpesa_transaction->TransAmount = $content->TransAmount;
+        $mpesa_transaction->BusinessShortCode = $content->BusinessShortCode;
+        $mpesa_transaction->BillRefNumber = $content->BillRefNumber;
+        $mpesa_transaction->InvoiceNumber = $content->InvoiceNumber;
+        $mpesa_transaction->OrgAccountBalance = $content->OrgAccountBalance;
+        $mpesa_transaction->ThirdPartyTransID = $content->ThirdPartyTransID;
+        $mpesa_transaction->MSISDN = $content->MSISDN;
+        $mpesa_transaction->FirstName = $content->FirstName;
+        $mpesa_transaction->MiddleName = $content->MiddleName;
+        $mpesa_transaction->LastName = $content->LastName;
+        $mpesa_transaction->save();
+        return $mpesa_transaction->id;
+    }
+
+    private function processMpesaTransaction(Request $content, $mpesa_transaction_id): void
+    {
+        $meter = Meter::where('number', $content->BillRefNumber)
+            ->first();
+        if (!$meter) {
+            UnresolvedMpesaTransaction::create([
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
+            ]);
+            return;
+        }
+        $content->replace([
+            'meter_id' => $meter->id,
+            'amount_paid' => $content->TransAmount
+        ]);
+        $this->store($content);
     }
 }
