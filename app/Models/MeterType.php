@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MeterType extends Model
 {
@@ -16,11 +16,11 @@ class MeterType extends Model
     protected $keyType = 'uuid';
 
     /**
-     * Get meter station that owns the meter
-     * @return BelongsTo
+     * Get the meters that belong to meter type.
+     * @return HasMany
      */
-    public function meter(): BelongsTo
+    public function meters(): HasMany
     {
-        return $this->belongsTo(Meter::class);
+        return $this->hasMany(Meter::class);
     }
 }
