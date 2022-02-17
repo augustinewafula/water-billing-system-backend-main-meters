@@ -55,7 +55,7 @@ class MeterBillingController extends Controller
      * @param CreateMeterBillingRequest $request
      * @return JsonResponse
      */
-    public function store(CreateMeterBillingRequest $request): JsonResponse
+    public function store(CreateMeterBillingRequest $request, $mpesa_transaction_id): JsonResponse
     {
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
             ->where(function ($query) {
@@ -63,6 +63,14 @@ class MeterBillingController extends Controller
                 $query->orWhere('status', MeterReadingStatus::Balance);
             })
             ->orderBy('created_at', 'ASC')->get();
+
+        if ($pending_meter_readings->count() === 0) {
+            UnresolvedMpesaTransaction::create([
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'reason' => UnresolvedMpesaTransactionReason::MeterReadingNotFound
+            ]);
+            return response()->json('created', 422);
+        }
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
             $user = User::where('meter_id', $request->meter_id)->first();
@@ -236,6 +244,6 @@ class MeterBillingController extends Controller
             'meter_id' => $meter->id,
             'amount_paid' => $content->TransAmount
         ]);
-        $this->store($content);
+        $this->store($content, $mpesa_transaction_id);
     }
 }
