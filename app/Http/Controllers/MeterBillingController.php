@@ -94,7 +94,8 @@ class MeterBillingController extends Controller
                 $request->amount_paid,
                 $balance,
                 $user,
-                $pending_meter_reading);
+                $pending_meter_reading,
+                $mpesa_transaction_id);
 
         }
 
@@ -151,10 +152,11 @@ class MeterBillingController extends Controller
         $amount_paid,
         $balance,
         $user,
-        $meter_reading): bool
+        $meter_reading,
+        $mpesa_transaction_id): bool
     {
         try {
-            DB::transaction(function () use ($amount_paid, $balance, $user, $meter_reading) {
+            DB::transaction(function () use ($amount_paid, $balance, $user, $meter_reading, $mpesa_transaction_id) {
                 $meter = Meter::find($meter_reading->meter_id);
                 $meter->update([
                     'last_billing_date' => Carbon::now()->toDateTimeString(),
@@ -177,7 +179,8 @@ class MeterBillingController extends Controller
                     'meter_reading_id' => $meter_reading->id,
                     'amount_paid' => $amount_paid,
                     'balance' => $user_bill_balance,
-                    'date_paid' => Carbon::now()->toDateTimeString()
+                    'date_paid' => Carbon::now()->toDateTimeString(),
+                    'mpesa_transaction_id' => $mpesa_transaction_id
                 ]);
                 $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m', $meter_reading->month)->format('M'));
                 $bill_year = Carbon::createFromFormat('Y-m', $meter_reading->month)->format('Y');
