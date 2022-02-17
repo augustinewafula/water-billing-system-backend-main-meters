@@ -14,5 +14,5 @@ class MeterBilling extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'date_paid'];
+    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'mpesa_transaction_id', 'date_paid'];
 }
