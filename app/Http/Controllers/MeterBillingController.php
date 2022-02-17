@@ -243,10 +243,11 @@ class MeterBillingController extends Controller
             ]);
             return;
         }
-        $content->replace([
+        $request = new CreateMeterBillingRequest();
+        $request->request->add([
             'meter_id' => $meter->id,
             'amount_paid' => $content->TransAmount
         ]);
-        $this->store($content, $mpesa_transaction_id);
+        $this->store($request, $mpesa_transaction_id);
     }
 }
