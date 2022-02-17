@@ -76,7 +76,10 @@ class MeterBillingController extends Controller
             $user = User::where('meter_id', $request->meter_id)->first();
 
             if (!$user) {
-                //save to unresolved money
+                UnresolvedMpesaTransaction::create([
+                    'mpesa_transaction_id' => $mpesa_transaction_id,
+                    'reason' => UnresolvedMpesaTransactionReason::UserNotFound
+                ]);
                 break;
             }
 
