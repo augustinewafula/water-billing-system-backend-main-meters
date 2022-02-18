@@ -15,8 +15,8 @@ class MeterTypeSeeder extends Seeder
     public function run()
     {
         $meterTypes = [
-            'Sh meters Gprs',
-            'Sh meters Nb-iot',
+            'Sh Gprs',
+            'Sh Nb-iot',
             'Changsha Nb-iot'
         ];
         foreach ($meterTypes as $value){
