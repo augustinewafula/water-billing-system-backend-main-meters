@@ -33,7 +33,7 @@ class MeterReadingController extends Controller
                 $query->where('station_id', $station_id);
             });
         }
-        $meter_readings->with('meter');
+        $meter_readings->with(['meter', 'user']);
         $meter_readings = $meter_readings->get();
         return response()->json($meter_readings);
     }
