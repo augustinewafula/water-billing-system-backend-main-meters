@@ -6,6 +6,7 @@ use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MeterReading extends Model
 {
@@ -24,5 +25,14 @@ class MeterReading extends Model
     public function meter(): BelongsTo
     {
         return $this->belongsTo(Meter::class);
+    }
+
+    /**
+     * Get meter that owns the meter reading
+     * @return hasOne
+     */
+    public function user(): hasOne
+    {
+        return $this->hasOne(User::class, 'meter_id', 'meter_id');
     }
 }
