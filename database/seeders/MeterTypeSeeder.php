@@ -17,7 +17,8 @@ class MeterTypeSeeder extends Seeder
         $meterTypes = [
             'Sh Gprs',
             'Sh Nb-iot',
-            'Changsha Nb-iot'
+            'Changsha Nb-iot',
+            'Prepaid'
         ];
         foreach ($meterTypes as $value){
             $meterType = new MeterType();
