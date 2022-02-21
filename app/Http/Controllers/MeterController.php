@@ -8,12 +8,18 @@ use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use App\Models\MeterType;
+use App\Traits\ProcessPrepaidMeterTransaction;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
+use Log;
+use Throwable;
 
 class MeterController extends Controller
 {
+    use ProcessPrepaidMeterTransaction;
+
     /**
      * Display a listing of the resource.
      *
@@ -48,11 +54,20 @@ class MeterController extends Controller
      *
      * @param CreateMeterRequest $request
      * @return JsonResponse
+     * @throws JsonException
      */
     public function store(CreateMeterRequest $request): JsonResponse
     {
         if ((int)$request->mode === MeterMode::Automatic) {
             $meter = Meter::create($request->validated());
+
+            try {
+                if (MeterType::find($request->type_id)->name === 'Prepaid') {
+                    $this->register_meter($meter->id);
+                }
+            } catch (Throwable $exception) {
+                Log::error('Failed to register prepaid meter id: ' . $meter->id);
+            }
             return response()->json($meter, 201);
         }
         $meter = Meter::create([
