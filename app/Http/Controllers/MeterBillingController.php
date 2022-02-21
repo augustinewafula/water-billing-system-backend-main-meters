@@ -9,9 +9,12 @@ use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
 use App\Models\MeterReading;
+use App\Models\MeterToken;
+use App\Models\MeterType;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
+use App\Traits\ProcessPrepaidMeterTransaction;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +27,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
+    use ProcessPrepaidMeterTransaction;
     /**
      * Display a listing of the resource.
      *
@@ -239,6 +243,9 @@ class MeterBillingController extends Controller
         return $mpesa_transaction->id;
     }
 
+    /**
+     * @throws JsonException
+     */
     private function processMpesaTransaction(Request $content, $mpesa_transaction_id): void
     {
         $meter = Meter::where('number', $content->BillRefNumber)
@@ -247,6 +254,18 @@ class MeterBillingController extends Controller
             UnresolvedMpesaTransaction::create([
                 'mpesa_transaction_id' => $mpesa_transaction_id,
                 'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
+            ]);
+            return;
+        }
+
+        if (MeterType::find($meter->type_id)->name === 'Prepaid') {
+            $token = $this->top_up($meter->number, $content->TransAmount);
+            $units = $content->TransAmount / 200;
+
+            MeterToken::create([
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'token' => strtok($token, ','),
+                'units' => $units,
             ]);
             return;
         }
