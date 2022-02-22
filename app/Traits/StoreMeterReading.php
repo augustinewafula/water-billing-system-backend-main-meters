@@ -52,12 +52,12 @@ trait StoreMeterReading
 
     }
 
-    public function calculateBill($previous_reading, $current_reading)
+    public function calculateBill($previous_reading, $current_reading): float
     {
         $meter_charges = MeterCharge::take(1)
             ->first();
-        return (
+        return round((
                 ($current_reading - $previous_reading) * $meter_charges->cost_per_unit)
-            + $meter_charges->service_charge;
+            + $meter_charges->service_charge);
     }
 }

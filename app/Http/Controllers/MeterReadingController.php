@@ -40,10 +40,10 @@ class MeterReadingController extends Controller
 
 
 
-    public function calculateBillUpdate($previous_reading, $current_reading, $previous_bill)
+    public function calculateBillUpdate($previous_reading, $current_reading, $previous_bill): float
     {
-        return (
-            ($current_reading * $previous_bill) / $previous_reading);
+        return round((
+            ($current_reading * $previous_bill) / $previous_reading));
     }
 
     /**
