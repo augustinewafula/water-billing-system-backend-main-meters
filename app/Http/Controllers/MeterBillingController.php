@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\MeterReadingStatus;
 use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Http\Requests\CreateMeterBillingRequest;
+use App\Jobs\SendSMS;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
@@ -28,14 +29,25 @@ use Throwable;
 class MeterBillingController extends Controller
 {
     use ProcessPrepaidMeterTransaction;
+
     /**
      * Display a listing of the resource.
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $meter_billings = MeterBilling::query();
+        $meter_billings = $meter_billings->select('meter_billings.mpesa_transaction_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
+            ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+            ->join('meters', 'meters.id', 'meter_readings.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+        if ($request->has('station_id')) {
+            $meter_billings = $meter_billings->where('meter_stations.id', $request->query('station_id'));
+        }
+        $meter_billings = $meter_billings->get();
+        return response()->json($meter_billings);
     }
 
     /**
@@ -257,17 +269,30 @@ class MeterBillingController extends Controller
             ]);
             return;
         }
+        $meter_type = MeterType::find($meter->type_id);
+        if ($meter_type) {
+            if ($meter_type->name === 'Prepaid') {
+                $token = $this->top_up($meter->number, $content->TransAmount);
+                $units = $content->TransAmount / 200;
 
-        if (MeterType::find($meter->type_id)->name === 'Prepaid') {
-            $token = $this->top_up($meter->number, $content->TransAmount);
-            $units = $content->TransAmount / 200;
+                MeterToken::create([
+                    'mpesa_transaction_id' => $mpesa_transaction_id,
+                    'token' => strtok($token, ','),
+                    'units' => $units,
+                ]);
+                $date = Carbon::now()->toDateTimeString();
+                $message = "Meter: $meter->number Token: $token Units: $units Amount: $content->TransAmount Date: $date Ref: $mpesa_transaction_id";
+//            $message = "Meter: $meter->number\n
+//                        Token: $token\n
+//                        Units: $units\n
+//                        Amount: $content->TransAmount\n
+//                        Date: $date\n
+//                        Ref: $mpesa_transaction_id";
+                Log::debug($message);
+                SendSMS::dispatch($content->MSISDN, $message);
+                return;
 
-            MeterToken::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
-                'token' => strtok($token, ','),
-                'units' => $units,
-            ]);
-            return;
+            }
         }
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
