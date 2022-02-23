@@ -16,7 +16,7 @@ class MeterReading extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'status'];
+    protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'status'];
 
     /**
      * Get meter that owns the meter reading

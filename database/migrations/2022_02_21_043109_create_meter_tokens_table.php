@@ -18,6 +18,7 @@ class CreateMeterTokensTable extends Migration
             $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained();
             $table->string('token');
             $table->string('units');
+            $table->decimal('service_fee', 15);
             $table->timestamps();
         });
     }

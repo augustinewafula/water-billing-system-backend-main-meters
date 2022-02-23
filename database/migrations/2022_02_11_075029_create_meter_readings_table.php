@@ -22,6 +22,7 @@ class CreateMeterReadingsTable extends Migration
             $table->integer('current_reading');
             $table->string('month');
             $table->decimal('bill', 15);
+            $table->decimal('service_fee', 15);
             $table->tinyInteger('status')->unsigned()->default(MeterReadingStatus::NotPaid);
             $table->timestamps();
         });

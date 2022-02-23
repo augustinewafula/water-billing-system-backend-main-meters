@@ -14,5 +14,5 @@ class MeterToken extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['mpesa_transaction_id', 'token', 'units'];
+    protected $fillable = ['mpesa_transaction_id', 'token', 'service_fee', 'units'];
 }
