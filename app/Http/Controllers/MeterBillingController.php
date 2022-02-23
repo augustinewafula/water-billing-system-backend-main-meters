@@ -98,9 +98,10 @@ class MeterBillingController extends Controller
             return response()->json('No user assigned to this meter', 422);
         }
 
+        $user_total_amount = $request->amount_paid;
+
         foreach ($pending_meter_readings as $pending_meter_reading) {
 
-            $user_total_amount = $request->amount_paid;
             if ($user->account_balance > 0) {
                 $user_total_amount += $user->account_balance;
             }
@@ -113,12 +114,19 @@ class MeterBillingController extends Controller
                     ->balance;
             }
             $balance = $bill_to_pay - $user_total_amount;
-            $this->saveBillingInfo(
+
+            if (round($user_total_amount) === 0.00) {
+                break;
+            }
+
+            if ($this->saveBillingInfo(
                 $request->amount_paid,
                 $balance,
                 $user,
                 $pending_meter_reading,
-                $mpesa_transaction_id);
+                $mpesa_transaction_id)) {
+                $user_total_amount = $balance;
+            }
 
         }
 
