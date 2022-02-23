@@ -38,7 +38,7 @@ class MeterBillingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $meter_billings = MeterBilling::query();
-        $meter_billings = $meter_billings->select('meter_billings.mpesa_transaction_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+        $meter_billings = $meter_billings->select('mpesa_transactions.id', 'meter_billings.mpesa_transaction_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
