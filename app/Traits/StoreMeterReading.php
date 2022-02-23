@@ -36,7 +36,8 @@ trait StoreMeterReading
                     'previous_reading' => $meter->last_reading,
                     'current_reading' => $request->current_reading,
                     'month' => $request->month,
-                    'bill' => $bill
+                    'bill' => $bill,
+                    'service_fee' => MeterCharge::take(1)->first()->service_charge
                 ]);
                 $meter->update([
                     'last_reading' => $request->current_reading,
