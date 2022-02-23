@@ -289,14 +289,7 @@ class MeterBillingController extends Controller
                     'units' => $units,
                 ]);
                 $date = Carbon::now()->toDateTimeString();
-                $message = "Meter: $meter->number Token: $token Units: $units Amount: $content->TransAmount Date: $date Ref: $mpesa_transaction_id";
-//            $message = "Meter: $meter->number\n
-//                        Token: $token\n
-//                        Units: $units\n
-//                        Amount: $content->TransAmount\n
-//                        Date: $date\n
-//                        Ref: $mpesa_transaction_id";
-                Log::debug($message);
+                $message = "Meter: $meter->number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
                 SendSMS::dispatch($content->MSISDN, $message);
                 return;
 
