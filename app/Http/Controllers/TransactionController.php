@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
+use App\Models\MpesaTransaction;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class TransactionController extends Controller
 {
@@ -28,6 +31,27 @@ class TransactionController extends Controller
         $all_transactions = $meter_billings_transactions->merge($meter_tokens_transactions);
 
         return response()->json($all_transactions);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param $id
+     * @return JsonResponse
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $meter_id = MeterBilling::where('mpesa_transaction_id', $id)->first()->meter_id;
+        } catch (Throwable $throwable) {
+            $meter_id = MeterToken::where('mpesa_transaction_id', $id)->first()->meter_id;
+        }
+        $user = User::where('meter_id', $meter_id)->first();
+        $transaction = MpesaTransaction::where('id', $id)->first();
+        return response()->json([
+            'user' => $user,
+            'transaction' => $transaction
+        ]);
     }
 
     /**
