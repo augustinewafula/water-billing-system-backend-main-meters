@@ -7,6 +7,7 @@ use App\Http\Controllers\MeterController;
 use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,9 +47,11 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('meters', MeterController::class);
     Route::apiResource('meter-readings', MeterReadingController::class);
     Route::apiResource('users', UserController::class);
+    Route::apiResource('transactions', TransactionController::class)->only([
+        'index', 'show'
+    ]);
     Route::get('meter-stations', [MeterStationController::class, 'index']);
     Route::get('meter-types', [MeterController::class, 'typeIndex']);
-    Route::get('meter-billings', [MeterBillingController::class, 'index']);
     Route::post('mpesa/transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
     Route::post('sms', [SmsController::class, 'send']);
