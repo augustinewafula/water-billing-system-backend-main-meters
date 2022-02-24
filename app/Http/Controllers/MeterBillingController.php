@@ -289,6 +289,7 @@ class MeterBillingController extends Controller
                     'mpesa_transaction_id' => $mpesa_transaction_id,
                     'token' => strtok($token, ','),
                     'units' => $units,
+                    'meter_id' => $meter->id,
                 ]);
                 $date = Carbon::now()->toDateTimeString();
                 $message = "Meter: $meter->number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
