@@ -6,6 +6,7 @@ use App\Http\Controllers\MeterBillingController;
 use App\Http\Controllers\MeterController;
 use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,7 @@ Route::prefix('v1')->group(function () {
     Route::get('meter-billings', [MeterBillingController::class, 'index']);
     Route::post('mpesa/transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
+    Route::post('sms', [SmsController::class, 'send']);
     Route::fallback(static function () {
         return response()->json([
             'message' => 'Page Not Found. If error persists, contact the website administrator'], 404);
