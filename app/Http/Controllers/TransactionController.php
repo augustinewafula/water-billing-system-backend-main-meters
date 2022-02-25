@@ -77,6 +77,10 @@ class TransactionController extends Controller
         if ($request->has('station_id')) {
             $transactions = $transactions->where('meter_stations.id', $request->query('station_id'));
         }
+        if ($request->has('user_id')) {
+            $transactions = $transactions->join('users', 'users.meter_id', 'meters.id');
+            $transactions = $transactions->where('users.id', $request->query('user_id'));
+        }
         return $transactions->get();
     }
 }
