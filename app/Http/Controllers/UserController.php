@@ -19,6 +19,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
@@ -69,6 +70,32 @@ class UserController extends Controller
             ->where('id', $id)
             ->first();
         return response()->json($user);
+    }
+
+    public function billing_report(Request $request, $user_id): JsonResponse
+    {
+        $year = $request->query('year');
+        return response()->json(
+            User::select('meter_billing_reports.*')
+                ->join('meters', 'meters.id', 'users.meter_id')
+                ->join('meter_billing_reports', 'meter_billing_reports.meter_id', 'meters.id')
+                ->where('meter_billing_reports.year', $year)
+                ->where('users.id', $user_id)
+                ->first()
+        );
+    }
+
+    public function billing_report_years($user_id): JsonResponse
+    {
+        return response()->json(
+            User::select('meter_billing_reports.year as text')
+                ->join('meters', 'meters.id', 'users.meter_id')
+                ->join('meter_billing_reports', 'meter_billing_reports.meter_id', 'meters.id')
+                ->where('users.id', $user_id)
+                ->distinct('meter_billing_reports.year')
+                ->orderBy('meter_billing_reports.created_at', 'desc')
+                ->get()
+        );
     }
 
     /**
