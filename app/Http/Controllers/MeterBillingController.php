@@ -34,6 +34,29 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException
      */
+    public function createValidationResponse($result_code, $result_description): Response
+    {
+        $result = json_encode(['ResultCode' => $result_code, 'ResultDesc' => $result_description], JSON_THROW_ON_ERROR);
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json; charset=utf-8');
+        $response->setContent($result);
+        return $response;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function mpesaValidation(Request $request): Response
+    {
+        $result_code = '0';
+        $result_description = 'Accepted validation request.';
+        return $this->createValidationResponse($result_code, $result_description);
+    }
+
+
+    /**
+     * @throws JsonException
+     */
     public function mpesaConfirmation(Request $content): Response
     {
 //        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);

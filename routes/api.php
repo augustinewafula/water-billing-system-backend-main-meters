@@ -55,6 +55,7 @@ Route::prefix('v1')->group(function () {
     Route::get('meter-stations', [MeterStationController::class, 'index']);
     Route::get('meter-types', [MeterController::class, 'typeIndex']);
     Route::post('mpesa/transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
+    Route::post('mpesa/transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
     Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
     Route::post('sms', [SmsController::class, 'send']);
     Route::fallback(static function () {
