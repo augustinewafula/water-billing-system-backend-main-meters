@@ -50,6 +50,8 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('transactions', TransactionController::class)->only([
         'index', 'show'
     ]);
+    Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
+    Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
     Route::get('meter-stations', [MeterStationController::class, 'index']);
     Route::get('meter-types', [MeterController::class, 'typeIndex']);
     Route::post('mpesa/transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
