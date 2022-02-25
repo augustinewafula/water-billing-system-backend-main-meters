@@ -55,10 +55,13 @@ trait StoreMeterReading
 
     public function calculateBill($previous_reading, $current_reading): float
     {
-        $meter_charges = MeterCharge::take(1)
+        $meter_charges = MeterCharge::where('for', 'prepay')
             ->first();
-        return round((
-                ($current_reading - $previous_reading) * $meter_charges->cost_per_unit)
-            + $meter_charges->service_charge);
+        $bill = ($current_reading - $previous_reading) * $meter_charges->cost_per_unit;
+        $service_charge = $meter_charges->service_charge;
+        if ($meter_charges->service_charge_in_percentage) {
+            $service_charge = ($service_charge * $bill) / 100;
+        }
+        return round($bill + $service_charge);
     }
 }
