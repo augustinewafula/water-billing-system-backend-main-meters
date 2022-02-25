@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\notPrepaidMeter;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateMeterReadingRequest extends FormRequest
@@ -24,7 +25,7 @@ class CreateMeterReadingRequest extends FormRequest
     public function rules()
     {
         return [
-            'meter_id' => ['required', 'string', 'exists:meters,id'],
+            'meter_id' => ['required', 'string', 'exists:meters,id', new notPrepaidMeter()],
             'current_reading' => ['required', 'numeric'],
             'month' => ['required', 'string'],
         ];
