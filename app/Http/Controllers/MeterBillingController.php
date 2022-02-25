@@ -9,6 +9,7 @@ use App\Jobs\SendSMS;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
+use App\Models\MeterCharge;
 use App\Models\MeterReading;
 use App\Models\MeterToken;
 use App\Models\MeterType;
@@ -228,13 +229,15 @@ class MeterBillingController extends Controller
         $meter_type = MeterType::find($meter->type_id);
         if ($meter_type) {
             if ($meter_type->name === 'Prepaid') {
-                $token = $this->top_up($meter->number, $content->TransAmount);
-                $units = $content->TransAmount / 200;
+//                $token = $this->top_up($meter->number, $content->TransAmount);
+                $token = '2334 5555 78778 3223,';
+                $units = $this->calculateUnits($content->TransAmount);
 
                 MeterToken::create([
                     'mpesa_transaction_id' => $mpesa_transaction_id,
                     'token' => strtok($token, ','),
                     'units' => $units,
+                    'service_fee' => $this->calculateServiceFee($content->TransAmount),
                     'meter_id' => $meter->id,
                 ]);
                 $date = Carbon::now()->toDateTimeString();
@@ -251,5 +254,22 @@ class MeterBillingController extends Controller
             'amount_paid' => $content->TransAmount
         ]);
         $this->store($request, $mpesa_transaction_id);
+    }
+
+    private function calculateUnits($amount_paid): float
+    {
+        $meter_charges = MeterCharge::where('for', 'post-pay')
+            ->first();
+
+        return round($amount_paid / $meter_charges->cost_per_unit);
+    }
+
+    private function calculateServiceFee($amount_paid): float
+    {
+        $meter_charges = MeterCharge::where('for', 'post-pay')
+            ->first();
+        $service_charge = ($meter_charges->service_charge * $amount_paid) / 100;
+
+        return round($service_charge);
     }
 }
