@@ -16,7 +16,14 @@ class MeterChargeSeeder extends Seeder
     {
         MeterCharge::create([
             'cost_per_unit' => 130,
-            'service_charge' => 200
+            'service_charge' => 200,
+            'for' => 'prepay'
+        ]);
+        MeterCharge::create([
+            'cost_per_unit' => 200,
+            'service_charge' => 10,
+            'service_charge_in_percentage' => true,
+            'for' => 'post-pay'
         ]);
     }
 }

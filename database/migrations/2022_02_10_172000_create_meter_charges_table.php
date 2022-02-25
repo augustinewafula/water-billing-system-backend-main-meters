@@ -17,6 +17,8 @@ class CreateMeterChargesTable extends Migration
             $table->id();
             $table->decimal('cost_per_unit', 15, 2);
             $table->decimal('service_charge', 15, 2);
+            $table->tinyInteger('service_charge_in_percentage')->unsigned()->default(false);
+            $table->string('for');
             $table->timestamps();
         });
     }
