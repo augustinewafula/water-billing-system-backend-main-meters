@@ -57,9 +57,9 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException
      */
-    public function mpesaConfirmation(Request $content): Response
+    public function mpesaConfirmation(Request $request): Response
     {
-//        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
+        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $mpesa_transaction_id = $this->storeMpesaTransaction($content);
         $this->processMpesaTransaction($content, $mpesa_transaction_id);
 
