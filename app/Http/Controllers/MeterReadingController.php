@@ -81,7 +81,6 @@ class MeterReadingController extends Controller
             DB::transaction(static function () use ($request, $bill, $meter, $meterReading) {
                 $meterReading->update([
                     'meter_id' => $request->meter_id,
-                    'previous_reading' => $meter->last_reading,
                     'current_reading' => $request->current_reading,
                     'month' => $request->month,
                     'bill' => $bill
