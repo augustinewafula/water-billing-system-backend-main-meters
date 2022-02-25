@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use App\Models\Meter;
 use Illuminate\Contracts\Validation\Rule;
+use Throwable;
 
 class notPrepaidMeter implements Rule
 {
@@ -26,10 +27,14 @@ class notPrepaidMeter implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        $meter_type = Meter::select('meter_types.name')
-            ->join('meter_types', 'meters.type_id', 'meter_types.id')
-            ->where('meters.id', $value)
-            ->first()->name;
+        try {
+            $meter_type = Meter::select('meter_types.name')
+                ->join('meter_types', 'meters.type_id', 'meter_types.id')
+                ->where('meters.id', $value)
+                ->first()->name;
+        } catch (Throwable $throwable) {
+            $meter_type = 'not prepaid';
+        }
         return $meter_type !== 'Prepaid';
     }
 
