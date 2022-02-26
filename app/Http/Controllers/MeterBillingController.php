@@ -57,8 +57,13 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException
      */
-    public function mpesaConfirmation(Request $request): Response
+    public function mpesaConfirmation(Request $request)
     {
+        if (!$this->safaricomIpAddress($request->ip())) {
+            Log::notice("Ip $request->ip() has been stopped from accessing transaction url");
+            $response = ['message' => 'Nothing interesting around here.'];
+            return response()->json($response, 418);
+        }
         $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $mpesa_transaction_id = $this->storeMpesaTransaction($content);
         $this->processMpesaTransaction($content, $mpesa_transaction_id);
@@ -276,5 +281,23 @@ class MeterBillingController extends Controller
             'amount_paid' => $content->TransAmount
         ]);
         $this->store($request, $mpesa_transaction_id);
+    }
+
+    private function safaricomIpAddress($clientIpAddress): bool
+    {
+        $whitelist = ['196.201.214.200',
+            '196.201.214.206',
+            '196.201.213.114',
+            '196.201.214.207',
+            '196.201.214.208',
+            '196. 201.213.44',
+            '196.201.212.127',
+            '196.201.212.128',
+            '196.201.212.129',
+            '196.201.212.136',
+            '196.201.212.74',
+            '196.201.212.69'];
+
+        return in_array($clientIpAddress, $whitelist, true);
     }
 }
