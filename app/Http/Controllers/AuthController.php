@@ -4,27 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Hash;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function initiateAdminLogin(Request $request){
+    public function initiateAdminLogin(Request $request): JsonResponse
+    {
         return $this->login($request, 'admin');
     }
 
-    public function initiateUserLogin(Request $request){
+    public function initiateUserLogin(Request $request): JsonResponse
+    {
         return $this->login($request, 'user');
     }
 
-    public function login(Request $request, $user_type){
+    /**
+     * @throws ValidationException
+     */
+    public function login(Request $request, $user_type)
+    {
         $rules = [
             'email' => 'required|email|exists:users',
-            'password'  => 'required'
+            'password' => 'required'
         ];
         $customMessages = [
             'required' => 'The :attribute field is required.',
-            'email'=>'Invalid email address',
-            'exists'=>'Email does not match any user'
+            'email' => 'Invalid email address',
+            'exists' => 'Email does not match any user'
         ];
         $this->validate($request, $rules, $customMessages);
         $user = User::where('email', $request->email)->first();
@@ -40,7 +48,7 @@ class AuthController extends Controller
 
     }
 
-    public function logout()
+    public function logout(): JsonResponse
     {
         $token = auth()->guard('api')->user()->token();
         $token->revoke();
@@ -49,7 +57,7 @@ class AuthController extends Controller
         return response()->json($response, 200);
     }
 
-    public function user()
+    public function user(): JsonResponse
     {
         $user = auth()->guard('api')->user()->only('id', 'name', 'email');
         return response()->json($user);
