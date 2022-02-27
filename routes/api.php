@@ -44,7 +44,7 @@ Route::prefix('v1')->group(function () {
             });
         });
     });
-    Route::group(['middleware' => 'auth:api'], static function () {
+//    Route::group(['middleware' => 'role:admin'], static function () {
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
@@ -57,7 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::get('meter-types', [MeterController::class, 'typeIndex']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::post('sms', [SmsController::class, 'send']);
-    });
+//    });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
     Route::fallback(static function () {
