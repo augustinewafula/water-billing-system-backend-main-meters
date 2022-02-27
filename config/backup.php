@@ -128,6 +128,7 @@ return [
              */
             'disks' => [
                 'local',
+                'dropbox',
             ],
         ],
 
