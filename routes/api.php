@@ -44,20 +44,22 @@ Route::prefix('v1')->group(function () {
             });
         });
     });
-    Route::apiResource('meters', MeterController::class);
-    Route::apiResource('meter-readings', MeterReadingController::class);
-    Route::apiResource('users', UserController::class);
-    Route::apiResource('transactions', TransactionController::class)->only([
-        'index', 'show'
-    ]);
-    Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
-    Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
-    Route::get('meter-stations', [MeterStationController::class, 'index']);
-    Route::get('meter-types', [MeterController::class, 'typeIndex']);
+    Route::group(['middleware' => 'auth:api'], static function () {
+        Route::apiResource('meters', MeterController::class);
+        Route::apiResource('meter-readings', MeterReadingController::class);
+        Route::apiResource('users', UserController::class);
+        Route::apiResource('transactions', TransactionController::class)->only([
+            'index', 'show'
+        ]);
+        Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
+        Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
+        Route::get('meter-stations', [MeterStationController::class, 'index']);
+        Route::get('meter-types', [MeterController::class, 'typeIndex']);
+        Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
+        Route::post('sms', [SmsController::class, 'send']);
+    });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
-    Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
-    Route::post('sms', [SmsController::class, 'send']);
     Route::fallback(static function () {
         return response()->json([
             'message' => 'Page Not Found. If error persists, contact the website administrator'], 404);
