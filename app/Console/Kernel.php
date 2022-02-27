@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('meter-readings:get')->lastDayOfMonth('23:50');
+        $schedule->command('backup:clean --only-db')->twiceDaily(0, 12);
+        $schedule->command('backup:run --only-db')->twiceDaily();
     }
 
     /**

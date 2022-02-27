@@ -200,17 +200,17 @@
             }
 
             /**
-         * Register a callback to run after loading the environment.
-         *
-         * @param Closure $callback
-         * @return void
-         * @static
-         */
-        public static function afterLoadingEnvironment($callback)
-        {
-            /** @var \Illuminate\Foundation\Application $instance */
-            $instance->afterLoadingEnvironment($callback);
-        }
+             * Register a callback to run after loading the environment.
+             *
+             * @param Closure $callback
+             * @return void
+             * @static
+             */
+            public static function afterLoadingEnvironment($callback)
+            {
+                /** @var \Illuminate\Foundation\Application $instance */
+                $instance->afterLoadingEnvironment($callback);
+            }
 
             /**
          * Register a callback to run before a bootstrapper.
@@ -1154,17 +1154,17 @@
          * Get the application namespace.
          *
          * @return string
-         * @throws RuntimeException
-         * @static
-         */
-        public static function getNamespace()
-        {
-            /** @var \Illuminate\Foundation\Application $instance */
-            return $instance->getNamespace();
-        }
+             * @throws RuntimeException
+             * @static
+             */
+            public static function getNamespace()
+            {
+                /** @var \Illuminate\Foundation\Application $instance */
+                return $instance->getNamespace();
+            }
 
             /**
-         * Define a contextual binding.
+             * Define a contextual binding.
              *
              * @param array|string $concrete
              * @return ContextualBindingBuilder
@@ -1200,17 +1200,17 @@
              *
              * @param string $abstract
              * @return bool
-         * @static
-         */
-        public static function resolved($abstract)
-        {            //Method inherited from \Illuminate\Container\Container
-            /** @var \Illuminate\Foundation\Application $instance */
-            return $instance->resolved($abstract);
-        }
+             * @static
+             */
+            public static function resolved($abstract)
+            {            //Method inherited from \Illuminate\Container\Container
+                /** @var \Illuminate\Foundation\Application $instance */
+                return $instance->resolved($abstract);
+            }
 
             /**
-         * Determine if a given type is shared.
-         *
+             * Determine if a given type is shared.
+             *
          * @param string $abstract
          * @return bool
          * @static
@@ -1469,17 +1469,17 @@
          * @param mixed $target
          * @param string $method
          * @return mixed
-         * @static
-         */
-        public static function refresh($abstract, $target, $method)
-        {            //Method inherited from \Illuminate\Container\Container
-            /** @var \Illuminate\Foundation\Application $instance */
-            return $instance->refresh($abstract, $target, $method);
-        }
+             * @static
+             */
+            public static function refresh($abstract, $target, $method)
+            {            //Method inherited from \Illuminate\Container\Container
+                /** @var \Illuminate\Foundation\Application $instance */
+                return $instance->refresh($abstract, $target, $method);
+            }
 
             /**
-         * Wrap the given closure such that its dependencies will be injected when executed.
-         *
+             * Wrap the given closure such that its dependencies will be injected when executed.
+             *
              * @param Closure $callback
              * @param array $parameters
              * @return Closure
@@ -1512,18 +1512,18 @@
              *
              * @param string $abstract
              * @return Closure
-         * @static
-         */
-        public static function factory($abstract)
-        {            //Method inherited from \Illuminate\Container\Container
-            /** @var \Illuminate\Foundation\Application $instance */
-            return $instance->factory($abstract);
-        }
+             * @static
+             */
+            public static function factory($abstract)
+            {            //Method inherited from \Illuminate\Container\Container
+                /** @var \Illuminate\Foundation\Application $instance */
+                return $instance->factory($abstract);
+            }
 
             /**
-         * An alias function name for make().
-         *
-         * @param string|callable $abstract
+             * An alias function name for make().
+             *
+             * @param string|callable $abstract
              * @param array $parameters
              * @return mixed
              * @throws BindingResolutionException
@@ -1701,17 +1701,18 @@
              * @return Container|static
              * @static
              */
-        public static function setInstance($container = null)
-        {            //Method inherited from \Illuminate\Container\Container
-                        return \Illuminate\Foundation\Application::setInstance($container);
-        }
-                    /**
-                     * Determine if a given offset exists.
-                     *
-                     * @param string $key
-                     * @return bool
-                     * @static
-                     */
+            public static function setInstance($container = null)
+            {            //Method inherited from \Illuminate\Container\Container
+                return \Illuminate\Foundation\Application::setInstance($container);
+            }
+
+            /**
+             * Determine if a given offset exists.
+             *
+             * @param string $key
+             * @return bool
+             * @static
+             */
             public static function offsetExists($key)
             {            //Method inherited from \Illuminate\Container\Container
                 /** @var \Illuminate\Foundation\Application $instance */
@@ -2597,26 +2598,28 @@
              * @static
              */
             public static function mixin($mixin, $replace = true)
-        {
-                        SessionGuard::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                SessionGuard::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return SessionGuard::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return SessionGuard::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
             {
                 SessionGuard::flushMacros();
@@ -2695,13 +2698,14 @@
             {
                 return BladeCompiler::render($string, $data, $deleteCachedView);
             }
-                    /**
-                     * Strip the parentheses from the given expression.
-                     *
-                     * @param string $expression
-                     * @return string
-                     * @static
-                     */
+
+            /**
+             * Strip the parentheses from the given expression.
+             *
+             * @param string $expression
+             * @return string
+             * @static
+             */
             public static function stripParentheses($expression)
             {
                 /** @var BladeCompiler $instance */
@@ -3008,15 +3012,16 @@
              * @static
              */
             public static function compileClassComponentOpening($component, $alias, $data, $hash)
-        {
-                        return BladeCompiler::compileClassComponentOpening($component, $alias, $data, $hash);
-        }
-                    /**
-                     * Compile the end-component statements into valid PHP.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                return BladeCompiler::compileClassComponentOpening($component, $alias, $data, $hash);
+            }
+
+            /**
+             * Compile the end-component statements into valid PHP.
+             *
+             * @return string
+             * @static
+             */
             public static function compileEndComponentClass()
             {
                 /** @var BladeCompiler $instance */
@@ -3298,141 +3303,152 @@
              * @static
              */
             public static function dispatchSync($command, $handler = null)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->dispatchSync($command, $handler);
-        }
-                    /**
-                     * Dispatch a command to its appropriate handler in the current process without using the synchronous queue.
-                     *
-                     * @param mixed $command
-                     * @param mixed $handler
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->dispatchSync($command, $handler);
+            }
+
+            /**
+             * Dispatch a command to its appropriate handler in the current process without using the synchronous queue.
+             *
+             * @param mixed $command
+             * @param mixed $handler
+             * @return mixed
+             * @static
+             */
             public static function dispatchNow($command, $handler = null)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->dispatchNow($command, $handler);
-        }
-                    /**
-                     * Attempt to find the batch with the given ID.
-                     *
-                     * @param string $batchId
-                     * @return Batch|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->dispatchNow($command, $handler);
+            }
+
+            /**
+             * Attempt to find the batch with the given ID.
+             *
+             * @param string $batchId
+             * @return Batch|null
+             * @static
+             */
             public static function findBatch($batchId)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->findBatch($batchId);
-        }
-                    /**
-                     * Create a new batch of queueable jobs.
-                     *
-                     * @param Collection|array|mixed $jobs
-                     * @return PendingBatch
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->findBatch($batchId);
+            }
+
+            /**
+             * Create a new batch of queueable jobs.
+             *
+             * @param Collection|array|mixed $jobs
+             * @return PendingBatch
+             * @static
+             */
             public static function batch($jobs)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->batch($jobs);
-        }
-                    /**
-                     * Create a new chain of queueable jobs.
-                     *
-                     * @param Collection|array $jobs
-                     * @return PendingChain
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->batch($jobs);
+            }
+
+            /**
+             * Create a new chain of queueable jobs.
+             *
+             * @param Collection|array $jobs
+             * @return PendingChain
+             * @static
+             */
             public static function chain($jobs)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->chain($jobs);
-        }
-                    /**
-                     * Determine if the given command has a handler.
-                     *
-                     * @param mixed $command
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->chain($jobs);
+            }
+
+            /**
+             * Determine if the given command has a handler.
+             *
+             * @param mixed $command
+             * @return bool
+             * @static
+             */
             public static function hasCommandHandler($command)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->hasCommandHandler($command);
-        }
-                    /**
-                     * Retrieve the handler for a command.
-                     *
-                     * @param mixed $command
-                     * @return bool|mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->hasCommandHandler($command);
+            }
+
+            /**
+             * Retrieve the handler for a command.
+             *
+             * @param mixed $command
+             * @return bool|mixed
+             * @static
+             */
             public static function getCommandHandler($command)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->getCommandHandler($command);
-        }
-                    /**
-                     * Dispatch a command to its appropriate handler behind a queue.
-                     *
-                     * @param mixed $command
-                     * @return mixed
-                     * @throws RuntimeException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->getCommandHandler($command);
+            }
+
+            /**
+             * Dispatch a command to its appropriate handler behind a queue.
+             *
+             * @param mixed $command
+             * @return mixed
+             * @throws RuntimeException
+             * @static
+             */
             public static function dispatchToQueue($command)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->dispatchToQueue($command);
-        }
-                    /**
-                     * Dispatch a command to its appropriate handler after the current process.
-                     *
-                     * @param mixed $command
-                     * @param mixed $handler
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->dispatchToQueue($command);
+            }
+
+            /**
+             * Dispatch a command to its appropriate handler after the current process.
+             *
+             * @param mixed $command
+             * @param mixed $handler
+             * @return void
+             * @static
+             */
             public static function dispatchAfterResponse($command, $handler = null)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        $instance->dispatchAfterResponse($command, $handler);
-        }
-                    /**
-                     * Set the pipes through which commands should be piped before dispatching.
-                     *
-                     * @param array $pipes
-                     * @return \Illuminate\Bus\Dispatcher
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                $instance->dispatchAfterResponse($command, $handler);
+            }
+
+            /**
+             * Set the pipes through which commands should be piped before dispatching.
+             *
+             * @param array $pipes
+             * @return \Illuminate\Bus\Dispatcher
+             * @static
+             */
             public static function pipeThrough($pipes)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->pipeThrough($pipes);
-        }
-                    /**
-                     * Map a command to a handler.
-                     *
-                     * @param array $map
-                     * @return \Illuminate\Bus\Dispatcher
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->pipeThrough($pipes);
+            }
+
+            /**
+             * Map a command to a handler.
+             *
+             * @param array $map
+             * @return \Illuminate\Bus\Dispatcher
+             * @static
+             */
             public static function map($map)
-        {
-                        /** @var \Illuminate\Bus\Dispatcher $instance */
-                        return $instance->map($map);
-        }
-                    /**
-                     * Assert if a job was dispatched based on a truth-test callback.
-                     *
-                     * @param string|Closure $command
-                     * @param callable|int|null $callback
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Bus\Dispatcher $instance */
+                return $instance->map($map);
+            }
+
+            /**
+             * Assert if a job was dispatched based on a truth-test callback.
+             *
+             * @param string|Closure $command
+             * @param callable|int|null $callback
+             * @return void
+             * @static
+             */
             public static function assertDispatched($command, $callback = null)
             {
                 /** @var BusFake $instance */
@@ -3870,32 +3886,34 @@
              * @static
              */
             public static function missing($key)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->missing($key);
-        }
-                    /**
-                     * Retrieve an item from the cache by key.
-                     *
-                     * @param string $key
-                     * @param mixed $default
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->missing($key);
+            }
+
+            /**
+             * Retrieve an item from the cache by key.
+             *
+             * @param string $key
+             * @param mixed $default
+             * @return mixed
+             * @static
+             */
             public static function get($key, $default = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->get($key, $default);
-        }
-                    /**
-                     * Retrieve multiple items from the cache by key.
-                     *
-                     * Items not found in the cache will have a null value.
-                     *
-                     * @param array $keys
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->get($key, $default);
+            }
+
+            /**
+             * Retrieve multiple items from the cache by key.
+             *
+             * Items not found in the cache will have a null value.
+             *
+             * @param array $keys
+             * @return array
+             * @static
+             */
             public static function many($keys)
             {
                 /** @var \Illuminate\Cache\Repository $instance */
@@ -3929,175 +3947,187 @@
              * @static
              */
             public static function pull($key, $default = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->pull($key, $default);
-        }
-                    /**
-                     * Store an item in the cache.
-                     *
-                     * @param string $key
-                     * @param mixed $value
-                     * @param DateTimeInterface|DateInterval|int|null $ttl
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->pull($key, $default);
+            }
+
+            /**
+             * Store an item in the cache.
+             *
+             * @param string $key
+             * @param mixed $value
+             * @param DateTimeInterface|DateInterval|int|null $ttl
+             * @return bool
+             * @static
+             */
             public static function put($key, $value, $ttl = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->put($key, $value, $ttl);
-        }
-                    /**
-                     * Persists data in the cache, uniquely referenced by a key with an optional expiration TTL time.
-                     *
-                     * @param string $key The key of the item to store.
-                     * @param mixed $value The value of the item to store, must be serializable.
-                     * @param null|int|DateInterval $ttl Optional. The TTL value of this item. If no value is sent and
-                     *                                      the driver supports TTL then the library may set a default value
-                     *                                      for it or let the driver take care of that.
-                     * @return bool
-                     * @return bool True on success and false on failure.
-                     * @throws \Psr\SimpleCache\InvalidArgumentException
-                     *   MUST be thrown if the $key string is not a legal value.
-                     * @static
-         */
-        public static function set($key, $value, $ttl = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->set($key, $value, $ttl);
-        }
-                    /**
-                     * Store multiple items in the cache for a given number of seconds.
-                     *
-                     * @param array $values
-                     * @param DateTimeInterface|DateInterval|int|null $ttl
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->put($key, $value, $ttl);
+            }
+
+            /**
+             * Persists data in the cache, uniquely referenced by a key with an optional expiration TTL time.
+             *
+             * @param string $key The key of the item to store.
+             * @param mixed $value The value of the item to store, must be serializable.
+             * @param null|int|DateInterval $ttl Optional. The TTL value of this item. If no value is sent and
+             *                                      the driver supports TTL then the library may set a default value
+             *                                      for it or let the driver take care of that.
+             * @return bool
+             * @return bool True on success and false on failure.
+             * @throws \Psr\SimpleCache\InvalidArgumentException
+             *   MUST be thrown if the $key string is not a legal value.
+             * @static
+             */
+            public static function set($key, $value, $ttl = null)
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->set($key, $value, $ttl);
+            }
+
+            /**
+             * Store multiple items in the cache for a given number of seconds.
+             *
+             * @param array $values
+             * @param DateTimeInterface|DateInterval|int|null $ttl
+             * @return bool
+             * @static
+             */
             public static function putMany($values, $ttl = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->putMany($values, $ttl);
-        }
-                    /**
-                     * Persists a set of key => value pairs in the cache, with an optional TTL.
-                     *
-                     * @param \Psr\SimpleCache\iterable $values A list of key => value pairs for a multiple-set operation.
-                     * @param null|int|DateInterval $ttl Optional. The TTL value of this item. If no value is sent and
-                     *                                       the driver supports TTL then the library may set a default value
-                     *                                       for it or let the driver take care of that.
-                     * @return bool
-                     * @return bool True on success and false on failure.
-                     * @throws \Psr\SimpleCache\InvalidArgumentException
-                     *   MUST be thrown if $values is neither an array nor a Traversable,
-                     *   or if any of the $values are not a legal value.
-                     * @static
-         */
-        public static function setMultiple($values, $ttl = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->setMultiple($values, $ttl);
-        }
-                    /**
-                     * Store an item in the cache if the key does not exist.
-                     *
-                     * @param string $key
-                     * @param mixed $value
-                     * @param DateTimeInterface|DateInterval|int|null $ttl
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->putMany($values, $ttl);
+            }
+
+            /**
+             * Persists a set of key => value pairs in the cache, with an optional TTL.
+             *
+             * @param \Psr\SimpleCache\iterable $values A list of key => value pairs for a multiple-set operation.
+             * @param null|int|DateInterval $ttl Optional. The TTL value of this item. If no value is sent and
+             *                                       the driver supports TTL then the library may set a default value
+             *                                       for it or let the driver take care of that.
+             * @return bool
+             * @return bool True on success and false on failure.
+             * @throws \Psr\SimpleCache\InvalidArgumentException
+             *   MUST be thrown if $values is neither an array nor a Traversable,
+             *   or if any of the $values are not a legal value.
+             * @static
+             */
+            public static function setMultiple($values, $ttl = null)
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->setMultiple($values, $ttl);
+            }
+
+            /**
+             * Store an item in the cache if the key does not exist.
+             *
+             * @param string $key
+             * @param mixed $value
+             * @param DateTimeInterface|DateInterval|int|null $ttl
+             * @return bool
+             * @static
+             */
             public static function add($key, $value, $ttl = null)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->add($key, $value, $ttl);
-        }
-                    /**
-                     * Increment the value of an item in the cache.
-                     *
-                     * @param string $key
-                     * @param mixed $value
-                     * @return int|bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->add($key, $value, $ttl);
+            }
+
+            /**
+             * Increment the value of an item in the cache.
+             *
+             * @param string $key
+             * @param mixed $value
+             * @return int|bool
+             * @static
+             */
             public static function increment($key, $value = 1)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->increment($key, $value);
-        }
-                    /**
-                     * Decrement the value of an item in the cache.
-                     *
-                     * @param string $key
-                     * @param mixed $value
-                     * @return int|bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->increment($key, $value);
+            }
+
+            /**
+             * Decrement the value of an item in the cache.
+             *
+             * @param string $key
+             * @param mixed $value
+             * @return int|bool
+             * @static
+             */
             public static function decrement($key, $value = 1)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->decrement($key, $value);
-        }
-                    /**
-                     * Store an item in the cache indefinitely.
-                     *
-                     * @param string $key
-                     * @param mixed $value
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->decrement($key, $value);
+            }
+
+            /**
+             * Store an item in the cache indefinitely.
+             *
+             * @param string $key
+             * @param mixed $value
+             * @return bool
+             * @static
+             */
             public static function forever($key, $value)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->forever($key, $value);
-        }
-                    /**
-                     * Get an item from the cache, or execute the given Closure and store the result.
-                     *
-                     * @param string $key
-                     * @param Closure|DateTimeInterface|DateInterval|int|null $ttl
-                     * @param Closure $callback
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->forever($key, $value);
+            }
+
+            /**
+             * Get an item from the cache, or execute the given Closure and store the result.
+             *
+             * @param string $key
+             * @param Closure|DateTimeInterface|DateInterval|int|null $ttl
+             * @param Closure $callback
+             * @return mixed
+             * @static
+             */
             public static function remember($key, $ttl, $callback)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->remember($key, $ttl, $callback);
-        }
-                    /**
-                     * Get an item from the cache, or execute the given Closure and store the result forever.
-                     *
-                     * @param string $key
-                     * @param Closure $callback
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->remember($key, $ttl, $callback);
+            }
+
+            /**
+             * Get an item from the cache, or execute the given Closure and store the result forever.
+             *
+             * @param string $key
+             * @param Closure $callback
+             * @return mixed
+             * @static
+             */
             public static function sear($key, $callback)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->sear($key, $callback);
-        }
-                    /**
-                     * Get an item from the cache, or execute the given Closure and store the result forever.
-                     *
-                     * @param string $key
-                     * @param Closure $callback
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->sear($key, $callback);
+            }
+
+            /**
+             * Get an item from the cache, or execute the given Closure and store the result forever.
+             *
+             * @param string $key
+             * @param Closure $callback
+             * @return mixed
+             * @static
+             */
             public static function rememberForever($key, $callback)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->rememberForever($key, $callback);
-        }
-                    /**
-                     * Remove an item from the cache.
-                     *
-                     * @param string $key
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->rememberForever($key, $callback);
+            }
+
+            /**
+             * Remove an item from the cache.
+             *
+             * @param string $key
+             * @return bool
+             * @static
+             */
             public static function forget($key)
             {
                 /** @var \Illuminate\Cache\Repository $instance */
@@ -4145,206 +4175,223 @@
              * @static
              */
             public static function clear()
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->clear();
-        }
-                    /**
-                     * Begin executing a new tags operation if the store supports it.
-                     *
-                     * @param array|mixed $names
-                     * @return TaggedCache
-                     * @throws BadMethodCallException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->clear();
+            }
+
+            /**
+             * Begin executing a new tags operation if the store supports it.
+             *
+             * @param array|mixed $names
+             * @return TaggedCache
+             * @throws BadMethodCallException
+             * @static
+             */
             public static function tags($names)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->tags($names);
-        }
-                    /**
-                     * Determine if the current store supports tags.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->tags($names);
+            }
+
+            /**
+             * Determine if the current store supports tags.
+             *
+             * @return bool
+             * @static
+             */
             public static function supportsTags()
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->supportsTags();
-        }
-                    /**
-                     * Get the default cache time.
-                     *
-                     * @return int|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->supportsTags();
+            }
+
+            /**
+             * Get the default cache time.
+             *
+             * @return int|null
+             * @static
+             */
             public static function getDefaultCacheTime()
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->getDefaultCacheTime();
-        }
-                    /**
-                     * Set the default cache time in seconds.
-                     *
-                     * @param int|null $seconds
-                     * @return \Illuminate\Cache\Repository
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->getDefaultCacheTime();
+            }
+
+            /**
+             * Set the default cache time in seconds.
+             *
+             * @param int|null $seconds
+             * @return \Illuminate\Cache\Repository
+             * @static
+             */
             public static function setDefaultCacheTime($seconds)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->setDefaultCacheTime($seconds);
-        }
-                    /**
-                     * Get the cache store implementation.
-                     *
-                     * @return \Illuminate\Contracts\Cache\Store
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->setDefaultCacheTime($seconds);
+            }
+
+            /**
+             * Get the cache store implementation.
+             *
+             * @return \Illuminate\Contracts\Cache\Store
+             * @static
+             */
             public static function getStore()
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->getStore();
-        }
-                    /**
-                     * Get the event dispatcher instance.
-                     *
-                     * @return Dispatcher
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->getStore();
+            }
+
+            /**
+             * Get the event dispatcher instance.
+             *
+             * @return Dispatcher
+             * @static
+             */
             public static function getEventDispatcher()
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->getEventDispatcher();
-        }
-                    /**
-                     * Set the event dispatcher instance.
-                     *
-                     * @param Dispatcher $events
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->getEventDispatcher();
+            }
+
+            /**
+             * Set the event dispatcher instance.
+             *
+             * @param Dispatcher $events
+             * @return void
+             * @static
+             */
             public static function setEventDispatcher($events)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        $instance->setEventDispatcher($events);
-        }
-                    /**
-                     * Determine if a cached value exists.
-                     *
-                     * @param string $key
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                $instance->setEventDispatcher($events);
+            }
+
+            /**
+             * Determine if a cached value exists.
+             *
+             * @param string $key
+             * @return bool
+             * @static
+             */
             public static function offsetExists($key)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->offsetExists($key);
-        }
-                    /**
-                     * Retrieve an item from the cache by key.
-                     *
-                     * @param string $key
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->offsetExists($key);
+            }
+
+            /**
+             * Retrieve an item from the cache by key.
+             *
+             * @param string $key
+             * @return mixed
+             * @static
+             */
             public static function offsetGet($key)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->offsetGet($key);
-        }
-                    /**
-                     * Store an item in the cache for the default time.
-                     *
-                     * @param string $key
-                     * @param mixed $value
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->offsetGet($key);
+            }
+
+            /**
+             * Store an item in the cache for the default time.
+             *
+             * @param string $key
+             * @param mixed $value
+             * @return void
+             * @static
+             */
             public static function offsetSet($key, $value)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        $instance->offsetSet($key, $value);
-        }
-                    /**
-                     * Remove an item from the cache.
-                     *
-                     * @param string $key
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                $instance->offsetSet($key, $value);
+            }
+
+            /**
+             * Remove an item from the cache.
+             *
+             * @param string $key
+             * @return void
+             * @static
+             */
             public static function offsetUnset($key)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        $instance->offsetUnset($key);
-        }
-                    /**
-                     * Register a custom macro.
-                     *
-                     * @param string $name
-                     * @param object|callable $macro
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                $instance->offsetUnset($key);
+            }
+
+            /**
+             * Register a custom macro.
+             *
+             * @param string $name
+             * @param object|callable $macro
+             * @return void
+             * @static
+             */
             public static function macro($name, $macro)
-        {
-                        \Illuminate\Cache\Repository::macro($name, $macro);
-        }
-                    /**
-                     * Mix another object into the class.
-                     *
-                     * @param object $mixin
-                     * @param bool $replace
-                     * @return void
-                     * @throws ReflectionException
-                     * @static
-                     */
+            {
+                \Illuminate\Cache\Repository::macro($name, $macro);
+            }
+
+            /**
+             * Mix another object into the class.
+             *
+             * @param object $mixin
+             * @param bool $replace
+             * @return void
+             * @throws ReflectionException
+             * @static
+             */
             public static function mixin($mixin, $replace = true)
-        {
-                        \Illuminate\Cache\Repository::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                \Illuminate\Cache\Repository::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return \Illuminate\Cache\Repository::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return \Illuminate\Cache\Repository::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
-        {
-                        \Illuminate\Cache\Repository::flushMacros();
-        }
-                    /**
-                     * Dynamically handle calls to the class.
-                     *
-                     * @param string $method
-                     * @param array $parameters
-                     * @return mixed
-                     * @throws BadMethodCallException
-                     * @static
-                     */
+            {
+                \Illuminate\Cache\Repository::flushMacros();
+            }
+
+            /**
+             * Dynamically handle calls to the class.
+             *
+             * @param string $method
+             * @param array $parameters
+             * @return mixed
+             * @throws BadMethodCallException
+             * @static
+             */
             public static function macroCall($method, $parameters)
-        {
-                        /** @var \Illuminate\Cache\Repository $instance */
-                        return $instance->macroCall($method, $parameters);
-        }
-                    /**
-                     * Remove all items from the cache.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\Repository $instance */
+                return $instance->macroCall($method, $parameters);
+            }
+
+            /**
+             * Remove all items from the cache.
+             *
+             * @return bool
+             * @static
+             */
             public static function flush()
             {
                 /** @var FileStore $instance */
@@ -4771,26 +4818,28 @@
              * @static
              */
             public static function mixin($mixin, $replace = true)
-        {
-                        CookieJar::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                CookieJar::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return CookieJar::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return CookieJar::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
             {
                 CookieJar::flushMacros();
@@ -4829,15 +4878,16 @@
             {
                 return Encrypter::generateKey($cipher);
             }
-                    /**
-                     * Encrypt the given value.
-                     *
-                     * @param mixed $value
-                     * @param bool $serialize
-                     * @return string
-                     * @throws EncryptException
-                     * @static
-                     */
+
+            /**
+             * Encrypt the given value.
+             *
+             * @param mixed $value
+             * @param bool $serialize
+             * @return string
+             * @throws EncryptException
+             * @static
+             */
             public static function encrypt($value, $serialize = true)
             {
                 /** @var Encrypter $instance */
@@ -4902,19 +4952,19 @@
         }
 
         /**
-     *
+         *
          *
          * @see https://carbon.nesbot.com/docs/
-     * @see https://github.com/briannesbitt/Carbon/blob/master/src/Carbon/Factory.php
-     * @method static Carbon create($year = 0, $month = 1, $day = 1, $hour = 0, $minute = 0, $second = 0, $tz = null)
-     * @method static Carbon createFromDate($year = null, $month = null, $day = null, $tz = null)
-     * @method static Carbon createFromTime($hour = 0, $minute = 0, $second = 0, $tz = null)
-     * @method static Carbon createFromTimeString($time, $tz = null)
-     * @method static Carbon createFromTimestamp($timestamp, $tz = null)
-     * @method static Carbon createFromTimestampMs($timestamp, $tz = null)
-     * @method static Carbon createFromTimestampUTC($timestamp)
-     * @method static Carbon createMidnightDate($year = null, $month = null, $day = null, $tz = null)
-     * @method static Carbon disableHumanDiffOption($humanDiffOption)
+         * @see https://github.com/briannesbitt/Carbon/blob/master/src/Carbon/Factory.php
+         * @method static Carbon create($year = 0, $month = 1, $day = 1, $hour = 0, $minute = 0, $second = 0, $tz = null)
+         * @method static Carbon createFromDate($year = null, $month = null, $day = null, $tz = null)
+         * @method static Carbon createFromTime($hour = 0, $minute = 0, $second = 0, $tz = null)
+         * @method static Carbon createFromTimeString($time, $tz = null)
+         * @method static Carbon createFromTimestamp($timestamp, $tz = null)
+         * @method static Carbon createFromTimestampMs($timestamp, $tz = null)
+         * @method static Carbon createFromTimestampUTC($timestamp)
+         * @method static Carbon createMidnightDate($year = null, $month = null, $day = null, $tz = null)
+         * @method static Carbon disableHumanDiffOption($humanDiffOption)
      * @method static Carbon enableHumanDiffOption($humanDiffOption)
      * @method static Carbon fromSerialized($value)
      * @method static Carbon getLastErrors()
@@ -4948,16 +4998,16 @@
      * @method static bool isModifiableUnit($unit)
      * @method static bool isStrictModeEnabled()
      * @method static bool localeHasDiffOneDayWords($locale)
-     * @method static bool localeHasDiffSyntax($locale)
-     * @method static bool localeHasDiffTwoDayWords($locale)
-     * @method static bool localeHasPeriodSyntax($locale)
-     * @method static bool localeHasShortUnits($locale)
-     * @method static bool setLocale($locale)
-     * @method static bool shouldOverflowMonths()
-     * @method static bool shouldOverflowYears()
-     * @method static int getHumanDiffOptions()
-     * @method static int getMidDayAt()
-     * @method static int getWeekEndsAt()
+         * @method static bool localeHasDiffSyntax($locale)
+         * @method static bool localeHasDiffTwoDayWords($locale)
+         * @method static bool localeHasPeriodSyntax($locale)
+         * @method static bool localeHasShortUnits($locale)
+         * @method static bool setLocale($locale)
+         * @method static bool shouldOverflowMonths()
+         * @method static bool shouldOverflowYears()
+         * @method static int getHumanDiffOptions()
+         * @method static int getMidDayAt()
+         * @method static int getWeekEndsAt()
          * @method static int getWeekStartsAt()
          * @method static mixed executeWithLocale($locale, $func)
          * @method static string getLocale()
@@ -5012,27 +5062,29 @@
              * @static
              */
             public static function useCallable($callable)
-        {
-                        DateFactory::useCallable($callable);
-        }
-                    /**
-                     * Use the given date type (class) when generating dates.
-                     *
-                     * @param string $dateClass
-                     * @return void
-                     * @static
-                     */
+            {
+                DateFactory::useCallable($callable);
+            }
+
+            /**
+             * Use the given date type (class) when generating dates.
+             *
+             * @param string $dateClass
+             * @return void
+             * @static
+             */
             public static function useClass($dateClass)
-        {
-                        DateFactory::useClass($dateClass);
-        }
-                    /**
-                     * Use the given Carbon factory when generating dates.
-                     *
-                     * @param object $factory
-                     * @return void
-                     * @static
-                     */
+            {
+                DateFactory::useClass($dateClass);
+            }
+
+            /**
+             * Use the given Carbon factory when generating dates.
+             *
+             * @param object $factory
+             * @return void
+             * @static
+             */
             public static function useFactory($factory)
             {
                 DateFactory::useFactory($factory);
@@ -6110,18 +6162,19 @@
              * @static
              */
             public static function getResolver($driver)
-        {            //Method inherited from \Illuminate\Database\Connection
-                        return MySqlConnection::getResolver($driver);
-        }
-                    /**
-                     * Execute a Closure within a transaction.
-                     *
-                     * @param Closure $callback
-                     * @param int $attempts
-                     * @return mixed
-                     * @throws Throwable
-                     * @static
-                     */
+            {            //Method inherited from \Illuminate\Database\Connection
+                return MySqlConnection::getResolver($driver);
+            }
+
+            /**
+             * Execute a Closure within a transaction.
+             *
+             * @param Closure $callback
+             * @param int $attempts
+             * @return mixed
+             * @throws Throwable
+             * @static
+             */
             public static function transaction($callback, $attempts = 1)
             {            //Method inherited from \Illuminate\Database\Connection
                 /** @var MySqlConnection $instance */
@@ -6227,211 +6280,228 @@
             public static function hasListeners($eventName)
             {
                 /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->hasListeners($eventName);
-        }
-                    /**
-                     * Determine if the given event has any wildcard listeners.
-                     *
-                     * @param string $eventName
-                     * @return bool
-                     * @static
-                     */
+                return $instance->hasListeners($eventName);
+            }
+
+            /**
+             * Determine if the given event has any wildcard listeners.
+             *
+             * @param string $eventName
+             * @return bool
+             * @static
+             */
             public static function hasWildcardListeners($eventName)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->hasWildcardListeners($eventName);
-        }
-                    /**
-                     * Register an event and payload to be fired later.
-                     *
-                     * @param string $event
-                     * @param array $payload
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->hasWildcardListeners($eventName);
+            }
+
+            /**
+             * Register an event and payload to be fired later.
+             *
+             * @param string $event
+             * @param array $payload
+             * @return void
+             * @static
+             */
             public static function push($event, $payload = [])
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        $instance->push($event, $payload);
-        }
-                    /**
-                     * Flush a set of pushed events.
-                     *
-                     * @param string $event
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                $instance->push($event, $payload);
+            }
+
+            /**
+             * Flush a set of pushed events.
+             *
+             * @param string $event
+             * @return void
+             * @static
+             */
             public static function flush($event)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        $instance->flush($event);
-        }
-                    /**
-                     * Register an event subscriber with the dispatcher.
-                     *
-                     * @param object|string $subscriber
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                $instance->flush($event);
+            }
+
+            /**
+             * Register an event subscriber with the dispatcher.
+             *
+             * @param object|string $subscriber
+             * @return void
+             * @static
+             */
             public static function subscribe($subscriber)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        $instance->subscribe($subscriber);
-        }
-                    /**
-                     * Fire an event until the first non-null response is returned.
-                     *
-                     * @param string|object $event
-                     * @param mixed $payload
-                     * @return array|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                $instance->subscribe($subscriber);
+            }
+
+            /**
+             * Fire an event until the first non-null response is returned.
+             *
+             * @param string|object $event
+             * @param mixed $payload
+             * @return array|null
+             * @static
+             */
             public static function until($event, $payload = [])
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->until($event, $payload);
-        }
-                    /**
-                     * Fire an event and call the listeners.
-                     *
-                     * @param string|object $event
-                     * @param mixed $payload
-                     * @param bool $halt
-                     * @return array|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->until($event, $payload);
+            }
+
+            /**
+             * Fire an event and call the listeners.
+             *
+             * @param string|object $event
+             * @param mixed $payload
+             * @param bool $halt
+             * @return array|null
+             * @static
+             */
             public static function dispatch($event, $payload = [], $halt = false)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->dispatch($event, $payload, $halt);
-        }
-                    /**
-                     * Get all of the listeners for a given event name.
-                     *
-                     * @param string $eventName
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->dispatch($event, $payload, $halt);
+            }
+
+            /**
+             * Get all of the listeners for a given event name.
+             *
+             * @param string $eventName
+             * @return array
+             * @static
+             */
             public static function getListeners($eventName)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->getListeners($eventName);
-        }
-                    /**
-                     * Register an event listener with the dispatcher.
-                     *
-                     * @param Closure|string|array $listener
-                     * @param bool $wildcard
-                     * @return Closure
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->getListeners($eventName);
+            }
+
+            /**
+             * Register an event listener with the dispatcher.
+             *
+             * @param Closure|string|array $listener
+             * @param bool $wildcard
+             * @return Closure
+             * @static
+             */
             public static function makeListener($listener, $wildcard = false)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->makeListener($listener, $wildcard);
-        }
-                    /**
-                     * Create a class based listener using the IoC container.
-                     *
-                     * @param string $listener
-                     * @param bool $wildcard
-                     * @return Closure
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->makeListener($listener, $wildcard);
+            }
+
+            /**
+             * Create a class based listener using the IoC container.
+             *
+             * @param string $listener
+             * @param bool $wildcard
+             * @return Closure
+             * @static
+             */
             public static function createClassListener($listener, $wildcard = false)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->createClassListener($listener, $wildcard);
-        }
-                    /**
-                     * Remove a set of listeners from the dispatcher.
-                     *
-                     * @param string $event
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->createClassListener($listener, $wildcard);
+            }
+
+            /**
+             * Remove a set of listeners from the dispatcher.
+             *
+             * @param string $event
+             * @return void
+             * @static
+             */
             public static function forget($event)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        $instance->forget($event);
-        }
-                    /**
-                     * Forget all of the pushed listeners.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                $instance->forget($event);
+            }
+
+            /**
+             * Forget all of the pushed listeners.
+             *
+             * @return void
+             * @static
+             */
             public static function forgetPushed()
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        $instance->forgetPushed();
-        }
-                    /**
-                     * Set the queue resolver implementation.
-                     *
-                     * @param callable $resolver
-                     * @return \Illuminate\Events\Dispatcher
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                $instance->forgetPushed();
+            }
+
+            /**
+             * Set the queue resolver implementation.
+             *
+             * @param callable $resolver
+             * @return \Illuminate\Events\Dispatcher
+             * @static
+             */
             public static function setQueueResolver($resolver)
-        {
-                        /** @var \Illuminate\Events\Dispatcher $instance */
-                        return $instance->setQueueResolver($resolver);
-        }
-                    /**
-                     * Register a custom macro.
-                     *
-                     * @param string $name
-                     * @param object|callable $macro
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Events\Dispatcher $instance */
+                return $instance->setQueueResolver($resolver);
+            }
+
+            /**
+             * Register a custom macro.
+             *
+             * @param string $name
+             * @param object|callable $macro
+             * @return void
+             * @static
+             */
             public static function macro($name, $macro)
-        {
-                        \Illuminate\Events\Dispatcher::macro($name, $macro);
-        }
-                    /**
-                     * Mix another object into the class.
-                     *
-                     * @param object $mixin
-                     * @param bool $replace
-                     * @return void
-                     * @throws ReflectionException
-                     * @static
-                     */
+            {
+                \Illuminate\Events\Dispatcher::macro($name, $macro);
+            }
+
+            /**
+             * Mix another object into the class.
+             *
+             * @param object $mixin
+             * @param bool $replace
+             * @return void
+             * @throws ReflectionException
+             * @static
+             */
             public static function mixin($mixin, $replace = true)
-        {
-                        \Illuminate\Events\Dispatcher::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                \Illuminate\Events\Dispatcher::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return \Illuminate\Events\Dispatcher::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return \Illuminate\Events\Dispatcher::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
-        {
-                        \Illuminate\Events\Dispatcher::flushMacros();
-        }
-                    /**
-                     * Assert if an event has a listener attached to it.
-                     *
-                     * @param string $expectedEvent
-                     * @param string $expectedListener
-                     * @return void
-                     * @static
-                     */
+            {
+                \Illuminate\Events\Dispatcher::flushMacros();
+            }
+
+            /**
+             * Assert if an event has a listener attached to it.
+             *
+             * @param string $expectedEvent
+             * @param string $expectedListener
+             * @return void
+             * @static
+             */
             public static function assertListening($expectedEvent, $expectedListener)
             {
                 /** @var EventFake $instance */
@@ -7146,26 +7216,28 @@
              * @static
              */
             public static function mixin($mixin, $replace = true)
-        {
-                        Filesystem::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                Filesystem::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return Filesystem::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return Filesystem::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
             {
                 Filesystem::flushMacros();
@@ -7204,274 +7276,295 @@
              * @static
              */
             public static function allowIf($condition, $message = null, $code = null)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->allowIf($condition, $message, $code);
-        }
-                    /**
-                     * Perform an on-demand authorization check. Throw an authorization exception if the condition or callback is true.
-                     *
-                     * @param \Illuminate\Auth\Access\Response|Closure|bool $condition
-                     * @param string|null $message
-                     * @param string|null $code
-                     * @return \Illuminate\Auth\Access\Response
-                     * @throws AuthorizationException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->allowIf($condition, $message, $code);
+            }
+
+            /**
+             * Perform an on-demand authorization check. Throw an authorization exception if the condition or callback is true.
+             *
+             * @param \Illuminate\Auth\Access\Response|Closure|bool $condition
+             * @param string|null $message
+             * @param string|null $code
+             * @return \Illuminate\Auth\Access\Response
+             * @throws AuthorizationException
+             * @static
+             */
             public static function denyIf($condition, $message = null, $code = null)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->denyIf($condition, $message, $code);
-        }
-                    /**
-                     * Define a new ability.
-                     *
-                     * @param string $ability
-                     * @param callable|string $callback
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @throws InvalidArgumentException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->denyIf($condition, $message, $code);
+            }
+
+            /**
+             * Define a new ability.
+             *
+             * @param string $ability
+             * @param callable|string $callback
+             * @return \Illuminate\Auth\Access\Gate
+             * @throws InvalidArgumentException
+             * @static
+             */
             public static function define($ability, $callback)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->define($ability, $callback);
-        }
-                    /**
-                     * Define abilities for a resource.
-                     *
-                     * @param string $name
-                     * @param string $class
-                     * @param array|null $abilities
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->define($ability, $callback);
+            }
+
+            /**
+             * Define abilities for a resource.
+             *
+             * @param string $name
+             * @param string $class
+             * @param array|null $abilities
+             * @return \Illuminate\Auth\Access\Gate
+             * @static
+             */
             public static function resource($name, $class, $abilities = null)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->resource($name, $class, $abilities);
-        }
-                    /**
-                     * Define a policy class for a given class type.
-                     *
-                     * @param string $class
-                     * @param string $policy
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->resource($name, $class, $abilities);
+            }
+
+            /**
+             * Define a policy class for a given class type.
+             *
+             * @param string $class
+             * @param string $policy
+             * @return \Illuminate\Auth\Access\Gate
+             * @static
+             */
             public static function policy($class, $policy)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->policy($class, $policy);
-        }
-                    /**
-                     * Register a callback to run before all Gate checks.
-                     *
-                     * @param callable $callback
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->policy($class, $policy);
+            }
+
+            /**
+             * Register a callback to run before all Gate checks.
+             *
+             * @param callable $callback
+             * @return \Illuminate\Auth\Access\Gate
+             * @static
+             */
             public static function before($callback)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->before($callback);
-        }
-                    /**
-                     * Register a callback to run after all Gate checks.
-                     *
-                     * @param callable $callback
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->before($callback);
+            }
+
+            /**
+             * Register a callback to run after all Gate checks.
+             *
+             * @param callable $callback
+             * @return \Illuminate\Auth\Access\Gate
+             * @static
+             */
             public static function after($callback)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->after($callback);
-        }
-                    /**
-                     * Determine if the given ability should be granted for the current user.
-                     *
-                     * @param string $ability
-                     * @param array|mixed $arguments
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->after($callback);
+            }
+
+            /**
+             * Determine if the given ability should be granted for the current user.
+             *
+             * @param string $ability
+             * @param array|mixed $arguments
+             * @return bool
+             * @static
+             */
             public static function allows($ability, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->allows($ability, $arguments);
-        }
-                    /**
-                     * Determine if the given ability should be denied for the current user.
-                     *
-                     * @param string $ability
-                     * @param array|mixed $arguments
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->allows($ability, $arguments);
+            }
+
+            /**
+             * Determine if the given ability should be denied for the current user.
+             *
+             * @param string $ability
+             * @param array|mixed $arguments
+             * @return bool
+             * @static
+             */
             public static function denies($ability, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->denies($ability, $arguments);
-        }
-                    /**
-                     * Determine if all of the given abilities should be granted for the current user.
-                     *
-                     * @param iterable|string $abilities
-                     * @param array|mixed $arguments
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->denies($ability, $arguments);
+            }
+
+            /**
+             * Determine if all of the given abilities should be granted for the current user.
+             *
+             * @param iterable|string $abilities
+             * @param array|mixed $arguments
+             * @return bool
+             * @static
+             */
             public static function check($abilities, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->check($abilities, $arguments);
-        }
-                    /**
-                     * Determine if any one of the given abilities should be granted for the current user.
-                     *
-                     * @param iterable|string $abilities
-                     * @param array|mixed $arguments
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->check($abilities, $arguments);
+            }
+
+            /**
+             * Determine if any one of the given abilities should be granted for the current user.
+             *
+             * @param iterable|string $abilities
+             * @param array|mixed $arguments
+             * @return bool
+             * @static
+             */
             public static function any($abilities, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->any($abilities, $arguments);
-        }
-                    /**
-                     * Determine if all of the given abilities should be denied for the current user.
-                     *
-                     * @param iterable|string $abilities
-                     * @param array|mixed $arguments
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->any($abilities, $arguments);
+            }
+
+            /**
+             * Determine if all of the given abilities should be denied for the current user.
+             *
+             * @param iterable|string $abilities
+             * @param array|mixed $arguments
+             * @return bool
+             * @static
+             */
             public static function none($abilities, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->none($abilities, $arguments);
-        }
-                    /**
-                     * Determine if the given ability should be granted for the current user.
-                     *
-                     * @param string $ability
-                     * @param array|mixed $arguments
-                     * @return \Illuminate\Auth\Access\Response
-                     * @throws AuthorizationException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->none($abilities, $arguments);
+            }
+
+            /**
+             * Determine if the given ability should be granted for the current user.
+             *
+             * @param string $ability
+             * @param array|mixed $arguments
+             * @return \Illuminate\Auth\Access\Response
+             * @throws AuthorizationException
+             * @static
+             */
             public static function authorize($ability, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->authorize($ability, $arguments);
-        }
-                    /**
-                     * Inspect the user for the given ability.
-                     *
-                     * @param string $ability
-                     * @param array|mixed $arguments
-                     * @return \Illuminate\Auth\Access\Response
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->authorize($ability, $arguments);
+            }
+
+            /**
+             * Inspect the user for the given ability.
+             *
+             * @param string $ability
+             * @param array|mixed $arguments
+             * @return \Illuminate\Auth\Access\Response
+             * @static
+             */
             public static function inspect($ability, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->inspect($ability, $arguments);
-        }
-                    /**
-                     * Get the raw result from the authorization callback.
-                     *
-                     * @param string $ability
-                     * @param array|mixed $arguments
-                     * @return mixed
-                     * @throws AuthorizationException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->inspect($ability, $arguments);
+            }
+
+            /**
+             * Get the raw result from the authorization callback.
+             *
+             * @param string $ability
+             * @param array|mixed $arguments
+             * @return mixed
+             * @throws AuthorizationException
+             * @static
+             */
             public static function raw($ability, $arguments = [])
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->raw($ability, $arguments);
-        }
-                    /**
-                     * Get a policy instance for a given class.
-                     *
-                     * @param object|string $class
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->raw($ability, $arguments);
+            }
+
+            /**
+             * Get a policy instance for a given class.
+             *
+             * @param object|string $class
+             * @return mixed
+             * @static
+             */
             public static function getPolicyFor($class)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->getPolicyFor($class);
-        }
-                    /**
-                     * Specify a callback to be used to guess policy names.
-                     *
-                     * @param callable $callback
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->getPolicyFor($class);
+            }
+
+            /**
+             * Specify a callback to be used to guess policy names.
+             *
+             * @param callable $callback
+             * @return \Illuminate\Auth\Access\Gate
+             * @static
+             */
             public static function guessPolicyNamesUsing($callback)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->guessPolicyNamesUsing($callback);
-        }
-                    /**
-                     * Build a policy class instance of the given type.
-                     *
-                     * @param object|string $class
-                     * @return mixed
-                     * @throws BindingResolutionException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->guessPolicyNamesUsing($callback);
+            }
+
+            /**
+             * Build a policy class instance of the given type.
+             *
+             * @param object|string $class
+             * @return mixed
+             * @throws BindingResolutionException
+             * @static
+             */
             public static function resolvePolicy($class)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->resolvePolicy($class);
-        }
-                    /**
-                     * Get a gate instance for the given user.
-                     *
-                     * @param Authenticatable|mixed $user
-                     * @return static
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->resolvePolicy($class);
+            }
+
+            /**
+             * Get a gate instance for the given user.
+             *
+             * @param Authenticatable|mixed $user
+             * @return static
+             * @static
+             */
             public static function forUser($user)
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->forUser($user);
-        }
-                    /**
-                     * Get all of the defined abilities.
-                     *
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->forUser($user);
+            }
+
+            /**
+             * Get all of the defined abilities.
+             *
+             * @return array
+             * @static
+             */
             public static function abilities()
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->abilities();
-        }
-                    /**
-                     * Get all of the defined policies.
-                     *
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->abilities();
+            }
+
+            /**
+             * Get all of the defined policies.
+             *
+             * @return array
+             * @static
+             */
             public static function policies()
-        {
-                        /** @var \Illuminate\Auth\Access\Gate $instance */
-                        return $instance->policies();
-        }
-                    /**
-                     * Set the container instance used by the gate.
-                     *
-                     * @param Container $container
-                     * @return \Illuminate\Auth\Access\Gate
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Auth\Access\Gate $instance */
+                return $instance->policies();
+            }
+
+            /**
+             * Set the container instance used by the gate.
+             *
+             * @param Container $container
+             * @return \Illuminate\Auth\Access\Gate
+             * @static
+             */
             public static function setContainer($container)
             {
                 /** @var \Illuminate\Auth\Access\Gate $instance */
@@ -7671,26 +7764,26 @@
         }
 
         /**
-     *
+         *
          *
          * @method static PendingRequest accept(string $contentType)
-     * @method static PendingRequest acceptJson()
-     * @method static PendingRequest asForm()
-     * @method static PendingRequest asJson()
-     * @method static PendingRequest asMultipart()
-     * @method static PendingRequest async()
-     * @method static PendingRequest attach(string|array $name, string $contents = '', string|null $filename = null, array $headers = [])
-     * @method static PendingRequest baseUrl(string $url)
-     * @method static PendingRequest beforeSending(callable $callback)
-     * @method static PendingRequest bodyFormat(string $format)
-     * @method static PendingRequest contentType(string $contentType)
-     * @method static PendingRequest dd()
-     * @method static PendingRequest dump()
-     * @method static PendingRequest retry(int $times, int $sleep = 0, ?callable $when = null)
-     * @method static PendingRequest sink(string|resource $to)
-     * @method static PendingRequest stub(callable $callback)
-     * @method static PendingRequest timeout(int $seconds)
-     * @method static PendingRequest withBasicAuth(string $username, string $password)
+         * @method static PendingRequest acceptJson()
+         * @method static PendingRequest asForm()
+         * @method static PendingRequest asJson()
+         * @method static PendingRequest asMultipart()
+         * @method static PendingRequest async()
+         * @method static PendingRequest attach(string|array $name, string $contents = '', string|null $filename = null, array $headers = [])
+         * @method static PendingRequest baseUrl(string $url)
+         * @method static PendingRequest beforeSending(callable $callback)
+         * @method static PendingRequest bodyFormat(string $format)
+         * @method static PendingRequest contentType(string $contentType)
+         * @method static PendingRequest dd()
+         * @method static PendingRequest dump()
+         * @method static PendingRequest retry(int $times, int $sleep = 0, ?callable $when = null)
+         * @method static PendingRequest sink(string|resource $to)
+         * @method static PendingRequest stub(callable $callback)
+         * @method static PendingRequest timeout(int $seconds)
+         * @method static PendingRequest withBasicAuth(string $username, string $password)
          * @method static PendingRequest withBody(resource|string $content, string $contentType)
          * @method static PendingRequest withCookies(array $cookies, string $domain)
          * @method static PendingRequest withDigestAuth(string $username, string $password)
@@ -7737,206 +7830,223 @@
             public static function sequence($responses = [])
             {
                 /** @var \Illuminate\Http\Client\Factory $instance */
-                        return $instance->sequence($responses);
-        }
-                    /**
-                     * Register a stub callable that will intercept requests and be able to return stub responses.
-                     *
-                     * @param callable|array $callback
-                     * @return \Illuminate\Http\Client\Factory
-                     * @static
-                     */
+                return $instance->sequence($responses);
+            }
+
+            /**
+             * Register a stub callable that will intercept requests and be able to return stub responses.
+             *
+             * @param callable|array $callback
+             * @return \Illuminate\Http\Client\Factory
+             * @static
+             */
             public static function fake($callback = null)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        return $instance->fake($callback);
-        }
-                    /**
-                     * Register a response sequence for the given URL pattern.
-                     *
-                     * @param string $url
-                     * @return ResponseSequence
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                return $instance->fake($callback);
+            }
+
+            /**
+             * Register a response sequence for the given URL pattern.
+             *
+             * @param string $url
+             * @return ResponseSequence
+             * @static
+             */
             public static function fakeSequence($url = '*')
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        return $instance->fakeSequence($url);
-        }
-                    /**
-                     * Stub the given URL using the given callback.
-                     *
-                     * @param string $url
-                     * @param \Illuminate\Http\Client\Response|PromiseInterface|callable $callback
-                     * @return \Illuminate\Http\Client\Factory
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                return $instance->fakeSequence($url);
+            }
+
+            /**
+             * Stub the given URL using the given callback.
+             *
+             * @param string $url
+             * @param \Illuminate\Http\Client\Response|PromiseInterface|callable $callback
+             * @return \Illuminate\Http\Client\Factory
+             * @static
+             */
             public static function stubUrl($url, $callback)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        return $instance->stubUrl($url, $callback);
-        }
-                    /**
-                     * Record a request response pair.
-                     *
-                     * @param \Illuminate\Http\Client\Request $request
-                     * @param \Illuminate\Http\Client\Response $response
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                return $instance->stubUrl($url, $callback);
+            }
+
+            /**
+             * Record a request response pair.
+             *
+             * @param \Illuminate\Http\Client\Request $request
+             * @param \Illuminate\Http\Client\Response $response
+             * @return void
+             * @static
+             */
             public static function recordRequestResponsePair($request, $response)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->recordRequestResponsePair($request, $response);
-        }
-                    /**
-                     * Assert that a request / response pair was recorded matching a given truth test.
-                     *
-                     * @param callable $callback
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->recordRequestResponsePair($request, $response);
+            }
+
+            /**
+             * Assert that a request / response pair was recorded matching a given truth test.
+             *
+             * @param callable $callback
+             * @return void
+             * @static
+             */
             public static function assertSent($callback)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->assertSent($callback);
-        }
-                    /**
-                     * Assert that the given request was sent in the given order.
-                     *
-                     * @param array $callbacks
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->assertSent($callback);
+            }
+
+            /**
+             * Assert that the given request was sent in the given order.
+             *
+             * @param array $callbacks
+             * @return void
+             * @static
+             */
             public static function assertSentInOrder($callbacks)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->assertSentInOrder($callbacks);
-        }
-                    /**
-                     * Assert that a request / response pair was not recorded matching a given truth test.
-                     *
-                     * @param callable $callback
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->assertSentInOrder($callbacks);
+            }
+
+            /**
+             * Assert that a request / response pair was not recorded matching a given truth test.
+             *
+             * @param callable $callback
+             * @return void
+             * @static
+             */
             public static function assertNotSent($callback)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->assertNotSent($callback);
-        }
-                    /**
-                     * Assert that no request / response pair was recorded.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->assertNotSent($callback);
+            }
+
+            /**
+             * Assert that no request / response pair was recorded.
+             *
+             * @return void
+             * @static
+             */
             public static function assertNothingSent()
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->assertNothingSent();
-        }
-                    /**
-                     * Assert how many requests have been recorded.
-                     *
-                     * @param int $count
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->assertNothingSent();
+            }
+
+            /**
+             * Assert how many requests have been recorded.
+             *
+             * @param int $count
+             * @return void
+             * @static
+             */
             public static function assertSentCount($count)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->assertSentCount($count);
-        }
-                    /**
-                     * Assert that every created response sequence is empty.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->assertSentCount($count);
+            }
+
+            /**
+             * Assert that every created response sequence is empty.
+             *
+             * @return void
+             * @static
+             */
             public static function assertSequencesAreEmpty()
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        $instance->assertSequencesAreEmpty();
-        }
-                    /**
-                     * Get a collection of the request / response pairs matching the given truth test.
-                     *
-                     * @param callable $callback
-                     * @return Collection
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                $instance->assertSequencesAreEmpty();
+            }
+
+            /**
+             * Get a collection of the request / response pairs matching the given truth test.
+             *
+             * @param callable $callback
+             * @return Collection
+             * @static
+             */
             public static function recorded($callback = null)
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        return $instance->recorded($callback);
-        }
-                    /**
-                     * Get the current event dispatcher implementation.
-                     *
-                     * @return Dispatcher|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                return $instance->recorded($callback);
+            }
+
+            /**
+             * Get the current event dispatcher implementation.
+             *
+             * @return Dispatcher|null
+             * @static
+             */
             public static function getDispatcher()
-        {
-                        /** @var \Illuminate\Http\Client\Factory $instance */
-                        return $instance->getDispatcher();
-        }
-                    /**
-                     * Register a custom macro.
-                     *
-                     * @param string $name
-                     * @param object|callable $macro
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Client\Factory $instance */
+                return $instance->getDispatcher();
+            }
+
+            /**
+             * Register a custom macro.
+             *
+             * @param string $name
+             * @param object|callable $macro
+             * @return void
+             * @static
+             */
             public static function macro($name, $macro)
-        {
-                        \Illuminate\Http\Client\Factory::macro($name, $macro);
-        }
-                    /**
-                     * Mix another object into the class.
-                     *
-                     * @param object $mixin
-                     * @param bool $replace
-                     * @return void
-                     * @throws ReflectionException
-                     * @static
-                     */
+            {
+                \Illuminate\Http\Client\Factory::macro($name, $macro);
+            }
+
+            /**
+             * Mix another object into the class.
+             *
+             * @param object $mixin
+             * @param bool $replace
+             * @return void
+             * @throws ReflectionException
+             * @static
+             */
             public static function mixin($mixin, $replace = true)
-        {
-                        \Illuminate\Http\Client\Factory::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                \Illuminate\Http\Client\Factory::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return \Illuminate\Http\Client\Factory::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return \Illuminate\Http\Client\Factory::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
-        {
-                        \Illuminate\Http\Client\Factory::flushMacros();
-        }
-                    /**
-                     * Dynamically handle calls to the class.
-                     *
-                     * @param string $method
-                     * @param array $parameters
-                     * @return mixed
-                     * @throws BadMethodCallException
-                     * @static
-                     */
+            {
+                \Illuminate\Http\Client\Factory::flushMacros();
+            }
+
+            /**
+             * Dynamically handle calls to the class.
+             *
+             * @param string $method
+             * @param array $parameters
+             * @return mixed
+             * @throws BadMethodCallException
+             * @static
+             */
             public static function macroCall($method, $parameters)
             {
                 /** @var \Illuminate\Http\Client\Factory $instance */
@@ -7976,217 +8086,234 @@
              * @static
              */
             public static function has($key, $locale = null, $fallback = true)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->has($key, $locale, $fallback);
-        }
-                    /**
-                     * Get the translation for the given key.
-                     *
-                     * @param string $key
-                     * @param array $replace
-                     * @param string|null $locale
-                     * @param bool $fallback
-                     * @return string|array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->has($key, $locale, $fallback);
+            }
+
+            /**
+             * Get the translation for the given key.
+             *
+             * @param string $key
+             * @param array $replace
+             * @param string|null $locale
+             * @param bool $fallback
+             * @return string|array
+             * @static
+             */
             public static function get($key, $replace = [], $locale = null, $fallback = true)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->get($key, $replace, $locale, $fallback);
-        }
-                    /**
-                     * Get a translation according to an integer value.
-                     *
-                     * @param string $key
-                     * @param Countable|int|array $number
-                     * @param array $replace
-                     * @param string|null $locale
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->get($key, $replace, $locale, $fallback);
+            }
+
+            /**
+             * Get a translation according to an integer value.
+             *
+             * @param string $key
+             * @param Countable|int|array $number
+             * @param array $replace
+             * @param string|null $locale
+             * @return string
+             * @static
+             */
             public static function choice($key, $number, $replace = [], $locale = null)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->choice($key, $number, $replace, $locale);
-        }
-                    /**
-                     * Add translation lines to the given locale.
-                     *
-                     * @param array $lines
-                     * @param string $locale
-                     * @param string $namespace
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->choice($key, $number, $replace, $locale);
+            }
+
+            /**
+             * Add translation lines to the given locale.
+             *
+             * @param array $lines
+             * @param string $locale
+             * @param string $namespace
+             * @return void
+             * @static
+             */
             public static function addLines($lines, $locale, $namespace = '*')
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->addLines($lines, $locale, $namespace);
-        }
-                    /**
-                     * Load the specified language group.
-                     *
-                     * @param string $namespace
-                     * @param string $group
-                     * @param string $locale
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->addLines($lines, $locale, $namespace);
+            }
+
+            /**
+             * Load the specified language group.
+             *
+             * @param string $namespace
+             * @param string $group
+             * @param string $locale
+             * @return void
+             * @static
+             */
             public static function load($namespace, $group, $locale)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->load($namespace, $group, $locale);
-        }
-                    /**
-                     * Add a new namespace to the loader.
-                     *
-                     * @param string $namespace
-                     * @param string $hint
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->load($namespace, $group, $locale);
+            }
+
+            /**
+             * Add a new namespace to the loader.
+             *
+             * @param string $namespace
+             * @param string $hint
+             * @return void
+             * @static
+             */
             public static function addNamespace($namespace, $hint)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->addNamespace($namespace, $hint);
-        }
-                    /**
-                     * Add a new JSON path to the loader.
-                     *
-                     * @param string $path
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->addNamespace($namespace, $hint);
+            }
+
+            /**
+             * Add a new JSON path to the loader.
+             *
+             * @param string $path
+             * @return void
+             * @static
+             */
             public static function addJsonPath($path)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->addJsonPath($path);
-        }
-                    /**
-                     * Parse a key into namespace, group, and item.
-                     *
-                     * @param string $key
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->addJsonPath($path);
+            }
+
+            /**
+             * Parse a key into namespace, group, and item.
+             *
+             * @param string $key
+             * @return array
+             * @static
+             */
             public static function parseKey($key)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->parseKey($key);
-        }
-                    /**
-                     * Get the message selector instance.
-                     *
-                     * @return MessageSelector
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->parseKey($key);
+            }
+
+            /**
+             * Get the message selector instance.
+             *
+             * @return MessageSelector
+             * @static
+             */
             public static function getSelector()
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->getSelector();
-        }
-                    /**
-                     * Set the message selector instance.
-                     *
-                     * @param MessageSelector $selector
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->getSelector();
+            }
+
+            /**
+             * Set the message selector instance.
+             *
+             * @param MessageSelector $selector
+             * @return void
+             * @static
+             */
             public static function setSelector($selector)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->setSelector($selector);
-        }
-                    /**
-                     * Get the language line loader implementation.
-                     *
-                     * @return Loader
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->setSelector($selector);
+            }
+
+            /**
+             * Get the language line loader implementation.
+             *
+             * @return Loader
+             * @static
+             */
             public static function getLoader()
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->getLoader();
-        }
-                    /**
-                     * Get the default locale being used.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->getLoader();
+            }
+
+            /**
+             * Get the default locale being used.
+             *
+             * @return string
+             * @static
+             */
             public static function locale()
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->locale();
-        }
-                    /**
-                     * Get the default locale being used.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->locale();
+            }
+
+            /**
+             * Get the default locale being used.
+             *
+             * @return string
+             * @static
+             */
             public static function getLocale()
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->getLocale();
-        }
-                    /**
-                     * Set the default locale.
-                     *
-                     * @param string $locale
-                     * @return void
-                     * @throws InvalidArgumentException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->getLocale();
+            }
+
+            /**
+             * Set the default locale.
+             *
+             * @param string $locale
+             * @return void
+             * @throws InvalidArgumentException
+             * @static
+             */
             public static function setLocale($locale)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->setLocale($locale);
-        }
-                    /**
-                     * Get the fallback locale being used.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->setLocale($locale);
+            }
+
+            /**
+             * Get the fallback locale being used.
+             *
+             * @return string
+             * @static
+             */
             public static function getFallback()
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        return $instance->getFallback();
-        }
-                    /**
-                     * Set the fallback locale being used.
-                     *
-                     * @param string $fallback
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                return $instance->getFallback();
+            }
+
+            /**
+             * Set the fallback locale being used.
+             *
+             * @param string $fallback
+             * @return void
+             * @static
+             */
             public static function setFallback($fallback)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->setFallback($fallback);
-        }
-                    /**
-                     * Set the loaded translation groups.
-                     *
-                     * @param array $loaded
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->setFallback($fallback);
+            }
+
+            /**
+             * Set the loaded translation groups.
+             *
+             * @param array $loaded
+             * @return void
+             * @static
+             */
             public static function setLoaded($loaded)
-        {
-                        /** @var \Illuminate\Translation\Translator $instance */
-                        $instance->setLoaded($loaded);
-        }
-                    /**
-                     * Set the parsed value of a key.
-                     *
-                     * @param string $key
-                     * @param array $parsed
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Translation\Translator $instance */
+                $instance->setLoaded($loaded);
+            }
+
+            /**
+             * Set the parsed value of a key.
+             *
+             * @param string $key
+             * @param array $parsed
+             * @return void
+             * @static
+             */
             public static function setParsedKey($key, $parsed)
             {            //Method inherited from \Illuminate\Support\NamespacedItemResolver
                 /** @var \Illuminate\Translation\Translator $instance */
@@ -8228,26 +8355,28 @@
              * @static
              */
             public static function mixin($mixin, $replace = true)
-        {
-                        \Illuminate\Translation\Translator::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                \Illuminate\Translation\Translator::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return \Illuminate\Translation\Translator::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return \Illuminate\Translation\Translator::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
             {
                 \Illuminate\Translation\Translator::flushMacros();
@@ -9271,26 +9400,28 @@
              * @static
              */
             public static function mixin($mixin, $replace = true)
-        {
-                        NotificationFake::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                NotificationFake::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return NotificationFake::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return NotificationFake::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
             {
                 NotificationFake::flushMacros();
@@ -10000,130 +10131,140 @@
             public static function limiter($name)
             {
                 /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->limiter($name);
-        }
-                    /**
-                     * Attempts to execute a callback if it's not limited.
-                     *
-                     * @param string $key
-                     * @param int $maxAttempts
-                     * @param Closure $callback
-                     * @param int $decaySeconds
-                     * @return mixed
-                     * @static
-                     */
+                return $instance->limiter($name);
+            }
+
+            /**
+             * Attempts to execute a callback if it's not limited.
+             *
+             * @param string $key
+             * @param int $maxAttempts
+             * @param Closure $callback
+             * @param int $decaySeconds
+             * @return mixed
+             * @static
+             */
             public static function attempt($key, $maxAttempts, $callback, $decaySeconds = 60)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->attempt($key, $maxAttempts, $callback, $decaySeconds);
-        }
-                    /**
-                     * Determine if the given key has been "accessed" too many times.
-                     *
-                     * @param string $key
-                     * @param int $maxAttempts
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->attempt($key, $maxAttempts, $callback, $decaySeconds);
+            }
+
+            /**
+             * Determine if the given key has been "accessed" too many times.
+             *
+             * @param string $key
+             * @param int $maxAttempts
+             * @return bool
+             * @static
+             */
             public static function tooManyAttempts($key, $maxAttempts)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->tooManyAttempts($key, $maxAttempts);
-        }
-                    /**
-                     * Increment the counter for a given key for a given decay time.
-                     *
-                     * @param string $key
-                     * @param int $decaySeconds
-                     * @return int
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->tooManyAttempts($key, $maxAttempts);
+            }
+
+            /**
+             * Increment the counter for a given key for a given decay time.
+             *
+             * @param string $key
+             * @param int $decaySeconds
+             * @return int
+             * @static
+             */
             public static function hit($key, $decaySeconds = 60)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->hit($key, $decaySeconds);
-        }
-                    /**
-                     * Get the number of attempts for the given key.
-                     *
-                     * @param string $key
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->hit($key, $decaySeconds);
+            }
+
+            /**
+             * Get the number of attempts for the given key.
+             *
+             * @param string $key
+             * @return mixed
+             * @static
+             */
             public static function attempts($key)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->attempts($key);
-        }
-                    /**
-                     * Reset the number of attempts for the given key.
-                     *
-                     * @param string $key
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->attempts($key);
+            }
+
+            /**
+             * Reset the number of attempts for the given key.
+             *
+             * @param string $key
+             * @return mixed
+             * @static
+             */
             public static function resetAttempts($key)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->resetAttempts($key);
-        }
-                    /**
-                     * Get the number of retries left for the given key.
-                     *
-                     * @param string $key
-                     * @param int $maxAttempts
-                     * @return int
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->resetAttempts($key);
+            }
+
+            /**
+             * Get the number of retries left for the given key.
+             *
+             * @param string $key
+             * @param int $maxAttempts
+             * @return int
+             * @static
+             */
             public static function remaining($key, $maxAttempts)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->remaining($key, $maxAttempts);
-        }
-                    /**
-                     * Get the number of retries left for the given key.
-                     *
-                     * @param string $key
-                     * @param int $maxAttempts
-                     * @return int
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->remaining($key, $maxAttempts);
+            }
+
+            /**
+             * Get the number of retries left for the given key.
+             *
+             * @param string $key
+             * @param int $maxAttempts
+             * @return int
+             * @static
+             */
             public static function retriesLeft($key, $maxAttempts)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->retriesLeft($key, $maxAttempts);
-        }
-                    /**
-                     * Clear the hits and lockout timer for the given key.
-                     *
-                     * @param string $key
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->retriesLeft($key, $maxAttempts);
+            }
+
+            /**
+             * Clear the hits and lockout timer for the given key.
+             *
+             * @param string $key
+             * @return void
+             * @static
+             */
             public static function clear($key)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        $instance->clear($key);
-        }
-                    /**
-                     * Get the number of seconds until the "key" is accessible again.
-                     *
-                     * @param string $key
-                     * @return int
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                $instance->clear($key);
+            }
+
+            /**
+             * Get the number of seconds until the "key" is accessible again.
+             *
+             * @param string $key
+             * @return int
+             * @static
+             */
             public static function availableIn($key)
-        {
-                        /** @var \Illuminate\Cache\RateLimiter $instance */
-                        return $instance->availableIn($key);
-        }
-                    /**
-                     * Clean the rate limiter key from unicode characters.
-                     *
-                     * @param string $key
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Cache\RateLimiter $instance */
+                return $instance->availableIn($key);
+            }
+
+            /**
+             * Clean the rate limiter key from unicode characters.
+             *
+             * @param string $key
+             * @return string
+             * @static
+             */
             public static function cleanRateLimiterKey($key)
             {
                 /** @var \Illuminate\Cache\RateLimiter $instance */
@@ -10386,26 +10527,28 @@
              * @static
              */
             public static function mixin($mixin, $replace = true)
-        {
-                        Redirector::mixin($mixin, $replace);
-        }
-                    /**
-                     * Checks if macro is registered.
-                     *
-                     * @param string $name
-                     * @return bool
-                     * @static
-                     */
+            {
+                Redirector::mixin($mixin, $replace);
+            }
+
+            /**
+             * Checks if macro is registered.
+             *
+             * @param string $name
+             * @return bool
+             * @static
+             */
             public static function hasMacro($name)
-        {
-                        return Redirector::hasMacro($name);
-        }
-                    /**
-                     * Flush the existing macros.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {
+                return Redirector::hasMacro($name);
+            }
+
+            /**
+             * Flush the existing macros.
+             *
+             * @return void
+             * @static
+             */
             public static function flushMacros()
             {
                 Redirector::flushMacros();
@@ -10451,309 +10594,335 @@
              * @static
              */
             public static function method()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->method();
-        }
-                    /**
-                     * Get the root URL for the application.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->method();
+            }
+
+            /**
+             * Get the root URL for the application.
+             *
+             * @return string
+             * @static
+             */
             public static function root()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->root();
-        }
-                    /**
-                     * Get the URL (no query string) for the request.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->root();
+            }
+
+            /**
+             * Get the URL (no query string) for the request.
+             *
+             * @return string
+             * @static
+             */
             public static function url()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->url();
-        }
-                    /**
-                     * Get the full URL for the request.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->url();
+            }
+
+            /**
+             * Get the full URL for the request.
+             *
+             * @return string
+             * @static
+             */
             public static function fullUrl()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->fullUrl();
-        }
-                    /**
-                     * Get the full URL for the request with the added query string parameters.
-                     *
-                     * @param array $query
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->fullUrl();
+            }
+
+            /**
+             * Get the full URL for the request with the added query string parameters.
+             *
+             * @param array $query
+             * @return string
+             * @static
+             */
             public static function fullUrlWithQuery($query)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->fullUrlWithQuery($query);
-        }
-                    /**
-                     * Get the full URL for the request without the given query string parameters.
-                     *
-                     * @param array|string $query
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->fullUrlWithQuery($query);
+            }
+
+            /**
+             * Get the full URL for the request without the given query string parameters.
+             *
+             * @param array|string $query
+             * @return string
+             * @static
+             */
             public static function fullUrlWithoutQuery($keys)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->fullUrlWithoutQuery($keys);
-        }
-                    /**
-                     * Get the current path info for the request.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->fullUrlWithoutQuery($keys);
+            }
+
+            /**
+             * Get the current path info for the request.
+             *
+             * @return string
+             * @static
+             */
             public static function path()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->path();
-        }
-                    /**
-                     * Get the current decoded path info for the request.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->path();
+            }
+
+            /**
+             * Get the current decoded path info for the request.
+             *
+             * @return string
+             * @static
+             */
             public static function decodedPath()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->decodedPath();
-        }
-                    /**
-                     * Get a segment from the URI (1 based index).
-                     *
-                     * @param int $index
-                     * @param string|null $default
-                     * @return string|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->decodedPath();
+            }
+
+            /**
+             * Get a segment from the URI (1 based index).
+             *
+             * @param int $index
+             * @param string|null $default
+             * @return string|null
+             * @static
+             */
             public static function segment($index, $default = null)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->segment($index, $default);
-        }
-                    /**
-                     * Get all of the segments for the request path.
-                     *
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->segment($index, $default);
+            }
+
+            /**
+             * Get all of the segments for the request path.
+             *
+             * @return array
+             * @static
+             */
             public static function segments()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->segments();
-        }
-                    /**
-                     * Determine if the current request URI matches a pattern.
-                     *
-                     * @param mixed $patterns
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->segments();
+            }
+
+            /**
+             * Determine if the current request URI matches a pattern.
+             *
+             * @param mixed $patterns
+             * @return bool
+             * @static
+             */
             public static function is(...$patterns)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->is(...$patterns);
-        }
-                    /**
-                     * Determine if the route name matches a given pattern.
-                     *
-                     * @param mixed $patterns
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->is(...$patterns);
+            }
+
+            /**
+             * Determine if the route name matches a given pattern.
+             *
+             * @param mixed $patterns
+             * @return bool
+             * @static
+             */
             public static function routeIs(...$patterns)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->routeIs(...$patterns);
-        }
-                    /**
-                     * Determine if the current request URL and query string match a pattern.
-                     *
-                     * @param mixed $patterns
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->routeIs(...$patterns);
+            }
+
+            /**
+             * Determine if the current request URL and query string match a pattern.
+             *
+             * @param mixed $patterns
+             * @return bool
+             * @static
+             */
             public static function fullUrlIs(...$patterns)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->fullUrlIs(...$patterns);
-        }
-                    /**
-                     * Determine if the request is the result of an AJAX call.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->fullUrlIs(...$patterns);
+            }
+
+            /**
+             * Determine if the request is the result of an AJAX call.
+             *
+             * @return bool
+             * @static
+             */
             public static function ajax()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->ajax();
-        }
-                    /**
-                     * Determine if the request is the result of a PJAX call.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->ajax();
+            }
+
+            /**
+             * Determine if the request is the result of a PJAX call.
+             *
+             * @return bool
+             * @static
+             */
             public static function pjax()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->pjax();
-        }
-                    /**
-                     * Determine if the request is the result of a prefetch call.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->pjax();
+            }
+
+            /**
+             * Determine if the request is the result of a prefetch call.
+             *
+             * @return bool
+             * @static
+             */
             public static function prefetch()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->prefetch();
-        }
-                    /**
-                     * Determine if the request is over HTTPS.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->prefetch();
+            }
+
+            /**
+             * Determine if the request is over HTTPS.
+             *
+             * @return bool
+             * @static
+             */
             public static function secure()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->secure();
-        }
-                    /**
-                     * Get the client IP address.
-                     *
-                     * @return string|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->secure();
+            }
+
+            /**
+             * Get the client IP address.
+             *
+             * @return string|null
+             * @static
+             */
             public static function ip()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->ip();
-        }
-                    /**
-                     * Get the client IP addresses.
-                     *
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->ip();
+            }
+
+            /**
+             * Get the client IP addresses.
+             *
+             * @return array
+             * @static
+             */
             public static function ips()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->ips();
-        }
-                    /**
-                     * Get the client user agent.
-                     *
-                     * @return string|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->ips();
+            }
+
+            /**
+             * Get the client user agent.
+             *
+             * @return string|null
+             * @static
+             */
             public static function userAgent()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->userAgent();
-        }
-                    /**
-                     * Merge new input into the current request's input array.
-                     *
-                     * @param array $input
-                     * @return \Illuminate\Http\Request
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->userAgent();
+            }
+
+            /**
+             * Merge new input into the current request's input array.
+             *
+             * @param array $input
+             * @return \Illuminate\Http\Request
+             * @static
+             */
             public static function merge($input)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->merge($input);
-        }
-                    /**
-                     * Merge new input into the request's input, but only when that key is missing from the request.
-                     *
-                     * @param array $input
-                     * @return \Illuminate\Http\Request
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->merge($input);
+            }
+
+            /**
+             * Merge new input into the request's input, but only when that key is missing from the request.
+             *
+             * @param array $input
+             * @return \Illuminate\Http\Request
+             * @static
+             */
             public static function mergeIfMissing($input)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->mergeIfMissing($input);
-        }
-                    /**
-                     * Replace the input for the current request.
-                     *
-                     * @param array $input
-                     * @return \Illuminate\Http\Request
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->mergeIfMissing($input);
+            }
+
+            /**
+             * Replace the input for the current request.
+             *
+             * @param array $input
+             * @return \Illuminate\Http\Request
+             * @static
+             */
             public static function replace($input)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->replace($input);
-        }
-                    /**
-                     * This method belongs to Symfony HttpFoundation and is not usually needed when using Laravel.
-                     *
-                     * Instead, you may use the "input" method.
-                     *
-                     * @param string $key
-                     * @param mixed $default
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->replace($input);
+            }
+
+            /**
+             * This method belongs to Symfony HttpFoundation and is not usually needed when using Laravel.
+             *
+             * Instead, you may use the "input" method.
+             *
+             * @param string $key
+             * @param mixed $default
+             * @return mixed
+             * @static
+             */
             public static function get($key, $default = null)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->get($key, $default);
-        }
-                    /**
-                     * Get the JSON payload for the request.
-                     *
-                     * @param string|null $key
-                     * @param mixed $default
-                     * @return ParameterBag|mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->get($key, $default);
+            }
+
+            /**
+             * Get the JSON payload for the request.
+             *
+             * @param string|null $key
+             * @param mixed $default
+             * @return ParameterBag|mixed
+             * @static
+             */
             public static function json($key = null, $default = null)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->json($key, $default);
-        }
-                    /**
-                     * Create a new request instance from the given Laravel request.
-                     *
-                     * @param \Illuminate\Http\Request $from
-                     * @param \Illuminate\Http\Request|null $to
-                     * @return static
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->json($key, $default);
+            }
+
+            /**
+             * Create a new request instance from the given Laravel request.
+             *
+             * @param \Illuminate\Http\Request $from
+             * @param \Illuminate\Http\Request|null $to
+             * @return static
+             * @static
+             */
             public static function createFrom($from, $to = null)
-        {
-                        return \Illuminate\Http\Request::createFrom($from, $to);
-        }
-                    /**
-                     * Create an Illuminate request from a Symfony instance.
-                     *
-                     * @param \Symfony\Component\HttpFoundation\Request $request
-                     * @return static
-                     * @static
-                     */
+            {
+                return \Illuminate\Http\Request::createFrom($from, $to);
+            }
+
+            /**
+             * Create an Illuminate request from a Symfony instance.
+             *
+             * @param \Symfony\Component\HttpFoundation\Request $request
+             * @return static
+             * @static
+             */
             public static function createFromBase($request)
             {
                 return \Illuminate\Http\Request::createFromBase($request);
@@ -10786,202 +10955,218 @@
              * @static
              */
             public static function session()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->session();
-        }
-                    /**
-                     * Get the session associated with the request.
-                     *
-                     * @return Store|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->session();
+            }
+
+            /**
+             * Get the session associated with the request.
+             *
+             * @return Store|null
+             * @static
+             */
             public static function getSession()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->getSession();
-        }
-                    /**
-                     * Set the session instance on the request.
-                     *
-                     * @param \Illuminate\Contracts\Session\Session $session
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->getSession();
+            }
+
+            /**
+             * Set the session instance on the request.
+             *
+             * @param \Illuminate\Contracts\Session\Session $session
+             * @return void
+             * @static
+             */
             public static function setLaravelSession($session)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        $instance->setLaravelSession($session);
-        }
-                    /**
-                     * Get the user making the request.
-                     *
-                     * @param string|null $guard
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                $instance->setLaravelSession($session);
+            }
+
+            /**
+             * Get the user making the request.
+             *
+             * @param string|null $guard
+             * @return mixed
+             * @static
+             */
             public static function user($guard = null)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->user($guard);
-        }
-                    /**
-                     * Get the route handling the request.
-                     *
-                     * @param string|null $param
-                     * @param mixed $default
-                     * @return \Illuminate\Routing\Route|object|string|null
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->user($guard);
+            }
+
+            /**
+             * Get the route handling the request.
+             *
+             * @param string|null $param
+             * @param mixed $default
+             * @return \Illuminate\Routing\Route|object|string|null
+             * @static
+             */
             public static function route($param = null, $default = null)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->route($param, $default);
-        }
-                    /**
-                     * Get a unique fingerprint for the request / route / IP address.
-                     *
-                     * @return string
-                     * @throws RuntimeException
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->route($param, $default);
+            }
+
+            /**
+             * Get a unique fingerprint for the request / route / IP address.
+             *
+             * @return string
+             * @throws RuntimeException
+             * @static
+             */
             public static function fingerprint()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->fingerprint();
-        }
-                    /**
-                     * Set the JSON payload for the request.
-                     *
-                     * @param ParameterBag $json
-                     * @return \Illuminate\Http\Request
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->fingerprint();
+            }
+
+            /**
+             * Set the JSON payload for the request.
+             *
+             * @param ParameterBag $json
+             * @return \Illuminate\Http\Request
+             * @static
+             */
             public static function setJson($json)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->setJson($json);
-        }
-                    /**
-                     * Get the user resolver callback.
-                     *
-                     * @return Closure
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->setJson($json);
+            }
+
+            /**
+             * Get the user resolver callback.
+             *
+             * @return Closure
+             * @static
+             */
             public static function getUserResolver()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->getUserResolver();
-        }
-                    /**
-                     * Set the user resolver callback.
-                     *
-                     * @param Closure $callback
-                     * @return \Illuminate\Http\Request
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->getUserResolver();
+            }
+
+            /**
+             * Set the user resolver callback.
+             *
+             * @param Closure $callback
+             * @return \Illuminate\Http\Request
+             * @static
+             */
             public static function setUserResolver($callback)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->setUserResolver($callback);
-        }
-                    /**
-                     * Get the route resolver callback.
-                     *
-                     * @return Closure
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->setUserResolver($callback);
+            }
+
+            /**
+             * Get the route resolver callback.
+             *
+             * @return Closure
+             * @static
+             */
             public static function getRouteResolver()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->getRouteResolver();
-        }
-                    /**
-                     * Set the route resolver callback.
-                     *
-                     * @param Closure $callback
-                     * @return \Illuminate\Http\Request
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->getRouteResolver();
+            }
+
+            /**
+             * Set the route resolver callback.
+             *
+             * @param Closure $callback
+             * @return \Illuminate\Http\Request
+             * @static
+             */
             public static function setRouteResolver($callback)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->setRouteResolver($callback);
-        }
-                    /**
-                     * Get all of the input and files for the request.
-                     *
-                     * @return array
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->setRouteResolver($callback);
+            }
+
+            /**
+             * Get all of the input and files for the request.
+             *
+             * @return array
+             * @static
+             */
             public static function toArray()
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->toArray();
-        }
-                    /**
-                     * Determine if the given offset exists.
-                     *
-                     * @param string $offset
-                     * @return bool
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->toArray();
+            }
+
+            /**
+             * Determine if the given offset exists.
+             *
+             * @param string $offset
+             * @return bool
+             * @static
+             */
             public static function offsetExists($offset)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->offsetExists($offset);
-        }
-                    /**
-                     * Get the value at the given offset.
-                     *
-                     * @param string $offset
-                     * @return mixed
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->offsetExists($offset);
+            }
+
+            /**
+             * Get the value at the given offset.
+             *
+             * @param string $offset
+             * @return mixed
+             * @static
+             */
             public static function offsetGet($offset)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        return $instance->offsetGet($offset);
-        }
-                    /**
-                     * Set the value at the given offset.
-                     *
-                     * @param string $offset
-                     * @param mixed $value
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                return $instance->offsetGet($offset);
+            }
+
+            /**
+             * Set the value at the given offset.
+             *
+             * @param string $offset
+             * @param mixed $value
+             * @return void
+             * @static
+             */
             public static function offsetSet($offset, $value)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        $instance->offsetSet($offset, $value);
-        }
-                    /**
-                     * Remove the value at the given offset.
-                     *
-                     * @param string $offset
-                     * @return void
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                $instance->offsetSet($offset, $value);
+            }
+
+            /**
+             * Remove the value at the given offset.
+             *
+             * @param string $offset
+             * @return void
+             * @static
+             */
             public static function offsetUnset($offset)
-        {
-                        /** @var \Illuminate\Http\Request $instance */
-                        $instance->offsetUnset($offset);
-        }
-                    /**
-                     * Sets the parameters for this request.
-                     *
-                     * This method also re-initializes all properties.
-                     *
-                     * @param array $query The GET parameters
-                     * @param array $request The POST parameters
-                     * @param array $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
-                     * @param array $cookies The COOKIE parameters
-                     * @param array $files The FILES parameters
-                     * @param array $server The SERVER parameters
-                     * @param string|resource|null $content The raw body data
-                     * @static
-                     */
+            {
+                /** @var \Illuminate\Http\Request $instance */
+                $instance->offsetUnset($offset);
+            }
+
+            /**
+             * Sets the parameters for this request.
+             *
+             * This method also re-initializes all properties.
+             *
+             * @param array $query The GET parameters
+             * @param array $request The POST parameters
+             * @param array $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
+             * @param array $cookies The COOKIE parameters
+             * @param array $files The FILES parameters
+             * @param array $server The SERVER parameters
+             * @param string|resource|null $content The raw body data
+             * @static
+             */
             public static function initialize($query = [], $request = [], $attributes = [], $cookies = [], $files = [], $server = [], $content = null)
             {            //Method inherited from \Symfony\Component\HttpFoundation\Request
                 /** @var \Illuminate\Http\Request $instance */
@@ -11012,34 +11197,36 @@
              * @param array $files The request files ($_FILES)
              * @param array $server The server parameters ($_SERVER)
              * @param string|resource|null $content The raw body data
-         * @return static
-         * @static
-         */
-        public static function create($uri, $method = 'GET', $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::create($uri, $method, $parameters, $cookies, $files, $server, $content);
-        }
-                    /**
-                     * Sets a callable able to create a Request instance.
-                     *
-                     * This is mainly useful when you need to override the Request class
-                     * to keep BC with an existing system. It should not be used for any
-                     * other purpose.
-                     *
-                     * @static
-                     */
+             * @return static
+             * @static
+             */
+            public static function create($uri, $method = 'GET', $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::create($uri, $method, $parameters, $cookies, $files, $server, $content);
+            }
+
+            /**
+             * Sets a callable able to create a Request instance.
+             *
+             * This is mainly useful when you need to override the Request class
+             * to keep BC with an existing system. It should not be used for any
+             * other purpose.
+             *
+             * @static
+             */
             public static function setFactory($callable)
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::setFactory($callable);
-        }
-                    /**
-                     * Overrides the PHP global variables according to this request instance.
-                     *
-                     * It overrides $_GET, $_POST, $_REQUEST, $_SERVER, $_COOKIE.
-                     * $_FILES is never overridden, see rfc1867
-                     *
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::setFactory($callable);
+            }
+
+            /**
+             * Overrides the PHP global variables according to this request instance.
+             *
+             * It overrides $_GET, $_POST, $_REQUEST, $_SERVER, $_COOKIE.
+             * $_FILES is never overridden, see rfc1867
+             *
+             * @static
+             */
             public static function overrideGlobals()
             {            //Method inherited from \Symfony\Component\HttpFoundation\Request
                 /** @var \Illuminate\Http\Request $instance */
@@ -11059,95 +11246,103 @@
             {            //Method inherited from \Symfony\Component\HttpFoundation\Request
                 return \Illuminate\Http\Request::setTrustedProxies($proxies, $trustedHeaderSet);
             }
-                    /**
-                     * Gets the list of trusted proxies.
-                     *
-                     * @return array
-                     * @static
-                     */
+
+            /**
+             * Gets the list of trusted proxies.
+             *
+             * @return array
+             * @static
+             */
             public static function getTrustedProxies()
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::getTrustedProxies();
-        }
-                    /**
-                     * Gets the set of trusted headers from trusted proxies.
-                     *
-                     * @return int A bit field of Request::HEADER_* that defines which headers are trusted from your proxies
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::getTrustedProxies();
+            }
+
+            /**
+             * Gets the set of trusted headers from trusted proxies.
+             *
+             * @return int A bit field of Request::HEADER_* that defines which headers are trusted from your proxies
+             * @static
+             */
             public static function getTrustedHeaderSet()
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::getTrustedHeaderSet();
-        }
-                    /**
-                     * Sets a list of trusted host patterns.
-                     *
-                     * You should only list the hosts you manage using regexs.
-                     *
-                     * @param array $hostPatterns A list of trusted host patterns
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::getTrustedHeaderSet();
+            }
+
+            /**
+             * Sets a list of trusted host patterns.
+             *
+             * You should only list the hosts you manage using regexs.
+             *
+             * @param array $hostPatterns A list of trusted host patterns
+             * @static
+             */
             public static function setTrustedHosts($hostPatterns)
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::setTrustedHosts($hostPatterns);
-        }
-                    /**
-                     * Gets the list of trusted host patterns.
-                     *
-                     * @return array
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::setTrustedHosts($hostPatterns);
+            }
+
+            /**
+             * Gets the list of trusted host patterns.
+             *
+             * @return array
+             * @static
+             */
             public static function getTrustedHosts()
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::getTrustedHosts();
-        }
-                    /**
-                     * Normalizes a query string.
-                     *
-                     * It builds a normalized query string, where keys/value pairs are alphabetized,
-                     * have consistent escaping and unneeded delimiters are removed.
-                     *
-                     * @return string
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::getTrustedHosts();
+            }
+
+            /**
+             * Normalizes a query string.
+             *
+             * It builds a normalized query string, where keys/value pairs are alphabetized,
+             * have consistent escaping and unneeded delimiters are removed.
+             *
+             * @return string
+             * @static
+             */
             public static function normalizeQueryString($qs)
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::normalizeQueryString($qs);
-        }
-                    /**
-                     * Enables support for the _method request parameter to determine the intended HTTP method.
-                     *
-                     * Be warned that enabling this feature might lead to CSRF issues in your code.
-                     * Check that you are using CSRF tokens when required.
-                     * If the HTTP method parameter override is enabled, an html-form with method "POST" can be altered
-                     * and used to send a "PUT" or "DELETE" request via the _method request parameter.
-                     * If these methods are not protected against CSRF, this presents a possible vulnerability.
-                     *
-                     * The HTTP method can only be overridden when the real HTTP method is POST.
-                     *
-                     * @static
-                     */
-        public static function enableHttpMethodParameterOverride()
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::enableHttpMethodParameterOverride();
-        }
-                    /**
-                     * Checks whether support for the _method request parameter is enabled.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::normalizeQueryString($qs);
+            }
+
+            /**
+             * Enables support for the _method request parameter to determine the intended HTTP method.
+             *
+             * Be warned that enabling this feature might lead to CSRF issues in your code.
+             * Check that you are using CSRF tokens when required.
+             * If the HTTP method parameter override is enabled, an html-form with method "POST" can be altered
+             * and used to send a "PUT" or "DELETE" request via the _method request parameter.
+             * If these methods are not protected against CSRF, this presents a possible vulnerability.
+             *
+             * The HTTP method can only be overridden when the real HTTP method is POST.
+             *
+             * @static
+             */
+            public static function enableHttpMethodParameterOverride()
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::enableHttpMethodParameterOverride();
+            }
+
+            /**
+             * Checks whether support for the _method request parameter is enabled.
+             *
+             * @return bool
+             * @static
+             */
             public static function getHttpMethodParameterOverride()
-        {            //Method inherited from \Symfony\Component\HttpFoundation\Request
-                        return \Illuminate\Http\Request::getHttpMethodParameterOverride();
-        }
-                    /**
-                     * Whether the request contains a Session which was started in one of the
-                     * previous requests.
-                     *
-                     * @return bool
-                     * @static
-                     */
+            {            //Method inherited from \Symfony\Component\HttpFoundation\Request
+                return \Illuminate\Http\Request::getHttpMethodParameterOverride();
+            }
+
+            /**
+             * Whether the request contains a Session which was started in one of the
+             * previous requests.
+             *
+             * @return bool
+             * @static
+             */
             public static function hasPreviousSession()
             {            //Method inherited from \Symfony\Component\HttpFoundation\Request
                 /** @var \Illuminate\Http\Request $instance */
@@ -13976,27 +14171,29 @@
              * @static
              */
             public static function defaultMorphKeyType($type)
-        {            //Method inherited from \Illuminate\Database\Schema\Builder
-                        MySqlBuilder::defaultMorphKeyType($type);
-        }
-                    /**
-                     * Set the default morph key type for migrations to UUIDs.
-                     *
-                     * @return void
-                     * @static
-                     */
+            {            //Method inherited from \Illuminate\Database\Schema\Builder
+                MySqlBuilder::defaultMorphKeyType($type);
+            }
+
+            /**
+             * Set the default morph key type for migrations to UUIDs.
+             *
+             * @return void
+             * @static
+             */
             public static function morphUsingUuids()
-        {            //Method inherited from \Illuminate\Database\Schema\Builder
-                        MySqlBuilder::morphUsingUuids();
-        }
-                    /**
-                     * Determine if the given table has a given column.
-                     *
-                     * @param string $table
-                     * @param string $column
-                     * @return bool
-                     * @static
-                     */
+            {            //Method inherited from \Illuminate\Database\Schema\Builder
+                MySqlBuilder::morphUsingUuids();
+            }
+
+            /**
+             * Determine if the given table has a given column.
+             *
+             * @param string $table
+             * @param string $column
+             * @return bool
+             * @static
+             */
             public static function hasColumn($table, $column)
             {            //Method inherited from \Illuminate\Database\Schema\Builder
                 /** @var MySqlBuilder $instance */
@@ -17384,10 +17581,10 @@ namespace Illuminate\Support {
      *
      *
      */
-        class Str
-        {
+    class Str
+    {
 
-        }
+    }
 
 }
 
@@ -17755,10 +17952,10 @@ namespace Illuminate\Http {
                         return Request::hasValidSignature($absolute);
         }
                     /**
-         *
+                     *
                      *
                      * @see \Illuminate\Foundation\Providers\FoundationServiceProvider::registerRequestSignatureValidation()
-         * @static
+                     * @static
                      */
         public static function hasValidRelativeSignature()
         {
@@ -17791,9 +17988,9 @@ namespace Illuminate\Routing {
         /**
          *
          *
+         * @see \Spatie\Permission\PermissionServiceProvider::registerMacroHelpers()
          * @param mixed $permissions
          * @static
-         *@see \Spatie\Permission\PermissionServiceProvider::registerMacroHelpers()
          */
         public static function permission($permissions = [])
         {
@@ -21412,8 +21609,13 @@ namespace {
     {
     }
 
-    class View extends \Illuminate\Support\Facades\View {}
-            class Flare extends \Facade\Ignition\Facades\Flare {}
+    class View extends \Illuminate\Support\Facades\View
+    {
+    }
+
+    class Flare extends \Facade\Ignition\Facades\Flare
+    {
+    }
 
 }
 
