@@ -213,18 +213,18 @@
             }
 
             /**
-         * Register a callback to run before a bootstrapper.
-         *
-         * @param string $bootstrapper
-         * @param Closure $callback
-         * @return void
-         * @static
-         */
-        public static function beforeBootstrapping($bootstrapper, $callback)
-        {
-            /** @var \Illuminate\Foundation\Application $instance */
-            $instance->beforeBootstrapping($bootstrapper, $callback);
-        }
+             * Register a callback to run before a bootstrapper.
+             *
+             * @param string $bootstrapper
+             * @param Closure $callback
+             * @return void
+             * @static
+             */
+            public static function beforeBootstrapping($bootstrapper, $callback)
+            {
+                /** @var \Illuminate\Foundation\Application $instance */
+                $instance->beforeBootstrapping($bootstrapper, $callback);
+            }
 
             /**
          * Register a callback to run after a bootstrapper.
@@ -1143,17 +1143,17 @@
          *
          * @return void
          * @static
-         */
-        public static function flush()
-        {
-            /** @var \Illuminate\Foundation\Application $instance */
-            $instance->flush();
-        }
+             */
+            public static function flush()
+            {
+                /** @var \Illuminate\Foundation\Application $instance */
+                $instance->flush();
+            }
 
             /**
-         * Get the application namespace.
-         *
-         * @return string
+             * Get the application namespace.
+             *
+             * @return string
              * @throws RuntimeException
              * @static
              */
@@ -1211,15 +1211,15 @@
             /**
              * Determine if a given type is shared.
              *
-         * @param string $abstract
-         * @return bool
-         * @static
-         */
-        public static function isShared($abstract)
-        {            //Method inherited from \Illuminate\Container\Container
-            /** @var \Illuminate\Foundation\Application $instance */
-            return $instance->isShared($abstract);
-        }
+             * @param string $abstract
+             * @return bool
+             * @static
+             */
+            public static function isShared($abstract)
+            {            //Method inherited from \Illuminate\Container\Container
+                /** @var \Illuminate\Foundation\Application $instance */
+                return $instance->isShared($abstract);
+            }
 
             /**
          * Determine if a given string is an alias.
@@ -1463,12 +1463,12 @@
         }
 
             /**
-         * Refresh an instance on the given target and method.
-         *
-         * @param string $abstract
-         * @param mixed $target
-         * @param string $method
-         * @return mixed
+             * Refresh an instance on the given target and method.
+             *
+             * @param string $abstract
+             * @param mixed $target
+             * @param string $method
+             * @return mixed
              * @static
              */
             public static function refresh($abstract, $target, $method)
@@ -4965,16 +4965,16 @@
          * @method static Carbon createFromTimestampUTC($timestamp)
          * @method static Carbon createMidnightDate($year = null, $month = null, $day = null, $tz = null)
          * @method static Carbon disableHumanDiffOption($humanDiffOption)
-     * @method static Carbon enableHumanDiffOption($humanDiffOption)
-     * @method static Carbon fromSerialized($value)
-     * @method static Carbon getLastErrors()
-     * @method static Carbon getTestNow()
-     * @method static Carbon instance($date)
-     * @method static Carbon isMutable()
-     * @method static Carbon maxValue()
-     * @method static Carbon minValue()
-     * @method static Carbon now($tz = null)
-     * @method static Carbon parse($time = null, $tz = null)
+         * @method static Carbon enableHumanDiffOption($humanDiffOption)
+         * @method static Carbon fromSerialized($value)
+         * @method static Carbon getLastErrors()
+         * @method static Carbon getTestNow()
+         * @method static Carbon instance($date)
+         * @method static Carbon isMutable()
+         * @method static Carbon maxValue()
+         * @method static Carbon minValue()
+         * @method static Carbon now($tz = null)
+         * @method static Carbon parse($time = null, $tz = null)
      * @method static Carbon setHumanDiffOptions($humanDiffOptions)
      * @method static void setTestNow($testNow = null)
      * @method static Carbon setUtf8($utf8)
@@ -4988,16 +4988,16 @@
      * @method static TranslatorInterface getTranslator()
      * @method static array getAvailableLocales()
      * @method static array getDays()
-     * @method static array getIsoUnits()
-     * @method static array getWeekendDays()
-     * @method static bool hasFormat($date, $format)
-     * @method static bool hasMacro($name)
-     * @method static bool hasRelativeKeywords($time)
-     * @method static bool hasTestNow()
-     * @method static bool isImmutable()
-     * @method static bool isModifiableUnit($unit)
-     * @method static bool isStrictModeEnabled()
-     * @method static bool localeHasDiffOneDayWords($locale)
+         * @method static array getIsoUnits()
+         * @method static array getWeekendDays()
+         * @method static bool hasFormat($date, $format)
+         * @method static bool hasMacro($name)
+         * @method static bool hasRelativeKeywords($time)
+         * @method static bool hasTestNow()
+         * @method static bool isImmutable()
+         * @method static bool isModifiableUnit($unit)
+         * @method static bool isStrictModeEnabled()
+         * @method static bool localeHasDiffOneDayWords($locale)
          * @method static bool localeHasDiffSyntax($locale)
          * @method static bool localeHasDiffTwoDayWords($locale)
          * @method static bool localeHasPeriodSyntax($locale)
@@ -17988,9 +17988,9 @@ namespace Illuminate\Routing {
         /**
          *
          *
-         * @see \Spatie\Permission\PermissionServiceProvider::registerMacroHelpers()
          * @param mixed $permissions
          * @static
+         *@see \Spatie\Permission\PermissionServiceProvider::registerMacroHelpers()
          */
         public static function permission($permissions = [])
         {

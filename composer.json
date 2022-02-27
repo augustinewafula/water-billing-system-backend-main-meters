@@ -11,6 +11,7 @@
         "php": "^7.3|^8.0",
         "ext-json": "*",
         "ext-openssl": "*",
+        "benjamincrozat/laravel-dropbox-driver": "^3.0",
         "bensampo/laravel-enum": "^4.1",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
