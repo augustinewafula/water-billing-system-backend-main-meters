@@ -17,26 +17,41 @@ class SmsController extends Controller
      */
     public function send(Request $request): JsonResponse
     {
-        $users = User::role('user');
-        if ($request->recipient !== 'all') {
+        $users = User::role('user')
+            ->with('meter');
+        if ($request->recipient !== 'all' && $request->recipient !== 'specific') {
             $station_id = $request->recipient;
             $users->whereHas('meter', function ($query) use ($station_id) {
                 $query->where('station_id', $station_id);
             });
         }
+        if ($request->recipient === 'specific') {
+            $recipients = $request->specific_recipients;
+            $users->where('phone', $recipients[0]);
+            foreach ($recipients as $key => $recipient) {
+                $users = $users->orWhere('phone', $recipient);
+            }
+        }
 
-        $users = $users->pluck('phone')
-            ->all();
-        $phone_numbers_string = implode(',', $users);
+        $users = $users->get();
 
-        if (empty($phone_numbers_string)) {
+        if ($users->count() === 0) {
             $response = ['message' => 'The given data was invalid.', 'errors' => ['recipient' => ['Recipients not found']]];
             return response()->json($response, 422);
         }
-        if ($this->initiateSendSms($phone_numbers_string, $request->message)) {
-            return response()->json('sent');
-        }
-        return response()->json(['message' => 'Failed to send message, if error persists please contact website admin']);
 
+        foreach ($users as $user) {
+            $first_name = explode(' ', trim($user->name))[0];
+            $to_replace = [$first_name, $user->name, $user->meter->number];
+            $personalized_message = $this->personalizeMessage($to_replace, $request->message);
+            $this->initiateSendSms($users->phone, $personalized_message);
+        }
+        return response()->json('sent');
+    }
+
+    private function personalizeMessage(array $replace_with, $message): string
+    {
+        $search_words = ['{first-name}', '{full-name}', '{meter-number}'];
+        return str_replace($search_words, $replace_with, $message);
     }
 }
