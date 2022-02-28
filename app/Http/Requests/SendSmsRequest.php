@@ -25,6 +25,7 @@ class SendSmsRequest extends FormRequest
     {
         return [
             'recipient' => ['required', 'string'],
+            'specific_recipients' => ['required_if:recipient,specific', 'array'],
             'message' => ['required', 'string', 'max:140'],
         ];
     }
