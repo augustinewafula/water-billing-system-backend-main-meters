@@ -7,6 +7,8 @@ use App\Traits\SendSms;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Log;
+use Throwable;
 
 class SmsController extends Controller
 {
@@ -35,16 +37,33 @@ class SmsController extends Controller
 
         $users = $users->get();
 
-        if ($users->count() === 0) {
+        $total_users_count = $users->count();
+
+        if ($total_users_count === 0) {
             $response = ['message' => 'The given data was invalid.', 'errors' => ['recipient' => ['Recipients not found']]];
             return response()->json($response, 422);
         }
 
+        $failed_messages_count = 0;
         foreach ($users as $user) {
-            $first_name = explode(' ', trim($user->name))[0];
-            $to_replace = [$first_name, $user->name, $user->meter->number];
-            $personalized_message = $this->personalizeMessage($to_replace, $request->message);
-            $this->initiateSendSms($user->phone, $personalized_message);
+            try {
+                $first_name = explode(' ', trim($user->name))[0];
+                $to_replace = [$first_name, $user->name, $user->meter->number];
+                $personalized_message = $this->personalizeMessage($to_replace, $request->message);
+                $this->initiateSendSms($user->phone, $personalized_message);
+            } catch (Throwable $th) {
+                $failed_messages_count++;
+                Log::info($th);
+            }
+        }
+
+        if ($failed_messages_count === $total_users_count) {
+            $response = ['message' => 'Failed to send message.'];
+            return response()->json($response, 422);
+        }
+        if ($failed_messages_count > 0) {
+            $response = ['message' => 'Some messages failed to send'];
+            return response()->json($response, 422);
         }
         return response()->json('sent');
     }
