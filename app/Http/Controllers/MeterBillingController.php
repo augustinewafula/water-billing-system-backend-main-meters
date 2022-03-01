@@ -67,7 +67,9 @@ class MeterBillingController extends Controller
         }
         $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $mpesa_transaction_id = $this->storeMpesaTransaction($content);
-        $this->processMpesaTransaction($content, $mpesa_transaction_id);
+        if ($mpesa_transaction_id) {
+            $this->processMpesaTransaction($content, $mpesa_transaction_id);
+        }
 
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
