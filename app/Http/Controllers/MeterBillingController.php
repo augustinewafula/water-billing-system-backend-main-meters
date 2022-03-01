@@ -60,7 +60,6 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
-        Log::notice("Received transaction confirmation from Ip $client_ip");
         if (!$this->safaricomIpAddress($client_ip)) {
             Log::notice("Ip $client_ip has been stopped from accessing transaction url");
             $response = ['message' => 'Nothing interesting around here.'];
@@ -222,24 +221,31 @@ class MeterBillingController extends Controller
      * @param Request $content
      * @return String
      */
-    public function storeMpesaTransaction(Request $content): string
+    public function storeMpesaTransaction(Request $content): ?string
     {
-        $mpesa_transaction = new MpesaTransaction();
-        $mpesa_transaction->TransactionType = $content->TransactionType;
-        $mpesa_transaction->TransID = $content->TransID;
-        $mpesa_transaction->TransTime = $content->TransTime;
-        $mpesa_transaction->TransAmount = $content->TransAmount;
-        $mpesa_transaction->BusinessShortCode = $content->BusinessShortCode;
-        $mpesa_transaction->BillRefNumber = $content->BillRefNumber;
-        $mpesa_transaction->InvoiceNumber = $content->InvoiceNumber;
-        $mpesa_transaction->OrgAccountBalance = $content->OrgAccountBalance;
-        $mpesa_transaction->ThirdPartyTransID = $content->ThirdPartyTransID;
-        $mpesa_transaction->MSISDN = $content->MSISDN;
-        $mpesa_transaction->FirstName = $content->FirstName;
-        $mpesa_transaction->MiddleName = $content->MiddleName;
-        $mpesa_transaction->LastName = $content->LastName;
-        $mpesa_transaction->save();
-        return $mpesa_transaction->id;
+        $content->validate([
+            'TransID' => 'unique:mpesa_transactions'
+        ]);
+        try {
+            return MpesaTransaction::create([
+                'TransactionType' => $content->TransactionType,
+                'TransID' => $content->TransID,
+                'TransTime' => $content->TransTime,
+                'TransAmount' => $content->TransAmount,
+                'BusinessShortCode' => $content->BusinessShortCode,
+                'BillRefNumber' => $content->BillRefNumber,
+                'InvoiceNumber' => $content->InvoiceNumber,
+                'OrgAccountBalance' => $content->OrgAccountBalance,
+                'ThirdPartyTransID' => $content->ThirdPartyTransID,
+                'MSISDN' => $content->MSISDN,
+                'FirstName' => $content->FirstName,
+                'MiddleName' => $content->MiddleName,
+                'LastName' => $content->LastName,
+            ])->id;
+        } catch (Throwable $throwable) {
+            Log::info($throwable);
+        }
+        return null;
     }
 
     /**
