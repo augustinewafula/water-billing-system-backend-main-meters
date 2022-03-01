@@ -44,7 +44,7 @@ class SmsController extends Controller
             $first_name = explode(' ', trim($user->name))[0];
             $to_replace = [$first_name, $user->name, $user->meter->number];
             $personalized_message = $this->personalizeMessage($to_replace, $request->message);
-            $this->initiateSendSms($users->phone, $personalized_message);
+            $this->initiateSendSms($user->phone, $personalized_message);
         }
         return response()->json('sent');
     }
