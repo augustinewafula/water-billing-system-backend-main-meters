@@ -60,6 +60,7 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
+        Log::notice("Received transaction confirmation from Ip $client_ip");
         if (!$this->safaricomIpAddress($client_ip)) {
             Log::notice("Ip $client_ip has been stopped from accessing transaction url");
             $response = ['message' => 'Nothing interesting around here.'];
