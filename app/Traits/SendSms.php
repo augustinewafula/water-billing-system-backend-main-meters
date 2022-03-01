@@ -6,6 +6,7 @@ use Exception;
 use Http;
 use Log;
 use stdClass;
+use Throwable;
 
 trait SendSms
 {
@@ -39,7 +40,12 @@ trait SendSms
             Log::info('response:' . $response->body());
             $response = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->SMSMessageData;
             foreach ($response->Recipients as $recipient) {
-                $this->storeSms($recipient->number, $message, $recipient->status, $recipient->cost);
+                try {
+                    $cost = explode(' ', trim($recipient->cost))[1];
+                } catch (Throwable $throwable) {
+                    $cost = $recipient->cost;
+                }
+                $this->storeSms($recipient->number, $message, $recipient->status, $cost);
             }
             return $response;
         }
