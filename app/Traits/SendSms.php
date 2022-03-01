@@ -9,6 +9,7 @@ use stdClass;
 
 trait SendSms
 {
+    use StoreSms;
 
     /**
      * @throws Exception
@@ -36,7 +37,11 @@ trait SendSms
 
         if ($response->successful()) {
             Log::info('response:' . $response->body());
-            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->SMSMessageData;
+            $response = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->SMSMessageData;
+            foreach ($response->Recipients as $recipient) {
+                $this->storeSms($recipient->number, $message, $recipient->status, $recipient->cost);
+            }
+            return $response;
         }
         return null;
 
