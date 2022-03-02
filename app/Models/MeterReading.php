@@ -19,6 +19,15 @@ class MeterReading extends Model
     protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'status', 'sms_sent', 'send_sms_at'];
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'send_sms_at' => 'datetime',
+    ];
+
+    /**
      * Get meter that owns the meter reading
      * @return BelongsTo
      */
