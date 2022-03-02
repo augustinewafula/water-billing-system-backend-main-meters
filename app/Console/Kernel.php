@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('meter-readings:get')->lastDayOfMonth('23:50');
+        $schedule->command('meter-readings:get --type=daily')->dailyAt('23:50');
+        $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth('23:50');
         $schedule->command('backup:clean --only-db')->twiceDaily(0, 12);
         $schedule->command('backup:run --only-db')->twiceDaily();
     }
