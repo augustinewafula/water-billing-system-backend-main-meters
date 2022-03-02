@@ -11,7 +11,7 @@ class GetMeterReadings extends Command
      *
      * @var string
      */
-    protected $signature = 'meter-readings:get';
+    protected $signature = 'meter-readings:get {--type=monthly: i.e monthly or daily}';
 
     /**
      * The console command description.
@@ -37,7 +37,7 @@ class GetMeterReadings extends Command
      */
     public function handle()
     {
-        \App\Jobs\GetMeterReadings::dispatch();
+        \App\Jobs\GetMeterReadings::dispatch($this->option('type'));
         return 0;
     }
 }
