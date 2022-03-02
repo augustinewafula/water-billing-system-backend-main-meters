@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
+use App\Traits\StoreDailyMeterReading;
 use App\Traits\StoreMeterReading;
 use Carbon\Carbon;
 use DB;
@@ -19,16 +21,18 @@ use Throwable;
 
 class GetMeterReadings implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoreDailyMeterReading;
+
+    protected $type;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($type)
     {
-        //
+        $this->type = $type;
     }
 
     /**
@@ -51,7 +55,7 @@ class GetMeterReadings implements ShouldQueue
     public function getShMeterReadings(): void
     {
         $database_meter_numbers = $this->getShDatabaseMeters();
-        $response = Http::retry(3, 100)
+        $response = Http::retry(3, 3000)
             ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYGetMeterData.ashx', [
                 'MeterIdList' => $database_meter_numbers,
                 'UserName' => env('SH_METER_USERNAME'),
@@ -62,7 +66,13 @@ class GetMeterReadings implements ShouldQueue
             foreach ($meters as $meter) {
                 $meter_number = $meter->MeterId;
                 $meter_reading = $meter->PositiveCumulativeFlow;
-                $this->saveMeterReadings($meter_number, $meter_reading);
+                $meter_voltage = $meter->MeterVoltage;
+                $database_meter = Meter::where('number', $meter_number)->first();
+                if ($this->type === 'daily') {
+                    $this->saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage);
+                    break;
+                }
+                $this->saveMonthlyMeterReadings($database_meter, $meter_reading);
             }
         }
     }
@@ -76,7 +86,7 @@ class GetMeterReadings implements ShouldQueue
         if ($token = $this->loginChangshaNbIot()) {
             $response = Http::withHeaders([
                 'Token' => $token,
-                ])
+            ])
                 ->retry(3, 100)
                 ->get('http://220.248.173.29:10004/collect/v3/getMeterDataList', [
                     'pageIndex' => 1,
@@ -87,7 +97,13 @@ class GetMeterReadings implements ShouldQueue
                 foreach ($meters as $key => $meter) {
                     $meter_number = $meter->meterno;
                     $meter_reading = $meter->lasttotalall;
-                    $this->saveMeterReadings($meter_number, $meter_reading);
+                    $meter_voltage = $meter->battery;
+                    $database_meter = Meter::where('number', $meter_number)->first();
+                    if ($this->type === 'daily') {
+                        $this->saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage);
+                        break;
+                    }
+                    $this->saveMonthlyMeterReadings($database_meter, $meter_reading);
                 }
             }
         }
@@ -111,7 +127,7 @@ class GetMeterReadings implements ShouldQueue
      */
     public function loginChangshaNbIot(): ?string
     {
-        $response = Http::retry(3, 100)
+        $response = Http::retry(3, 3000)
             ->get('http://220.248.173.29:10004/collect/v3/getToken', [
                 'userName' => env('CHANGSHA_NBIOT_METER_USERNAME'),
                 'passWord' => env('CHANGSHA_NBIOT_METER_PASSWORD'),
@@ -123,15 +139,35 @@ class GetMeterReadings implements ShouldQueue
         return null;
     }
 
+    public function saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage): void
+    {
+        if ($database_meter) {
+            $request = new CreateDailyMeterReadingRequest();
+            $request->setMethod('POST');
+            $request->request->add([
+                'meter_id' => $database_meter->id,
+                'reading' => round($meter_reading)
+            ]);
+            try {
+                DB::transaction(function () use ($request, $database_meter, $meter_voltage) {
+                    $this->storeDailyReading($request);
+                    $database_meter->update([
+                        'voltage' => $meter_voltage
+                    ]);
+                });
+            } catch (Throwable $exception) {
+                Log::error($exception);
+            }
+        }
+    }
+
     /**
-     * @param $meter_number
+     * @param $database_meter
      * @param $meter_reading
      * @return void
-     * @throws Throwable
      */
-    public function saveMeterReadings($meter_number, $meter_reading): void
+    public function saveMonthlyMeterReadings($database_meter, $meter_reading): void
     {
-        $database_meter = Meter::where('number', $meter_number)->first();
         if ($database_meter) {
             $request = new CreateMeterReadingRequest();
             $request->setMethod('POST');
