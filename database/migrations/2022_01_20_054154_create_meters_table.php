@@ -25,6 +25,8 @@ class CreateMetersTable extends Migration
             $table->integer('last_reading');
             $table->dateTime('last_reading_date')->nullable();
             $table->dateTime('last_billing_date')->nullable();
+            $table->decimal('voltage', 15)->nullable();
+            $table->integer('signal')->nullable();
             $table->timestamps();
         });
     }
