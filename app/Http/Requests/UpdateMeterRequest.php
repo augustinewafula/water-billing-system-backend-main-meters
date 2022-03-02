@@ -27,7 +27,7 @@ class UpdateMeterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'valve_status' => ['required_if:mode,1', 'nullable', new EnumValue(ValveStatus::class, false)],
+            'valve_status' => ['nullable', new EnumValue(ValveStatus::class, false)],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
             'mode' => ['required', new EnumValue(MeterMode::class, false)]
