@@ -24,6 +24,8 @@ class CreateMeterReadingsTable extends Migration
             $table->decimal('bill', 15);
             $table->decimal('service_fee', 15);
             $table->tinyInteger('status')->unsigned()->default(MeterReadingStatus::NotPaid);
+            $table->tinyInteger('sms_sent')->unsigned()->default(false);
+            $table->dateTime('send_sms_at');
             $table->timestamps();
         });
     }
