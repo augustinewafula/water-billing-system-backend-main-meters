@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\GetMeterReadings;
 use Illuminate\Console\Command;
 
-class GetMeterReadings extends Command
+class GetMeterReadingsCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -37,7 +38,7 @@ class GetMeterReadings extends Command
      */
     public function handle()
     {
-        \App\Jobs\GetMeterReadings::dispatch($this->option('type'));
+        GetMeterReadings::dispatch($this->option('type'));
         return 0;
     }
 }
