@@ -40,7 +40,8 @@ trait StoreMeterReading
                 'current_reading' => $request->current_reading,
                 'month' => $request->month,
                 'bill' => $bill,
-                'service_fee' => $this->calculateServiceFee($bill, 'post-pay')
+                'service_fee' => $this->calculateServiceFee($bill, 'post-pay'),
+                'send_sms_at' => Carbon::now()->add(2, 'day')->toDateTimeString()
             ]);
             $meter->update([
                 'last_reading' => $request->current_reading,
@@ -53,7 +54,7 @@ trait StoreMeterReading
             $response = ['message' => 'Something went wrong, please contact website admin for help'];
             return response($response, 422);
         }
-        $this->sendMeterReadingsToUser($meter, $request, $bill, $previous_reading);
+//        $this->sendMeterReadingsToUser($meter, $request, $bill, $previous_reading);
         return response()->json($bill, 201);
 
     }
