@@ -102,7 +102,13 @@ class MeterController extends Controller
      */
     public function update(UpdateMeterRequest $request, Meter $meter): JsonResponse
     {
-        $meter->update($request->validated());
+        $meter->update([
+            'number' => $request->number,
+            'station_id' => $request->station_id,
+            'type_id' => $request->type_id,
+            'valve_status' => $request->valve_status,
+            'mode' => $request->mode
+        ]);
         return response()->json($meter);
     }
 
