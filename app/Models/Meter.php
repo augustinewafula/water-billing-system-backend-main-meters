@@ -16,7 +16,7 @@ class Meter extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date'];
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'voltage'];
 
     /**
      * The attributes that should be cast.
