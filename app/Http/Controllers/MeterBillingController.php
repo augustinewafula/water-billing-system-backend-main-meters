@@ -301,8 +301,10 @@ class MeterBillingController extends Controller
             '196.201.212.127',
             '196.201.212.128',
             '196.201.212.129',
+            '196.201.212.132',
             '196.201.212.136',
             '196.201.212.74',
+            '196.201.212.138',
             '196.201.212.69'];
 
         return in_array($clientIpAddress, $whitelist, true);
