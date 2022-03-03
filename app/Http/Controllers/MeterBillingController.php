@@ -62,6 +62,7 @@ class MeterBillingController extends Controller
         $client_ip = $request->ip();
         if (!$this->safaricomIpAddress($client_ip)) {
             Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+            Log::notice($request);
             $response = ['message' => 'Nothing interesting around here.'];
             return response()->json($response, 418);
         }
