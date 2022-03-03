@@ -65,10 +65,14 @@ class MeterBillingController extends Controller
             $response = ['message' => 'Nothing interesting around here.'];
             return response()->json($response, 418);
         }
-        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
-        $mpesa_transaction_id = $this->storeMpesaTransaction($content);
+
+//        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
+        $request->validate([
+            'TransID' => 'unique:mpesa_transactions'
+        ]);
+        $mpesa_transaction_id = $this->storeMpesaTransaction($request);
         if ($mpesa_transaction_id) {
-            $this->processMpesaTransaction($content, $mpesa_transaction_id);
+            $this->processMpesaTransaction($request, $mpesa_transaction_id);
         }
 
         $response = new Response();
@@ -225,29 +229,21 @@ class MeterBillingController extends Controller
      */
     public function storeMpesaTransaction(Request $content): ?string
     {
-        $content->validate([
-            'TransID' => 'unique:mpesa_transactions'
-        ]);
-        try {
-            return MpesaTransaction::create([
-                'TransactionType' => $content->TransactionType,
-                'TransID' => $content->TransID,
-                'TransTime' => $content->TransTime,
-                'TransAmount' => $content->TransAmount,
-                'BusinessShortCode' => $content->BusinessShortCode,
-                'BillRefNumber' => $content->BillRefNumber,
-                'InvoiceNumber' => $content->InvoiceNumber,
-                'OrgAccountBalance' => $content->OrgAccountBalance,
-                'ThirdPartyTransID' => $content->ThirdPartyTransID,
-                'MSISDN' => $content->MSISDN,
-                'FirstName' => $content->FirstName,
-                'MiddleName' => $content->MiddleName,
-                'LastName' => $content->LastName,
-            ])->id;
-        } catch (Throwable $throwable) {
-            Log::info($throwable);
-        }
-        return null;
+        return MpesaTransaction::create([
+            'TransactionType' => $content->TransactionType,
+            'TransID' => $content->TransID,
+            'TransTime' => $content->TransTime,
+            'TransAmount' => $content->TransAmount,
+            'BusinessShortCode' => $content->BusinessShortCode,
+            'BillRefNumber' => $content->BillRefNumber,
+            'InvoiceNumber' => $content->InvoiceNumber,
+            'OrgAccountBalance' => $content->OrgAccountBalance,
+            'ThirdPartyTransID' => $content->ThirdPartyTransID,
+            'MSISDN' => $content->MSISDN,
+            'FirstName' => $content->FirstName,
+            'MiddleName' => $content->MiddleName,
+            'LastName' => $content->LastName,
+        ])->id;
     }
 
     /**
