@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
         $schedule->command('meter-readings:send')->everyThirtyMinutes();
         $schedule->command('meter-readings:get --type=daily')->dailyAt('23:50');
         $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth('23:50');
