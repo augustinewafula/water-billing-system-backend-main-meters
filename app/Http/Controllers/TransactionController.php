@@ -42,7 +42,10 @@ class TransactionController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $meter_id = MeterBilling::where('mpesa_transaction_id', $id)->first()->meter_id;
+            $meter_id = MeterBilling::select('meter_readings.meter_id')
+                ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+                ->where('mpesa_transaction_id', $id)
+                ->first()->meter_id;
         } catch (Throwable $throwable) {
             $meter_id = MeterToken::where('mpesa_transaction_id', $id)->first()->meter_id;
         }
