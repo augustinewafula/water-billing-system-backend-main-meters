@@ -36,7 +36,7 @@ class TransactionController extends Controller
 
     public function unresolvedTransactionIndex(): JsonResponse
     {
-        return response()->json(UnresolvedMpesaTransaction::select('unresolved_mpesa_transactions.reason', 'mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+        return response()->json(UnresolvedMpesaTransaction::select('unresolved_mpesa_transactions.reason', 'mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.BillRefNumber as account_number', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'unresolved_mpesa_transactions.mpesa_transaction_id')
             ->get());
     }
