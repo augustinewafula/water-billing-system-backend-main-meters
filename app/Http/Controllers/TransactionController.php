@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
+use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,6 +32,13 @@ class TransactionController extends Controller
         $all_transactions = $meter_billings_transactions->merge($meter_tokens_transactions);
 
         return response()->json($all_transactions);
+    }
+
+    public function unresolvedTransactionIndex(): JsonResponse
+    {
+        return response()->json(UnresolvedMpesaTransaction::select('unresolved_mpesa_transactions.reason', 'mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'unresolved_mpesa_transactions.mpesa_transaction_id')
+            ->get());
     }
 
     /**
