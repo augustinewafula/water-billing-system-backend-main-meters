@@ -32,6 +32,10 @@ class MeterController extends Controller
         $meters = Meter::with('user', 'station', 'type');
         if ($request->has('station_id')) {
             $meters->where('station_id', $station_id);
+            $meters->whereMainMeter(false);
+        }
+        if ($request->has('main_meters')) {
+            $meters->whereMainMeter(true);
         }
         $meters = $meters->get();
         return response()->json($meters);
