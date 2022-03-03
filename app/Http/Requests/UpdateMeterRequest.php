@@ -30,7 +30,8 @@ class UpdateMeterRequest extends FormRequest
             'valve_status' => ['nullable', new EnumValue(ValveStatus::class, false)],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
-            'mode' => ['required', new EnumValue(MeterMode::class, false)]
+            'mode' => ['required', new EnumValue(MeterMode::class, false)],
+            'main_meter' => ['nullable', 'boolean']
         ];
     }
 
