@@ -48,9 +48,10 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
-        Route::apiResource('transactions', TransactionController::class)->only([
-            'index', 'show'
-        ]);
+    Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
+    Route::apiResource('transactions', TransactionController::class)->only([
+        'index', 'show'
+    ]);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
         Route::get('meter-stations', [MeterStationController::class, 'index']);
