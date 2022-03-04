@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sms;
 use App\Models\User;
 use App\Traits\SendSms;
 use Exception;
@@ -13,6 +14,11 @@ use Throwable;
 class SmsController extends Controller
 {
     use SendSms;
+
+    public function index(): JsonResponse
+    {
+        return response()->json(Sms::latest()->get());
+    }
 
     /**
      * @throws Exception
