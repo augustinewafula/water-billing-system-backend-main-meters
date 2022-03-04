@@ -57,7 +57,8 @@ Route::prefix('v1')->group(function () {
         Route::get('meter-stations', [MeterStationController::class, 'index']);
         Route::get('meter-types', [MeterController::class, 'typeIndex']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
-        Route::post('sms', [SmsController::class, 'send']);
+    Route::get('sms', [SmsController::class, 'index']);
+    Route::post('sms', [SmsController::class, 'send']);
 //    });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
