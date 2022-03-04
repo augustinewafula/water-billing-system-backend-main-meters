@@ -26,11 +26,9 @@ Route::prefix('v1')->group(function () {
         Route::prefix('admin')->group(function () {
             Route::post('login', [AuthController::class, 'initiateAdminLogin']);
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
-            Route::group(['middleware' => 'role:admin'], function () {
-                Route::group(['middleware' => 'auth:api'], function(){
-                    Route::get('profile', [AuthController::class, 'user']);
-                    Route::get('logout', [AuthController::class, 'logout']);
-                });
+            Route::group(['middleware' => ['role:admin', 'auth:api']], function () {
+                Route::get('profile', [AuthController::class, 'user']);
+                Route::get('logout', [AuthController::class, 'logout']);
             });
         });
         Route::prefix('user')->group(function () {
@@ -44,22 +42,22 @@ Route::prefix('v1')->group(function () {
             });
         });
     });
-//    Route::group(['middleware' => 'role:admin'], static function () {
+    Route::group(['middleware' => ['role:admin', 'auth:api']], static function () {
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
-    Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
-    Route::apiResource('transactions', TransactionController::class)->only([
-        'index', 'show'
-    ]);
+        Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
+        Route::apiResource('transactions', TransactionController::class)->only([
+            'index', 'show'
+        ]);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
         Route::get('meter-stations', [MeterStationController::class, 'index']);
         Route::get('meter-types', [MeterController::class, 'typeIndex']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
-    Route::get('sms', [SmsController::class, 'index']);
-    Route::post('sms', [SmsController::class, 'send']);
-//    });
+        Route::get('sms', [SmsController::class, 'index']);
+        Route::post('sms', [SmsController::class, 'send']);
+    });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
     Route::fallback(static function () {
