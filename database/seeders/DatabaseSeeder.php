@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             MeterTypeSeeder::class,
             MeterStationSeeder::class,
             MeterChargeSeeder::class,
+            SettingSeeder::class,
         ]);
     }
 }
