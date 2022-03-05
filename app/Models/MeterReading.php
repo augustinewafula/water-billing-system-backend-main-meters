@@ -16,7 +16,7 @@ class MeterReading extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'status', 'sms_sent', 'send_sms_at'];
+    protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'status', 'sms_sent', 'send_sms_at', 'bill_due_at'];
 
     /**
      * The attributes that should be cast.
