@@ -45,11 +45,10 @@ class SendMeterReadingsToUser implements ShouldQueue
             }
             $meter = Meter::find($meter_reading->meter_id);
             $user_name = ucwords($user->name);
-            $next_month = Carbon::now()->add(1, 'month')->format('M');
-            $due_date = Carbon::parse('4th ' . $next_month)->format('d/m/Y');
-            $current_month = Carbon::now()->isoFormat('MMMM YYYY');
+            $due_date = Carbon::parse($meter_reading->bill_due_at)->format('d/m/Y');
+            $bill_month = Carbon::parse($meter_reading->created_at)->isoFormat('MMMM YYYY');
             $units_consumed = $meter_reading->current_reading - $meter_reading->previous_reading;
-            $message = "Hello $user_name, your water billing for $current_month is as follows:\nReading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBill: Ksh $meter_reading->bill\nBalance brought forward: Ksh $user->account_balance\nDue date: $due_date\nPay via paybill number 994470, account number $meter->number";
+            $message = "Hello $user_name, your water billing for $bill_month is as follows:\nReading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBill: Ksh $meter_reading->bill\nBalance brought forward: Ksh $user->account_balance\nDue date: $due_date\nPay via paybill number 994470, account number $meter->number";
             SendSMS::dispatch($user->phone, $message);
             $meter_reading->update([
                 'sms_sent' => true,
