@@ -9,5 +9,5 @@ class Setting extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['bill_due_days', 'meter_reading_sms_delay_days'];
+    protected $fillable = ['key', 'value'];
 }

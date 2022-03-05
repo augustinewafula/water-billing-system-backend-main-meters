@@ -15,8 +15,8 @@ class CreateSettingsTable extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->tinyInteger('bill_due_days')->unsigned();
-            $table->tinyInteger('meter_reading_sms_delay_days')->unsigned();
+            $table->string('key');
+            $table->string('value');
             $table->timestamps();
         });
     }

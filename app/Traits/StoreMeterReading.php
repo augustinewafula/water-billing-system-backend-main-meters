@@ -31,8 +31,13 @@ trait StoreMeterReading
         $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
 
         $next_month = Carbon::now()->add(1, 'month')->format('M');
-        $settings = Setting::take(1)->first();
-        $due_date = Carbon::parse($settings->bill_due_days . 'th ' . $next_month)->toDateTimeString();
+        $bill_due_days = Setting::where('key', 'bill_due_days')
+            ->first()
+            ->value;
+        $meter_reading_sms_delay_days = Setting::where('key', 'meter_reading_sms_delay_days')
+            ->first()
+            ->value;
+        $due_date = Carbon::parse($bill_due_days . 'th ' . $next_month)->toDateTimeString();
 
         try {
             DB::beginTransaction();
@@ -43,7 +48,7 @@ trait StoreMeterReading
                 'month' => $request->month,
                 'bill' => $bill,
                 'service_fee' => $this->calculateServiceFee($bill, 'post-pay'),
-                'send_sms_at' => Carbon::now()->add($settings->meter_reading_sms_delay_days, 'day')->toDateTimeString(),
+                'send_sms_at' => Carbon::now()->add($meter_reading_sms_delay_days, 'day')->toDateTimeString(),
                 'bill_due_at' => $due_date,
             ]);
             $meter->update([

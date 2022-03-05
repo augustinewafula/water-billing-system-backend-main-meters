@@ -15,8 +15,12 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         Setting::create([
-            'bill_due_days' => 5,
-            'meter_reading_sms_delay_days' => 2
+            'key' => 'bill_due_days',
+            'value' => 5
+        ]);
+        Setting::create([
+            'key' => 'meter_reading_sms_delay_days',
+            'value' => 2
         ]);
     }
 }
