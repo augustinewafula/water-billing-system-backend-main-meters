@@ -37,7 +37,9 @@ class MeterController extends Controller
         if ($request->has('main_meters')) {
             $meters->whereMainMeter(true);
         }
-        $meters = $meters->get();
+        $meters = $meters
+            ->latest()
+            ->get();
         return response()->json($meters);
     }
 

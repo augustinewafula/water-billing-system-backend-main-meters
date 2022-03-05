@@ -32,7 +32,9 @@ class UserController extends Controller
             });
         }
         $users->with('meter');
-        $users = $users->get();
+        $users = $users
+            ->latest()
+            ->get();
         return response()->json($users);
     }
 

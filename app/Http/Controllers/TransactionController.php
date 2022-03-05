@@ -38,6 +38,7 @@ class TransactionController extends Controller
     {
         return response()->json(UnresolvedMpesaTransaction::select('unresolved_mpesa_transactions.reason', 'mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.BillRefNumber as account_number', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'unresolved_mpesa_transactions.mpesa_transaction_id')
+            ->latest('transaction_timesor')
             ->get());
     }
 
@@ -92,6 +93,8 @@ class TransactionController extends Controller
             $transactions = $transactions->join('users', 'users.meter_id', 'meters.id');
             $transactions = $transactions->where('users.id', $request->query('user_id'));
         }
-        return $transactions->get();
+        return $transactions
+            ->latest('transaction_time')
+            ->get();
     }
 }

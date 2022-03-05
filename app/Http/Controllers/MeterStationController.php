@@ -8,6 +8,6 @@ class MeterStationController extends Controller
 {
     public function index()
     {
-        return response()->json(MeterStation::all());
+        return response()->json(MeterStation::latest()->get());
     }
 }
