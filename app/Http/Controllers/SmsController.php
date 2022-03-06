@@ -9,16 +9,30 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Log;
+use Str;
 use Throwable;
 
 class SmsController extends Controller
 {
     use SendSms;
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Sms::latest()
-            ->paginate(10));
+        $sms = Sms::latest();
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+
+        if ($request->has('search') && Str::length($search) > 0) {
+            $sms = Sms::search($search);
+        }
+
+        if ($request->has('sortBy')) {
+            $sms = $sms->orderBy($sortBy, $sortOrder);
+        }
+        $sms = $sms->paginate(10);
+
+        return response()->json($sms);
     }
 
     /**
