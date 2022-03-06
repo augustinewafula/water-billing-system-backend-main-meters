@@ -17,7 +17,8 @@ class SmsController extends Controller
 
     public function index(): JsonResponse
     {
-        return response()->json(Sms::latest()->get());
+        return response()->json(Sms::latest()
+            ->paginate(10));
     }
 
     /**
