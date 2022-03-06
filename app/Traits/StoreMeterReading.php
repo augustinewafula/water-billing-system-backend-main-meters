@@ -30,7 +30,7 @@ trait StoreMeterReading
         $meter = Meter::find($request->meter_id);
         $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
 
-        $next_month = Carbon::now()->add(1, 'month')->format('M');
+        $next_month = Carbon::parse($request->month)->add(1, 'month')->format('M');
         $bill_due_days = Setting::where('key', 'bill_due_days')
             ->first()
             ->value;
