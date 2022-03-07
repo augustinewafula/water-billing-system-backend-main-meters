@@ -52,7 +52,7 @@ Route::prefix('v1')->group(function () {
             'index', 'show'
         ]);
         Route::apiResource('settings', SettingController::class)->only([
-            'index', 'store'
+            'index', 'update'
         ]);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
@@ -61,6 +61,8 @@ Route::prefix('v1')->group(function () {
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index']);
         Route::post('sms', [SmsController::class, 'send']);
+        Route::get('settings', [SettingController::class, 'index']);
+        Route::put('settings', [SettingController::class, 'update']);
     });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
