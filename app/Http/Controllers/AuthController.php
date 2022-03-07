@@ -59,7 +59,7 @@ class AuthController extends Controller
 
     public function user(): JsonResponse
     {
-        $user = auth()->guard('api')->user()->only('id', 'name', 'email');
+        $user = auth()->guard('api')->user()->only('id', 'name', 'email', 'phone');
         return response()->json($user);
     }
 }
