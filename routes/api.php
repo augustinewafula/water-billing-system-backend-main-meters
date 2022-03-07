@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
             Route::group(['middleware' => ['role:admin', 'auth:api']], function () {
                 Route::get('profile', [AuthController::class, 'user']);
+                Route::put('profile/{user}', [AuthController::class, 'update']);
                 Route::get('logout', [AuthController::class, 'logout']);
             });
         });
