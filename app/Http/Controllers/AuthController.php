@@ -38,7 +38,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!Hash::check($request->password, $user->password) || !$user->hasRole($user_type)) {
-            $response = ['message' => 'The given data was invalid.','errors' =>['password'=>['Incorrect email or password']]];
+            $response = ['message' => 'The given data was invalid.', 'errors' => ['password' => ['Incorrect email or password']]];
             return response()->json($response, 422);
         }
 
@@ -46,6 +46,21 @@ class AuthController extends Controller
         $response = ['token' => $token, 'email' => $user->email];
         return response()->json($response, 200);
 
+    }
+
+    public function update(Request $request, User $user): JsonResponse
+    {
+        $request->validate([
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email', 'max:50'],
+            'phone' => ['nullable', 'numeric'],
+        ]);
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+        return response()->json('updated');
     }
 
     public function logout(): JsonResponse
