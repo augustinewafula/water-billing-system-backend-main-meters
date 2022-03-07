@@ -8,7 +8,7 @@ trait calculateBill
 {
     public function calculateBill($previous_reading, $current_reading): float
     {
-        $meter_charges = MeterCharge::where('for', 'prepay')
+        $meter_charges = MeterCharge::where('for', 'post-pay')
             ->first();
         $bill = ($current_reading - $previous_reading) * $meter_charges->cost_per_unit;
         $service_charge = $meter_charges->service_charge;
@@ -20,7 +20,7 @@ trait calculateBill
 
     private function calculateUnits($amount_paid): float
     {
-        $meter_charges = MeterCharge::where('for', 'post-pay')
+        $meter_charges = MeterCharge::where('for', 'prepay')
             ->first();
 
         return round($amount_paid / $meter_charges->cost_per_unit);
