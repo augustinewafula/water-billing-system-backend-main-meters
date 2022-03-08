@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\validCurrentPassword;
 use Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,6 +60,18 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
+        ]);
+        return response()->json('updated');
+    }
+
+    public function updatePassword(Request $request, User $user): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required', new validCurrentPassword()],
+            'new_password' => 'required|min:8|confirmed'
+        ]);
+        $user->update([
+            'password' => bcrypt($request->new_password),
         ]);
         return response()->json('updated');
     }
