@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('logout', [AuthController::class, 'logout']);
             });
         });
+        Route::put('update-password/{user}', [AuthController::class, 'updatePassword']);
         Route::prefix('user')->group(function () {
             Route::post('login', [AuthController::class, 'initiateUserLogin']);
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
