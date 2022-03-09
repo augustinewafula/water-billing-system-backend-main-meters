@@ -184,9 +184,8 @@ class GetMeterReadings implements ShouldQueue
     public function saveMeterReading($meter_number, $meter_reading, $meter_voltage): void
     {
         Log::info('Checking Meter number: ' . $meter_number);
-        $database_meter = Meter::where('number ', $meter_number)->first();
+        $database_meter = Meter::where('number', $meter_number)->first();
         if ($database_meter) {
-            Log::info('Meter number: ' . $database_meter->number . ' found');
             if ($this->type === 'daily') {
                 $this->saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage);
             } else {
