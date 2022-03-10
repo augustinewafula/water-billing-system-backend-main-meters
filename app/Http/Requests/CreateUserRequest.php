@@ -26,7 +26,7 @@ class CreateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'unique:users', 'max:50'],
-            'phone' => ['required', 'numeric', 'unique:users'],
+            'phone' => ['required', 'numeric'],
             'meter_id' => ['required', 'string', 'exists:meters,id', 'unique:users,meter_id', 'max:50']
         ];
     }
