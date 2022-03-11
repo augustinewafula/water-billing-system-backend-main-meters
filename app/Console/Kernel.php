@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('queue:work --max-time=300')->everyThreeMinutes()->withoutOverlapping();
-        $schedule->command('meter-readings:send')->everyThirtyMinutes();
+        $schedule->command('meter-readings:send')->everyTwoMinutes();
         $schedule->command('meter-readings:get --type=daily')->dailyAt('23:50');
         $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth('23:50');
         $schedule->command('backup:clean --only-db')->twiceDaily(0, 12);
