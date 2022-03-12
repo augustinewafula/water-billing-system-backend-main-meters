@@ -36,6 +36,9 @@ class MeterReadingController extends Controller
         if ($request->has('meter_id')) {
             $meter_readings = $meter_readings->where('meters.id', $request->query('meter_id'));
         }
+        if ($request->has('user_id')) {
+            $meter_readings = $meter_readings->where('users.id', $request->query('user_id'));
+        }
         $meter_readings = $meter_readings
             ->latest()
             ->get();
