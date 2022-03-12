@@ -30,9 +30,8 @@ class SmsController extends Controller
         if ($request->has('sortBy')) {
             $sms = $sms->orderBy($sortBy, $sortOrder);
         }
-        $sms = $sms->paginate(10);
 
-        return response()->json($sms);
+        return response()->json($sms->paginate(10));
     }
 
     /**
