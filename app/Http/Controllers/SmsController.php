@@ -18,7 +18,7 @@ class SmsController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $sms = Sms::latest();
+        $sms = Sms::query();
         $search = $request->query('search');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
