@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Traits\GeneratePassword;
 use Exception;
 use Hash;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
+use Str;
 
 class UserController extends Controller
 {
@@ -24,18 +26,10 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $station_id = $request->query('station_id');
         $users = User::role('user');
-        if ($request->has('station_id')) {
-            $users->whereHas('meter', function ($query) use ($station_id) {
-                $query->where('station_id', $station_id);
-            });
-        }
         $users->with('meter');
-        $users = $users
-            ->latest()
-            ->get();
-        return response()->json($users);
+        $users = $this->filterQuery($request, $users);
+        return response()->json($users->paginate(10));
     }
 
     /**
@@ -123,5 +117,34 @@ class UserController extends Controller
     {
         $user->delete();
         return response()->json('deleted');
+    }
+
+    private function filterQuery(Request $request, Builder $users): Builder
+    {
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
+
+        //TODO::implement search with meter number. Currently not working
+        if ($request->has('search') && Str::length($request->query('search')) > 0) {
+            $users = $users->where(function ($users) use ($search, $stationId) {
+                $users->orWhere('name', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->whereHas('meter', function ($query) use ($search) {
+                        $query->orWhere('number', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+        if ($request->has('station_id')) {
+            $users->whereHas('meter', function ($query) use ($stationId) {
+                $query->where('station_id', $stationId);
+            });
+        }
+        if ($request->has('sortBy')) {
+            $users = $users->orderBy($sortBy, $sortOrder);
+        }
+        return $users;
     }
 }
