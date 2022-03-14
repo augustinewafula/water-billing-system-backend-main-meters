@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\PaginationHelper;
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Str;
 use Throwable;
 
 class TransactionController extends Controller
@@ -23,15 +24,24 @@ class TransactionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $meter_billings_transactions = MeterBilling::query();
-        $meter_billings_transactions = $this->getTransactions($meter_billings_transactions, $request, 'billing');
 
-        $meter_tokens_transactions = MeterToken::query();
-        $meter_tokens_transactions = $this->getTransactions($meter_tokens_transactions, $request, 'tokens');
+        $postpaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+            ->join('meter_billings', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
+            ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+            ->join('meters', 'meters.id', 'meter_readings.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+        $postpaid_transactions = $this->filterQuery($postpaid_transactions, $request);
 
-        $all_transactions = $meter_billings_transactions->merge($meter_tokens_transactions);
+        $prepaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+            ->join('meter_tokens', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
+            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+        $prepaid_transactions = $this->filterQuery($prepaid_transactions, $request);
 
-        return response()->json($all_transactions);
+        $prepaid_transactions->union($postpaid_transactions);
+
+        return response()->json($prepaid_transactions->paginate(10));
+
     }
 
     public function unresolvedTransactionIndex(): JsonResponse
@@ -66,35 +76,32 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * @param Builder $transactions
-     * @param Request $request
-     * @param $type
-     * @return void
-     */
-    public function getTransactions(Builder $transactions, Request $request, $type): Collection
+    private function filterQuery(Builder $query, Request $request): Builder
     {
-        if ($type === 'billing') {
-            $transactions = $transactions->select('mpesa_transactions.id', 'meter_billings.mpesa_transaction_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
-                ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
-                ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
-                ->join('meters', 'meters.id', 'meter_readings.meter_id');
-        } else {
-            $transactions = $transactions->select('mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
-                ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
-                ->join('meters', 'meters.id', 'meter_tokens.meter_id');
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
+        if ($request->has('search') && Str::length($request->query('search')) > 0) {
+            $query = $query->where(function ($query) use ($search) {
+                $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%');
+                $query->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%');
+            });
         }
 
-        $transactions = $transactions->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         if ($request->has('station_id')) {
-            $transactions = $transactions->where('meter_stations.id', $request->query('station_id'));
+            $query = $query->where('meter_stations.id', $stationId);
         }
+
         if ($request->has('user_id')) {
-            $transactions = $transactions->join('users', 'users.meter_id', 'meters.id');
-            $transactions = $transactions->where('users.id', $request->query('user_id'));
+            $query = $query->join('users', 'users.meter_id', 'meters.id');
+            $query = $query->where('users.id', $request->query('user_id'));
         }
-        return $transactions
-            ->latest('transaction_time')
-            ->get();
+
+        if ($request->has('sortBy')) {
+            $query = $query->orderBy($sortBy, $sortOrder);
+        }
+
+        return $query;
     }
 }
