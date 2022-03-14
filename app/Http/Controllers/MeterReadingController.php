@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Log;
+use Str;
 use Throwable;
 
 class MeterReadingController extends Controller
@@ -29,20 +30,8 @@ class MeterReadingController extends Controller
         $meter_readings = MeterReading::select('meter_readings.id', 'meter_readings.previous_reading', 'meter_readings.current_reading', 'meter_readings.month', 'meter_readings.bill', 'meter_readings.status', 'meters.id as meter_id', 'meters.number as meter_number', 'users.id as user_id', 'users.name as user_name', 'meter_readings.created_at')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
             ->join('users', 'users.meter_id', 'meters.id');
-        if ($request->has('station_id')) {
-            $meter_readings = $meter_readings->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-                ->where('meter_stations.id', $request->query('station_id'));
-        }
-        if ($request->has('meter_id')) {
-            $meter_readings = $meter_readings->where('meters.id', $request->query('meter_id'));
-        }
-        if ($request->has('user_id')) {
-            $meter_readings = $meter_readings->where('users.id', $request->query('user_id'));
-        }
-        $meter_readings = $meter_readings
-            ->latest()
-            ->get();
-        return response()->json($meter_readings);
+        $meter_readings = $this->filterQuery($request, $meter_readings);
+        return response()->json($meter_readings->get());
     }
 
 
@@ -114,5 +103,42 @@ class MeterReadingController extends Controller
     {
         $meterReading->delete();
         return response()->json('deleted');
+    }
+
+    /**
+     * @param Request $request
+     * @param $meter_readings
+     * @return mixed
+     */
+    public function filterQuery(Request $request, $meter_readings)
+    {
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
+
+        if ($request->has('search') && Str::length($request->query('search')) > 0) {
+            $meter_readings = $meter_readings->where(function ($meter_readings) use ($search) {
+                $meter_readings->where('meter_readings.current_reading', 'like', '%' . $search . '%')
+                    ->orWhere('meters.number', 'like', '%' . $search . '%')
+                    ->orWhere('users.name', 'like', '%' . $search . '%')
+                    ->orWhere('meter_readings.bill', 'like', '%' . $search . '%')
+                    ->orWhere('meter_readings.previous_reading', 'like', '%' . $search . '%');
+            });
+        }
+        if ($request->has('station_id')) {
+            $meter_readings = $meter_readings->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+                ->where('meter_stations.id', $stationId);
+        }
+        if ($request->has('meter_id')) {
+            $meter_readings = $meter_readings->where('meters.id', $request->query('meter_id'));
+        }
+        if ($request->has('user_id')) {
+            $meter_readings = $meter_readings->where('users.id', $request->query('user_id'));
+        }
+        if ($request->has('sortBy')) {
+            $meter_readings = $meter_readings->orderBy($sortBy, $sortOrder);
+        }
+        return $meter_readings;
     }
 }
