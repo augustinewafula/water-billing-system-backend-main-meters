@@ -10,6 +10,7 @@ use App\Models\Meter;
 use App\Models\MeterType;
 use App\Traits\ProcessPrepaidMeterTransaction;
 use BenSampo\Enum\Rules\EnumValue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JsonException;
@@ -28,19 +29,9 @@ class MeterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $station_id = $request->query('station_id');
         $meters = Meter::with('user', 'station', 'type');
-        if ($request->has('station_id')) {
-            $meters->where('station_id', $station_id);
-            $meters->whereMainMeter(false);
-        }
-        if ($request->has('main_meters')) {
-            $meters->whereMainMeter(true);
-        }
-        $meters = $meters
-            ->latest()
-            ->get();
-        return response()->json($meters);
+        $meters = $this->filterQuery($request, $meters);
+        return response()->json($meters->paginate(10));
     }
 
     /**
@@ -146,5 +137,26 @@ class MeterController extends Controller
     {
         $meter->delete();
         return response()->json('deleted');
+    }
+
+    private function filterQuery(Request $request, Builder $meters): Builder
+    {
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
+
+        //TODO:: implement search
+        if ($request->has('station_id')) {
+            $meters->where('station_id', $stationId);
+            $meters->whereMainMeter(false);
+        }
+        if ($request->has('main_meters')) {
+            $meters->whereMainMeter(true);
+        }
+        if ($request->has('sortBy')) {
+            $meters = $meters->orderBy($sortBy, $sortOrder);
+        }
+        return $meters;
     }
 }
