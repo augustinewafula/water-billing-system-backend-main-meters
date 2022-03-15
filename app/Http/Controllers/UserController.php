@@ -122,6 +122,7 @@ class UserController extends Controller
     private function filterQuery(Request $request, Builder $users): Builder
     {
         $search = $request->query('search');
+        $searchByNameAndPhone = $request->query('searchByNameAndPhone');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
@@ -137,8 +138,18 @@ class UserController extends Controller
                     });
             });
         }
+        if ($request->has('searchByNameAndPhone') && Str::length($searchByNameAndPhone) > 0) {
+            $users = $users->where(function ($users) use ($searchByNameAndPhone) {
+                $users->orWhere('name', 'like', '%' . $searchByNameAndPhone . '%')
+                    ->orWhere('phone', 'like', '%' . $searchByNameAndPhone . '%');
+            });
+        }
+        if ($request->has('searchByMeter') && Str::length($request->query('searchByMeter')) > 0) {
+            //TODO::implement search with meter number
+//            $users->where('meters.number', 'like', '%' . $search . '%');
+        }
         if ($request->has('station_id')) {
-            $users->whereHas('meter', function ($query) use ($stationId) {
+            $users = $users->whereHas('meter', function ($query) use ($stationId) {
                 $query->where('station_id', $stationId);
             });
         }
