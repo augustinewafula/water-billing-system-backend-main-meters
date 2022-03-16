@@ -56,6 +56,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('settings', SettingController::class)->only([
             'index', 'update'
         ]);
+        Route::get('available-meters', [MeterController::class, 'availableIndex']);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
         Route::get('meter-stations', [MeterStationController::class, 'index']);

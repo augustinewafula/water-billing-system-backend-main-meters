@@ -34,6 +34,21 @@ class MeterController extends Controller
         return response()->json($meters->paginate(10));
     }
 
+    public function availableIndex(Request $request)
+    {
+        $stationId = $request->query('station_id');
+
+        $meters = Meter::query();
+        if ($request->has('station_id')) {
+            $meters->where('station_id', $stationId);
+            $meters->whereMainMeter(false);
+        }
+        if ($request->has('isAvailable')) {
+            $meters = $meters->doesntHave('user');
+        }
+        return response()->json($meters->paginate(10));
+    }
+
     /**
      * Display a listing of the resource.
      *
