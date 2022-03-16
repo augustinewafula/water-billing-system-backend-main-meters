@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JsonException;
 use Log;
+use Str;
 use Throwable;
 
 class MeterController extends Controller
@@ -29,9 +30,14 @@ class MeterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $meters = Meter::with('user', 'station', 'type');
-        $meters = $this->filterQuery($request, $meters);
-        return response()->json($meters->paginate(10));
+        try {
+            $meters = Meter::with('user', 'station', 'type');
+            $meters = $this->filterQuery($request, $meters);
+            return response()->json($meters->paginate(10));
+
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
+        }
     }
 
     public function availableIndex(Request $request): JsonResponse
@@ -161,7 +167,14 @@ class MeterController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
 
-        //TODO:: implement search
+        //TODO::implement search by type and customer name
+        if ($request->has('search') && Str::length($search) > 0) {
+            $meters = $meters->where(function ($meters) use ($search) {
+                $meters->whereHas('type', function ($query) use ($search) {
+                    $query->where('name', 'like', '%' . $search . '%');
+                })->orWhere('number', 'like', '%' . $search . '%');
+            });
+        }
         if ($request->has('station_id')) {
             $meters->where('station_id', $stationId);
             $meters->whereMainMeter(false);
