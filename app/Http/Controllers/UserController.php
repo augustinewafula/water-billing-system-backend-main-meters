@@ -131,6 +131,8 @@ class UserController extends Controller
     {
         $search = $request->query('search');
         $searchByNameAndPhone = $request->query('searchByNameAndPhone');
+        $searchByNameAndMeterNo = $request->query('searchByNameAndMeterNo');
+        $searchByMeterID = $request->query('searchByMeterID');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
@@ -151,6 +153,14 @@ class UserController extends Controller
                 $users->orWhere('name', 'like', '%' . $searchByNameAndPhone . '%')
                     ->orWhere('phone', 'like', '%' . $searchByNameAndPhone . '%');
             });
+        }
+        if ($request->has('searchByNameAndMeterNo') && Str::length($searchByNameAndMeterNo) > 0) {
+            $users = $users->whereHas('meter', function ($query) use ($searchByNameAndMeterNo) {
+                $query->where('number', 'like', '%' . $searchByNameAndMeterNo . '%');
+            })->orWhere('name', 'like', '%' . $searchByNameAndMeterNo . '%');
+        }
+        if ($request->has('searchByMeterID') && Str::length($searchByMeterID) > 0) {
+            $users->where('meter_id', $searchByMeterID);
         }
         if ($request->has('searchByMeter') && Str::length($request->query('searchByMeter')) > 0) {
             //TODO::implement search with meter number
