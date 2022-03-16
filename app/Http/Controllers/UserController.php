@@ -130,6 +130,7 @@ class UserController extends Controller
     private function filterQuery(Request $request, Builder $users): Builder
     {
         $search = $request->query('search');
+        $searchByMeter = $request->query('searchByMeter');
         $searchByNameAndPhone = $request->query('searchByNameAndPhone');
         $searchByNameAndMeterNo = $request->query('searchByNameAndMeterNo');
         $searchByMeterID = $request->query('searchByMeterID');
@@ -137,15 +138,13 @@ class UserController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
 
-        //TODO::implement search with meter number. Currently not working
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $users = $users->where(function ($users) use ($search, $stationId) {
-                $users->orWhere('name', 'like', '%' . $search . '%')
+                $users->whereHas('meter', function ($query) use ($search) {
+                    $query->where('number', 'like', '%' . $search . '%');
+                })->orWhere('name', 'like', '%' . $search . '%')
                     ->orWhere('phone', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->whereHas('meter', function ($query) use ($search) {
-                        $query->orWhere('number', 'like', '%' . $search . '%');
-                    });
+                    ->orWhere('email', 'like', '%' . $search . '%');
             });
         }
         if ($request->has('searchByNameAndPhone') && Str::length($searchByNameAndPhone) > 0) {
@@ -163,8 +162,9 @@ class UserController extends Controller
             $users->where('meter_id', $searchByMeterID);
         }
         if ($request->has('searchByMeter') && Str::length($request->query('searchByMeter')) > 0) {
-            //TODO::implement search with meter number
-//            $users->where('meters.number', 'like', '%' . $search . '%');
+            $users = $users->whereHas('meter', function ($query) use ($searchByMeter) {
+                $query->where('number', 'like', '%' . $searchByMeter . '%');
+            });
         }
         if ($request->has('station_id')) {
             $users = $users->whereHas('meter', function ($query) use ($stationId) {
