@@ -60,12 +60,12 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
-        if (!$this->safaricomIpAddress($client_ip)) {
-            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-            Log::notice($request);
-            $response = ['message' => 'Nothing interesting around here.'];
-            return response()->json($response, 418);
-        }
+//        if (!$this->safaricomIpAddress($client_ip)) {
+//            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+//            Log::notice($request);
+//            $response = ['message' => 'Nothing interesting around here.'];
+//            return response()->json($response, 418);
+//        }
 
 //        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $request->validate([
@@ -119,7 +119,6 @@ class MeterBillingController extends Controller
         $user_total_amount = $request->amount_paid;
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
-
             if ($user->account_balance > 0) {
                 $user_total_amount += $user->account_balance;
             }
@@ -133,7 +132,7 @@ class MeterBillingController extends Controller
             }
             $balance = $bill_to_pay - $user_total_amount;
 
-            if (round($user_total_amount) === 0.00) {
+            if (round($user_total_amount) <= 0.00) {
                 break;
             }
 
@@ -143,7 +142,7 @@ class MeterBillingController extends Controller
                 $user,
                 $pending_meter_reading,
                 $mpesa_transaction_id)) {
-                $user_total_amount = $balance;
+                $user_total_amount = 0 - $balance;
             }
 
         }
@@ -187,6 +186,9 @@ class MeterBillingController extends Controller
                     ]);
                     $user_bill_balance = 0;
                 } else {
+                    $user->update([
+                        'account_balance' => $user->account_balance + -abs($balance)
+                    ]);
                     $meter_reading->update([
                         'status' => MeterReadingStatus::Balance,
                     ]);
