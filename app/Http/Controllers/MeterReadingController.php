@@ -50,7 +50,7 @@ class MeterReadingController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $meter_reading = MeterReading::with('meter', 'user')
+        $meter_reading = MeterReading::with('meter', 'user', 'meter_billings')
             ->where('id', $id)
             ->first();
         return response()->json($meter_reading);
