@@ -34,7 +34,7 @@ class MeterController extends Controller
         return response()->json($meters->paginate(10));
     }
 
-    public function availableIndex(Request $request)
+    public function availableIndex(Request $request): JsonResponse
     {
         $stationId = $request->query('station_id');
 
