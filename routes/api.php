@@ -8,6 +8,7 @@ use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('settings', SettingController::class)->only([
             'index', 'update'
         ]);
+        Route::get('statistics', [StatisticsController::class, 'index']);
         Route::get('available-meters', [MeterController::class, 'availableIndex']);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
