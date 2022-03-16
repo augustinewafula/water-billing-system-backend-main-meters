@@ -11,8 +11,10 @@ use Hash;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Log;
 use Spatie\Permission\Models\Role;
 use Str;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -115,8 +117,14 @@ class UserController extends Controller
      */
     public function destroy(User $user): JsonResponse
     {
-        $user->delete();
-        return response()->json('deleted');
+        try {
+            $user->delete();
+            return response()->json('deleted');
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
+            $response = ['message' => 'Failed to delete'];
+            return response()->json($response, 422);
+        }
     }
 
     private function filterQuery(Request $request, Builder $users): Builder

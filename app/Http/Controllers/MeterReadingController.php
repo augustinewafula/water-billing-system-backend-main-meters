@@ -101,8 +101,14 @@ class MeterReadingController extends Controller
      */
     public function destroy(MeterReading $meterReading): JsonResponse
     {
-        $meterReading->delete();
-        return response()->json('deleted');
+        try {
+            $meterReading->delete();
+            return response()->json('deleted');
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
+            $response = ['message' => 'Failed to delete'];
+            return response()->json($response, 422);
+        }
     }
 
     /**
