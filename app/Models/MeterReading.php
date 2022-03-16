@@ -6,6 +6,7 @@ use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MeterReading extends Model
@@ -43,5 +44,14 @@ class MeterReading extends Model
     public function user(): hasOne
     {
         return $this->hasOne(User::class, 'meter_id', 'meter_id');
+    }
+
+    /**
+     * Get the meter_billings for the meter reading.
+     * @return HasMany
+     */
+    public function meter_billings(): HasMany
+    {
+        return $this->hasMany(MeterBilling::class);
     }
 }
