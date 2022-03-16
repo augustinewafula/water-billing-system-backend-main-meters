@@ -138,7 +138,7 @@ class UserController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
 
-        if ($request->has('search') && Str::length($request->query('search')) > 0) {
+        if ($request->has('search') && Str::length($search) > 0) {
             $users = $users->where(function ($users) use ($search, $stationId) {
                 $users->whereHas('meter', function ($query) use ($search) {
                     $query->where('number', 'like', '%' . $search . '%');
@@ -161,7 +161,7 @@ class UserController extends Controller
         if ($request->has('searchByMeterID') && Str::length($searchByMeterID) > 0) {
             $users->where('meter_id', $searchByMeterID);
         }
-        if ($request->has('searchByMeter') && Str::length($request->query('searchByMeter')) > 0) {
+        if ($request->has('searchByMeter') && Str::length($searchByMeter) > 0) {
             $users = $users->whereHas('meter', function ($query) use ($searchByMeter) {
                 $query->where('number', 'like', '%' . $searchByMeter . '%');
             });
