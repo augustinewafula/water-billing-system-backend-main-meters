@@ -127,6 +127,13 @@ class MeterController extends Controller
             'valve_status' => $request->valve_status,
             'mode' => $request->mode
         ]);
+        try {
+            if ($request->number !== $meter->number & MeterType::find($request->type_id)->name === 'Prepaid') {
+                $this->register_meter($meter->id);
+            }
+        } catch (Throwable $exception) {
+            Log::error('Failed to register prepaid meter id: ' . $meter->id);
+        }
         return response()->json($meter);
     }
 
