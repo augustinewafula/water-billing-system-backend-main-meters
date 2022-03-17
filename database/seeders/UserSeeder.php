@@ -21,8 +21,11 @@ class UserSeeder extends Seeder
         $user->email = 'george@progressive.co.ke';
         $user->password = bcrypt('qwertyuiop');
         $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
-        $admin = Role::create(['name' => 'admin']);
-        $user->assignRole($admin);
+        $user->assignRole(
+            Role::create([
+                'name' => 'admin',
+                'guard_name' => 'api',
+            ]));
         $user->save();
 
         $user = new User();
@@ -30,7 +33,11 @@ class UserSeeder extends Seeder
         $user->phone = '07459632142';
         $user->password = bcrypt('aU4v5UXygwEcQDqS');
         $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
-        $user->assignRole(Role::create(['name' => 'user']));
+        $user->assignRole(
+            Role::create([
+                'name' => 'user',
+                'guard_name' => 'api',
+            ]));
         $user->save();
     }
 }
