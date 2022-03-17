@@ -31,6 +31,7 @@ class UpdateSettingRequest extends FormRequest
             'postpaid_service_charge_in' => ['required', 'boolean'],
             'postpaid_service_charge' => ['required', 'numeric'],
             'bill_due_days' => ['required', 'numeric'],
+            'delay_meter_reading_sms' => ['required', 'boolean'],
             'meter_reading_sms_delay_days' => ['required', 'numeric'],
         ];
     }
