@@ -22,7 +22,7 @@ class MeterStation extends Model
      */
     public function meters(): HasMany
     {
-        return $this->hasMany(Meter::class);
+        return $this->hasMany(Meter::class, 'station_id');
     }
 
     /**
