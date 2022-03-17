@@ -6,6 +6,7 @@ use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MeterToken extends Model
 {
@@ -27,10 +28,19 @@ class MeterToken extends Model
     }
 
     /**
+     * Get meter that owns the meter token
+     * @return hasOne
+     */
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'meter_id', 'meter_id');
+    }
+
+    /**
      * Get mpesa transaction that owns the meter token
      * @return belongsTo
      */
-    public function mpesa_transaction(): belongsTo
+    public function mpesa_transaction(): BelongsTo
     {
         return $this->belongsTo(MpesaTransaction::class);
     }
