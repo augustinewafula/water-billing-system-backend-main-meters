@@ -28,13 +28,14 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $users = User::role('user');
+        $users = User::query();
         $users->with('meter');
         $users = $this->filterQuery($request, $users);
+        $users = $users->role('user');
         return response()->json($users->paginate(10));
     }
 
-    /**
+    /**re
      * Store a newly created resource in storage.
      *
      * @param CreateUserRequest $request
