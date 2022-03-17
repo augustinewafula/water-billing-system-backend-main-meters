@@ -28,16 +28,9 @@ class UserSeeder extends Seeder
             ]));
         $user->save();
 
-        $user = new User();
-        $user->name = 'John Doe';
-        $user->phone = '07459632142';
-        $user->password = bcrypt('aU4v5UXygwEcQDqS');
-        $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
-        $user->assignRole(
-            Role::create([
-                'name' => 'user',
-                'guard_name' => 'api',
-            ]));
-        $user->save();
+        Role::create([
+            'name' => 'user',
+            'guard_name' => 'api',
+        ]);
     }
 }
