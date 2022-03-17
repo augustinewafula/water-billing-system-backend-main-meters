@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\MeterToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Str;
 
 class MeterTokenController extends Controller
@@ -66,12 +65,15 @@ class MeterTokenController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param int $id
-     * @return Response
+     * @param string $id
+     * @return JsonResponse
      */
-    public function show($id)
+    public function show(string $id): JsonResponse
     {
-        //
+        $meter_reading = MeterToken::with('meter', 'user', 'mpesa_transaction')
+            ->where('id', $id)
+            ->first();
+        return response()->json($meter_reading);
     }
 
 }
