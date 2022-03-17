@@ -19,6 +19,10 @@ class SettingSeeder extends Seeder
             'value' => 5
         ]);
         Setting::create([
+            'key' => 'delay_meter_reading_sms',
+            'value' => true,
+        ]);
+        Setting::create([
             'key' => 'meter_reading_sms_delay_days',
             'value' => 2
         ]);
