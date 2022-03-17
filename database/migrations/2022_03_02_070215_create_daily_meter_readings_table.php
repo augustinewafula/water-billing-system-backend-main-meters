@@ -16,7 +16,7 @@ class CreateDailyMeterReadingsTable extends Migration
         Schema::create('daily_meter_readings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->integer('reading');
-            $table->foreignUuid('meter_id')->nullable()->constrained();
+            $table->foreignUuid('meter_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

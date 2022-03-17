@@ -20,7 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('phone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignUuid('meter_id')->nullable()->constrained('meters');
+            $table->foreignUuid('meter_id')->nullable()->constrained('meters')->cascadeOnDelete();
             $table->string('first_bill')->nullable();
             $table->decimal('account_balance', 15)->default(0);
             $table->rememberToken();

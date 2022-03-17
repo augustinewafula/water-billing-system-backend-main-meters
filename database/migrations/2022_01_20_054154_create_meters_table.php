@@ -12,17 +12,17 @@ class CreateMetersTable extends Migration
      *
      * @return void
      */
-    public function up()
-    {
-        Schema::create('meters', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('number')->unique();
-            $table->tinyInteger('valve_status')->unsigned()->nullable();
-            $table->uuid('station_id');
-            $table->foreign('station_id')->references('id')->on('meter_stations');
-            $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
-            $table->foreignUuid('type_id')->nullable()->constrained('meter_types');
-            $table->integer('last_reading');
+public function up()
+{
+    Schema::create('meters', function (Blueprint $table) {
+        $table->uuid('id')->primary();
+        $table->string('number')->unique();
+        $table->tinyInteger('valve_status')->unsigned()->nullable();
+        $table->uuid('station_id');
+        $table->foreign('station_id')->references('id')->on('meter_stations')->cascadeOnDelete();
+        $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
+        $table->foreignUuid('type_id')->nullable()->constrained('meter_types')->cascadeOnDelete();
+        $table->integer('last_reading');
             $table->dateTime('last_reading_date')->nullable();
             $table->dateTime('last_billing_date')->nullable();
             $table->decimal('voltage', 15)->nullable();

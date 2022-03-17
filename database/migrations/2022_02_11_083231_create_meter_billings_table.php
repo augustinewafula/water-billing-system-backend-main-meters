@@ -16,9 +16,9 @@ class CreateMeterBillingsTable extends Migration
         Schema::create('meter_billings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('meter_reading_id');
-            $table->foreign('meter_reading_id')->references('id')->on('meter_readings');
+            $table->foreign('meter_reading_id')->references('id')->on('meter_readings')->cascadeOnDelete();
             $table->decimal('amount_paid', 15);
-            $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained();
+            $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained()->cascadeOnDelete();
             $table->decimal('balance', 15)->default(0);
             $table->string('date_paid')->nullable();
             $table->timestamps();

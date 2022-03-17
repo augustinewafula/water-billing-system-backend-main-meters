@@ -15,11 +15,11 @@ class CreateMeterTokensTable extends Migration
     {
         Schema::create('meter_tokens', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained();
+            $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('token');
             $table->string('units');
             $table->decimal('service_fee', 15);
-            $table->foreignUuid('meter_id')->nullable()->constrained('meters');
+            $table->foreignUuid('meter_id')->nullable()->constrained('meters')->cascadeOnDelete();
             $table->timestamps();
         });
     }
