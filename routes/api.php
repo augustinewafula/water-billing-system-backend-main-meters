@@ -6,6 +6,7 @@ use App\Http\Controllers\MeterBillingController;
 use App\Http\Controllers\MeterController;
 use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
+use App\Http\Controllers\MeterTokenController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\StatisticsController;
@@ -52,6 +53,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
         Route::apiResource('transactions', TransactionController::class)->only([
+            'index', 'show'
+        ]);
+        Route::apiResource('meter-tokens', MeterTokenController::class)->only([
             'index', 'show'
         ]);
         Route::apiResource('settings', SettingController::class)->only([
