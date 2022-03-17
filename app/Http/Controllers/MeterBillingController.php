@@ -60,14 +60,14 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
-//        if (!$this->safaricomIpAddress($client_ip)) {
-//            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-//            Log::notice($request);
-//            $response = ['message' => 'Nothing interesting around here.'];
-//            return response()->json($response, 418);
-//        }
+        if (!$this->safaricomIpAddress($client_ip)) {
+            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+            Log::notice($request);
+            $response = ['message' => 'Nothing interesting around here.'];
+            return response()->json($response, 418);
+        }
 
-//        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
+        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $request->validate([
             'TransID' => 'unique:mpesa_transactions'
         ]);
@@ -266,7 +266,7 @@ class MeterBillingController extends Controller
         $meter_type = MeterType::find($meter->type_id);
         if ($meter_type) {
             if ($meter_type->name === 'Prepaid') {
-                $token = $this->top_up($meter->number, $content->TransAmount);
+                $token = strtok($this->top_up($meter->number, $content->TransAmount), ',');
                 $units = $this->calculateUnits($content->TransAmount);
 
                 MeterToken::create([
