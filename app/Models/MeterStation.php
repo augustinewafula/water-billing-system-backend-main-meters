@@ -16,6 +16,8 @@ class MeterStation extends Model
 
     protected $keyType = 'uuid';
 
+    protected $fillable = ['name'];
+
     /**
      * Get the meters for the meter station.
      * @return HasMany
