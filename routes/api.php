@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
+        Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
         Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
@@ -65,7 +66,6 @@ Route::prefix('v1')->group(function () {
         Route::get('available-meters', [MeterController::class, 'availableIndex']);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
-        Route::get('meter-stations', [MeterStationController::class, 'index']);
         Route::get('meter-types', [MeterController::class, 'typeIndex']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index']);
