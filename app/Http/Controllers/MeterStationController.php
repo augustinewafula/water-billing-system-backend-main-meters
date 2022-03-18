@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateMeterStationRequest;
+use App\Http\Requests\UpdateMeterStationRequest;
 use App\Models\MeterStation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -40,5 +42,30 @@ class MeterStationController extends Controller
                 ->paginate(10);
         }
         return $meter_stations->get();
+    }
+
+    public function store(CreateMeterStationRequest $request)
+    {
+        try {
+            $meter_station = MeterStation::create($request->validated());
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
+            $response = ['message' => 'Something went wrong, please contact website admin for help'];
+            return response($response, 500);
+        }
+
+        return response()->json($meter_station, 201);
+    }
+
+    public function update(UpdateMeterStationRequest $request, MeterStation $meter_station): JsonResponse
+    {
+        $meter_station->update($request->validated());
+        return response()->json($meter_station);
+    }
+
+    public function destroy(MeterStation $meter_station): JsonResponse
+    {
+        $meter_station->delete();
+        return response()->json('deleted');
     }
 }
