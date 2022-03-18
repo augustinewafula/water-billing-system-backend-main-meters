@@ -9,10 +9,14 @@ use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use App\Models\MeterType;
 use App\Traits\ProcessPrepaidMeterTransaction;
+use App\Traits\ToggleValveStatus;
 use BenSampo\Enum\Rules\EnumValue;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use JsonException;
 use Log;
 use Str;
@@ -20,7 +24,7 @@ use Throwable;
 
 class MeterController extends Controller
 {
-    use ProcessPrepaidMeterTransaction;
+    use ProcessPrepaidMeterTransaction, ToggleValveStatus;
 
     /**
      * Display a listing of the resource.
@@ -142,17 +146,22 @@ class MeterController extends Controller
      *
      * @param Request $request
      * @param Meter $meter
-     * @return JsonResponse
+     * @return Application|ResponseFactory|JsonResponse|Response
+     * @throws JsonException
      */
-    public function updateValveStatus(Request $request, Meter $meter): JsonResponse
+    public function updateValveStatus(Request $request, Meter $meter)
     {
         $request->validate([
             'valve_status' => ['required', new EnumValue(ValveStatus::class, false)],
         ]);
+        if (!$this->toggleValve($meter, $request->valve_status)) {
+            $response = ['message' => 'Failed, please contact website admin for help'];
+            return response($response, 422);
+        }
         $meter->update([
             'valve_status' => $request->valve_status
         ]);
-        return response()->json($meter);
+        return response()->json($meter->number);
     }
 
     /**
