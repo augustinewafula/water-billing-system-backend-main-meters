@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
+use App\Traits\AuthenticateMeter;
 use App\Traits\StoreDailyMeterReading;
 use App\Traits\StoreMeterReading;
 use Carbon\Carbon;
@@ -21,7 +22,7 @@ use Throwable;
 
 class GetMeterReadings implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoreDailyMeterReading;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoreDailyMeterReading, AuthenticateMeter;
 
     protected $type;
 
@@ -109,24 +110,6 @@ class GetMeterReadings implements ShouldQueue
             })
             ->pluck('number')
             ->all();
-    }
-
-
-    /**
-     * @throws JsonException
-     */
-    public function loginChangshaNbIot(): ?string
-    {
-        $response = Http::retry(3, 3000)
-            ->get('http://220.248.173.29:10004/collect/v3/getToken', [
-                'userName' => env('CHANGSHA_NBIOT_METER_USERNAME'),
-                'passWord' => env('CHANGSHA_NBIOT_METER_PASSWORD'),
-            ]);
-        if ($response->successful()) {
-            Log::info('response:' . $response->body());
-            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->body->token;
-        }
-        return null;
     }
 
     public function saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage): void
