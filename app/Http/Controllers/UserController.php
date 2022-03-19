@@ -35,6 +35,19 @@ class UserController extends Controller
         return response()->json($users->paginate(10));
     }
 
+    public function download(Request $request): JsonResponse
+    {
+        $stationId = $request->query('station_id');
+        $users = User::role('user')
+            ->select('users.name as Name', 'users.phone as Phone', 'users.email as Email', 'meters.number as Meter Number')
+            ->join('meters', 'meters.id', 'users.meter_id');
+
+        if ($request->has('station_id')) {
+            $users = $users->where('meters.station_id', $stationId);
+        }
+        return response()->json($users->get());
+    }
+
     /**re
      * Store a newly created resource in storage.
      *
