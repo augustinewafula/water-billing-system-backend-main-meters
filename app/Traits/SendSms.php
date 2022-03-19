@@ -15,7 +15,7 @@ trait SendSms
     /**
      * @throws Exception
      */
-    public function initiateSendSms($to, $message): ?stdClass
+    public function initiateSendSms($to, $message, $user_id): ?stdClass
     {
         env('AFRICASTKNG_USERNAME') === 'sandbox' ?
             $url = 'https://api.sandbox.africastalking.com/version1/messaging' :
@@ -45,7 +45,7 @@ trait SendSms
                 } catch (Throwable $throwable) {
                     $cost = $recipient->cost;
                 }
-                $this->storeSms($recipient->number, $message, $recipient->status, $cost);
+                $this->storeSms($recipient->number, $message, $recipient->status, $cost, $user_id);
             }
             return $response;
         }

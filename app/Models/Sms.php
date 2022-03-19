@@ -15,5 +15,5 @@ class Sms extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['phone', 'message', 'status', 'cost'];
+    protected $fillable = ['phone', 'message', 'status', 'cost', 'user_id'];
 }

@@ -54,7 +54,7 @@ class SendMeterReadingsToUser implements ShouldQueue
             }
 
             $message = "Hello $user_name, your water billing for $bill_month is as follows:\nReading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBill: Ksh $meter_reading->bill\nBalance brought forward: Ksh $carry_forward_balance\nDue date: $due_date\nPay via paybill number 994470, account number $meter->number";
-            SendSMS::dispatch($user->phone, $message);
+            SendSMS::dispatch($user->phone, $message, $user->id);
             $meter_reading->update([
                 'sms_sent' => true,
             ]);

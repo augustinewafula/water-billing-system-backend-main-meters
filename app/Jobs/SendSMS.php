@@ -20,10 +20,11 @@ class SendSMS implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($to, $message)
+    public function __construct($to, $message, $user_id)
     {
         $this->to = $to;
         $this->message = $message;
+        $this->user_id = $user_id;
     }
 
     /**
@@ -34,7 +35,7 @@ class SendSMS implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->initiateSendSms($this->to, $this->message);
+        $this->initiateSendSms($this->to, $this->message, $this->user_id);
     }
 
 }
