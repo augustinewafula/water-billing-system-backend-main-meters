@@ -47,6 +47,7 @@ class MeterController extends Controller
     public function availableIndex(Request $request): JsonResponse
     {
         $stationId = $request->query('station_id');
+        $search = $request->query('search');
 
         $meters = Meter::query();
         if ($request->has('station_id')) {
@@ -55,6 +56,9 @@ class MeterController extends Controller
         }
         if ($request->has('isAvailable')) {
             $meters = $meters->doesntHave('user');
+        }
+        if ($request->has('search')) {
+            $meters = $meters->where('number', 'like', '%' . $search . '%');
         }
         return response()->json($meters->paginate(10));
     }
