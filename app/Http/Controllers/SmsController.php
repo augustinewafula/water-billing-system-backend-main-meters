@@ -18,10 +18,11 @@ class SmsController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $sms = Sms::query();
+        $sms = Sms::select('sms.*');
         $search = $request->query('search');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
 
         if ($request->has('search') && Str::length($search) > 0) {
             $sms = Sms::search($search);
@@ -29,6 +30,13 @@ class SmsController extends Controller
 
         if ($request->has('sortBy')) {
             $sms = $sms->orderBy($sortBy, $sortOrder);
+        }
+
+        if ($request->has('station_id')) {
+            $sms = $sms->join('users', 'users.id', 'user_id')
+                ->join('meters', 'meters.id', 'users.meter_id')
+                ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+                ->where('meter_stations.id', $stationId);
         }
 
         return response()->json($sms->paginate(10));
