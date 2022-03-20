@@ -253,7 +253,7 @@ class MeterBillingController extends Controller
      */
     private function processMpesaTransaction(Request $content, $mpesa_transaction_id): void
     {
-        $user = User::select('users.account_number', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
+        $user = User::select('users.id as user_id', 'users.account_number', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_types', 'meter_types.id', 'meters.type_id')
             ->where('account_number', $content->BillRefNumber)
@@ -279,7 +279,7 @@ class MeterBillingController extends Controller
             ]);
             $date = Carbon::now()->toDateTimeString();
             $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-            SendSMS::dispatch($content->MSISDN, $message);
+            SendSMS::dispatch($content->MSISDN, $message, $user->id);
             return;
 
         }
