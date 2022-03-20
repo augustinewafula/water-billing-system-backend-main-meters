@@ -39,7 +39,7 @@ class UserController extends Controller
     {
         $stationId = $request->query('station_id');
         $users = User::role('user')
-            ->select('users.name as Name', 'users.phone as Phone', 'users.email as Email', 'meters.number as Meter Number')
+            ->select('users.name as Name', 'users.phone as Phone', 'users.email as Email', 'meters.number as Meter Number', 'users.account_number as Account Number')
             ->join('meters', 'meters.id', 'users.meter_id');
 
         if ($request->has('station_id')) {
