@@ -30,7 +30,8 @@ class User extends Authenticatable
         'meter_id',
         'password',
         'first_bill',
-        'account_balance'
+        'account_balance',
+        'account_number'
     ];
 
     /**
