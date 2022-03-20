@@ -27,6 +27,7 @@ class UpdateUserRequest extends FormRequest
             'name' => ['required', 'string'],
             'email' => ['nullable', 'email', 'unique:users', 'max:50'],
             'phone' => ['required', 'numeric'],
+            'account_number' => ['required', 'string', 'max:50'],
             'meter_id' => ['required', 'exists:meters,id']
         ];
     }
