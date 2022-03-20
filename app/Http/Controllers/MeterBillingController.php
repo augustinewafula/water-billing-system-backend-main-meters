@@ -11,7 +11,6 @@ use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
 use App\Models\MeterReading;
 use App\Models\MeterToken;
-use App\Models\MeterType;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
@@ -60,12 +59,12 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
-        if (!$this->safaricomIpAddress($client_ip)) {
-            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-            Log::notice($request);
-            $response = ['message' => 'Nothing interesting around here.'];
-            return response()->json($response, 418);
-        }
+//        if (!$this->safaricomIpAddress($client_ip)) {
+//            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+//            Log::notice($request);
+//            $response = ['message' => 'Nothing interesting around here.'];
+//            return response()->json($response, 418);
+//        }
 
         $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $request->validate([
@@ -254,39 +253,41 @@ class MeterBillingController extends Controller
      */
     private function processMpesaTransaction(Request $content, $mpesa_transaction_id): void
     {
-        $meter = Meter::where('number', $content->BillRefNumber)
+        $user = User::select('users.account_number', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_types', 'meter_types.id', 'meters.type_id')
+            ->where('account_number', $content->BillRefNumber)
             ->first();
-        if (!$meter) {
+        if (!$user) {
             UnresolvedMpesaTransaction::create([
                 'mpesa_transaction_id' => $mpesa_transaction_id,
                 'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
             ]);
             return;
         }
-        $meter_type = MeterType::find($meter->type_id);
-        if ($meter_type) {
-            if ($meter_type->name === 'Prepaid') {
-                $token = strtok($this->top_up($meter->number, $content->TransAmount), ',');
-                $units = $this->calculateUnits($content->TransAmount);
 
-                MeterToken::create([
-                    'mpesa_transaction_id' => $mpesa_transaction_id,
-                    'token' => strtok($token, ','),
-                    'units' => $units,
-                    'service_fee' => $this->calculateServiceFee($content->TransAmount, 'prepay'),
-                    'meter_id' => $meter->id,
-                ]);
-                $date = Carbon::now()->toDateTimeString();
-                $message = "Meter: $meter->number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-                SendSMS::dispatch($content->MSISDN, $message);
-                return;
+        if ($user->meter_type_name === 'Prepaid') {
+            $token = strtok($this->top_up($user->meter_number, $content->TransAmount), ',');
+            $units = $this->calculateUnits($content->TransAmount);
 
-            }
+            MeterToken::create([
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'token' => strtok($token, ','),
+                'units' => $units,
+                'service_fee' => $this->calculateServiceFee($content->TransAmount, 'prepay'),
+                'meter_id' => $user->meter_id,
+            ]);
+            $date = Carbon::now()->toDateTimeString();
+            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
+            SendSMS::dispatch($content->MSISDN, $message);
+            return;
+
         }
+
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
         $request->request->add([
-            'meter_id' => $meter->id,
+            'meter_id' => $user->meter_id,
             'amount_paid' => $content->TransAmount
         ]);
         $this->store($request, $mpesa_transaction_id);
