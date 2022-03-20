@@ -132,7 +132,6 @@ class MeterController extends Controller
             'number' => $request->number,
             'station_id' => $request->station_id,
             'type_id' => $request->type_id,
-            'valve_status' => $request->valve_status,
             'mode' => $request->mode
         ]);
         try {
