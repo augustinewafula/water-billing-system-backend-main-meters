@@ -13,7 +13,7 @@ class SendSMS implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, \App\Traits\SendSms;
 
-    protected $to, $message;
+    protected $to, $message, $user_id;
 
     /**
      * Create a new job instance.
