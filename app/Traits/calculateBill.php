@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\MeterCharge;
+use App\Models\ServiceCharge;
 
 trait calculateBill
 {
@@ -11,11 +12,7 @@ trait calculateBill
         $meter_charges = MeterCharge::where('for', 'post-pay')
             ->first();
         $bill = ($current_reading - $previous_reading) * $meter_charges->cost_per_unit;
-        $service_charge = $meter_charges->service_charge;
-        if ($meter_charges->service_charge_in_percentage) {
-            $service_charge = ($service_charge * $bill) / 100;
-        }
-        return round($bill + $service_charge);
+        return round($bill);
     }
 
     private function calculateUnits($amount_paid): float
@@ -30,11 +27,24 @@ trait calculateBill
     {
         $meter_charges = MeterCharge::where('for', $for)
             ->first();
-        $service_charge = $meter_charges->service_charge;
-        if ($meter_charges->service_charge_in_percentage) {
-            $service_charge = ($service_charge * $amount_paid) / 100;
-        }
-
+        $service_charge = $this->getServiceCharge($meter_charges->id, $amount_paid, $meter_charges->service_charge_in_percentage);
         return round($service_charge);
+    }
+
+    public function getServiceCharge($meter_charge_id, $amount_paid, $isServiceChargeInPercentage): int
+    {
+        $service_charges = ServiceCharge::where('meter_charge_id', $meter_charge_id)
+            ->get();
+        $service_fee = 10;
+        foreach ($service_charges as $service_charge) {
+            if (($service_charge->from <= $amount_paid) && ($amount_paid <= $service_charge->to)) {
+                $service_fee = $service_charge->amount;
+                break;
+            }
+        }
+        if ($isServiceChargeInPercentage) {
+            $service_fee = ($service_fee * $amount_paid) / 100;
+        }
+        return $service_fee;
     }
 }
