@@ -14,9 +14,8 @@ class CreateMeterChargesTable extends Migration
     public function up()
     {
         Schema::create('meter_charges', function (Blueprint $table) {
-            $table->id();
-            $table->decimal('cost_per_unit', 15, 2);
-            $table->decimal('service_charge', 15, 2);
+            $table->uuid('id')->primary();
+            $table->decimal('cost_per_unit', 15);
             $table->tinyInteger('service_charge_in_percentage')->unsigned()->default(false);
             $table->string('for');
             $table->timestamps();
