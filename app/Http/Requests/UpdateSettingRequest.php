@@ -24,12 +24,12 @@ class UpdateSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'prepay_cost_per_unit' => ['required', 'numeric'],
-            'prepay_service_charge_in' => ['required', 'boolean'],
-            'prepay_service_charge' => ['required', 'numeric'],
+            'prepaid_cost_per_unit' => ['required', 'numeric'],
+            'prepaid_service_charge_in' => ['required', 'boolean'],
+            'prepaid_service_charge' => ['required', 'string'],
             'postpaid_cost_per_unit' => ['required', 'numeric'],
             'postpaid_service_charge_in' => ['required', 'boolean'],
-            'postpaid_service_charge' => ['required', 'numeric'],
+            'postpaid_service_charge' => ['required', 'string'],
             'bill_due_days' => ['required', 'numeric'],
             'delay_meter_reading_sms' => ['required', 'boolean'],
             'meter_reading_sms_delay_days' => ['required', 'numeric'],
