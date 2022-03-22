@@ -28,7 +28,6 @@ trait StoreMeterReading
     public function store(CreateMeterReadingRequest $request)
     {
         $meter = Meter::find($request->meter_id);
-        $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
 
         $next_month = Carbon::parse($request->month)->add(1, 'month')->format('M');
         $bill_due_days = Setting::where('key', 'bill_due_days')
@@ -49,13 +48,15 @@ trait StoreMeterReading
 
         try {
             DB::beginTransaction();
+            $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
+            $service_fee = $this->calculateServiceFee($bill, 'post-pay');
             MeterReading::create([
                 'meter_id' => $request->meter_id,
                 'previous_reading' => $meter->last_reading,
                 'current_reading' => $request->current_reading,
                 'month' => $request->month,
-                'bill' => $bill,
-                'service_fee' => $this->calculateServiceFee($bill, 'post-pay'),
+                'bill' => $bill + $service_fee,
+                'service_fee' => $service_fee,
                 'send_sms_at' => $send_sms_at,
                 'bill_due_at' => $due_date,
             ]);
