@@ -47,6 +47,11 @@ class SettingController extends Controller
                 'service_charge_in_percentage' => $request->postpaid_service_charge_in
             ]);
             $postpaid_meter_service_charges = json_decode($request->postpaid_service_charge, false, 512, JSON_THROW_ON_ERROR);
+            if (count($postpaid_meter_service_charges) === 0) {
+                DB::rollBack();
+                $response = ['message' => 'Postpaid service charge must contain at least one range of price'];
+                return response()->json($response, 422);
+            }
             $this->updateServiceCharge($postpaid_meter_charges->id, $postpaid_meter_service_charges);
 
             $prepaid_meter_charges->update([
@@ -54,6 +59,11 @@ class SettingController extends Controller
                 'service_charge_in_percentage' => $request->prepaid_service_charge_in
             ]);
             $prepaid_meter_service_charges = json_decode($request->prepaid_service_charge, false, 512, JSON_THROW_ON_ERROR);
+            if (count($prepaid_meter_service_charges) === 0) {
+                DB::rollBack();
+                $response = ['message' => 'Prepaid service charge must contain at least one range of price'];
+                return response()->json($response, 422);
+            }
             $this->updateServiceCharge($prepaid_meter_charges->id, $prepaid_meter_service_charges);
 
             $bill_due_days_setting->update([
