@@ -72,7 +72,7 @@ Route::prefix('v1')->group(function () {
         Route::post('sms', [SmsController::class, 'send']);
         Route::get('settings', [SettingController::class, 'index']);
         Route::get('download-users', [UserController::class, 'download']);
-        Route::put('settings', [SettingController::class, 'update']);
+        Route::post('settings', [SettingController::class, 'update']);
     });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
