@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSettingRequest;
 use App\Models\MeterCharge;
+use App\Models\ServiceCharge;
 use App\Models\Setting;
 use DB;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,8 @@ class SettingController extends Controller
     public function index(): JsonResponse
     {
         $settings = Setting::all();
-        $meter_settings = MeterCharge::all();
+        $meter_settings = MeterCharge::with('service_charges')
+            ->get();
         return response()->json([
             'settings' => $settings,
             'meter_settings' => $meter_settings,
@@ -27,9 +29,9 @@ class SettingController extends Controller
      */
     public function update(UpdateSettingRequest $request): JsonResponse
     {
-        $post_pay_meter_charges = MeterCharge::where('for', 'post-pay')
+        $postpaid_meter_charges = MeterCharge::where('for', 'post-pay')
             ->first();
-        $prepay_meter_charges = MeterCharge::where('for', 'prepay')
+        $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
             ->first();
         $bill_due_days_setting = Setting::where('key', 'bill_due_days')
             ->first();
@@ -40,16 +42,20 @@ class SettingController extends Controller
 
         try {
             DB::beginTransaction();
-            $post_pay_meter_charges->update([
+            $postpaid_meter_charges->update([
                 'cost_per_unit' => $request->postpaid_cost_per_unit,
-                'service_charge' => $request->postpaid_service_charge,
                 'service_charge_in_percentage' => $request->postpaid_service_charge_in
             ]);
-            $prepay_meter_charges->update([
-                'cost_per_unit' => $request->prepay_cost_per_unit,
-                'service_charge' => $request->prepay_service_charge,
-                'service_charge_in_percentage' => $request->prepay_service_charge_in
+            $postpaid_meter_service_charges = json_decode($request->postpaid_service_charge, false, 512, JSON_THROW_ON_ERROR);
+            $this->updateServiceCharge($postpaid_meter_charges->id, $postpaid_meter_service_charges);
+
+            $prepaid_meter_charges->update([
+                'cost_per_unit' => $request->prepaid_cost_per_unit,
+                'service_charge_in_percentage' => $request->prepaid_service_charge_in
             ]);
+            $prepaid_meter_service_charges = json_decode($request->prepaid_service_charge, false, 512, JSON_THROW_ON_ERROR);
+            $this->updateServiceCharge($prepaid_meter_charges->id, $prepaid_meter_service_charges);
+
             $bill_due_days_setting->update([
                 'value' => $request->bill_due_days
             ]);
@@ -66,6 +72,20 @@ class SettingController extends Controller
             Log::error($throwable);
             $response = ['message' => 'Something went wrong, please try again later'];
             return response()->json($response, 422);
+        }
+    }
+
+    public function updateServiceCharge($meter_charge_id, $service_charges): void
+    {
+        ServiceCharge::where('meter_charge_id', $meter_charge_id)
+            ->delete();
+        foreach ($service_charges as $service_charge) {
+            ServiceCharge::create([
+                'from' => $service_charge->from,
+                'to' => $service_charge->to,
+                'amount' => $service_charge->amount,
+                'meter_charge_id' => $meter_charge_id
+            ]);
         }
     }
 }
