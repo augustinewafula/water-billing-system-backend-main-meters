@@ -43,7 +43,8 @@ class SendMeterReadingsToUser implements ShouldQueue
             if (!$user) {
                 break;
             }
-            $meter = Meter::find($meter_reading->meter_id);
+            $meter = Meter::with('station', 'user')
+                ->find($meter_reading->meter_id);
             $user_name = ucwords($user->name);
             $due_date = Carbon::parse($meter_reading->bill_due_at)->format('d/m/Y');
             $bill_month = Carbon::parse($meter_reading->created_at)->isoFormat('MMMM YYYY');
@@ -52,8 +53,10 @@ class SendMeterReadingsToUser implements ShouldQueue
             if ($user->account_balance < 0) {
                 $carry_forward_balance = abs($user->account_balance);
             }
+            $paybill_number = $meter->station->paybill_number;
+            $account_number = $meter->user->account_number;
 
-            $message = "Hello $user_name, your water billing for $bill_month is as follows:\nReading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBill: Ksh $meter_reading->bill\nBalance brought forward: Ksh $carry_forward_balance\nDue date: $due_date\nPay via paybill number 994470, account number $meter->number";
+            $message = "Hello $user_name, your water billing for $bill_month is as follows:\nReading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBill: Ksh $meter_reading->bill\nBalance brought forward: Ksh $carry_forward_balance\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
             SendSMS::dispatch($user->phone, $message, $user->id);
             $meter_reading->update([
                 'sms_sent' => true,
