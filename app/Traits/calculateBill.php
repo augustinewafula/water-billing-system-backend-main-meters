@@ -19,8 +19,9 @@ trait calculateBill
     {
         $meter_charges = MeterCharge::where('for', 'prepay')
             ->first();
+        $final_amount = $amount_paid - $this->calculateServiceFee($amount_paid, 'prepay');
 
-        return round($amount_paid / $meter_charges->cost_per_unit);
+        return round($final_amount / $meter_charges->cost_per_unit, 1);
     }
 
     private function calculateServiceFee($amount_paid, $for): float
