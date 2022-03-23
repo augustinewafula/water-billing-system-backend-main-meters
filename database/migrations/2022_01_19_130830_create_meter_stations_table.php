@@ -16,6 +16,7 @@ class CreateMeterStationsTable extends Migration
         Schema::create('meter_stations', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->integer('paybill_number');
             $table->timestamps();
         });
     }
