@@ -45,6 +45,11 @@ class AuthController extends Controller
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
         $response = ['token' => $token, 'name' => $user->name, 'email' => $user->email];
+
+        if ($user_type === 'admin') {
+            $role = $user->hasRole('super-admin') ? 'super-admin' : 'admin';
+            $response['role'] = $role;
+        }
         return response()->json($response, 200);
 
     }
