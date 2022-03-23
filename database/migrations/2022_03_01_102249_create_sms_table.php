@@ -16,7 +16,7 @@ class CreateSmsTable extends Migration
         Schema::create('sms', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('phone');
-            $table->string('message');
+            $table->text('message');
             $table->string('status');
             $table->decimal('cost', 15);
             $table->timestamps();
