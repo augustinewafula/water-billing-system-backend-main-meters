@@ -16,21 +16,33 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        Role::create([
+            'name' => 'user',
+            'guard_name' => 'api',
+        ]);
+        $admin = Role::create([
+            'name' => 'admin',
+            'guard_name' => 'api',
+        ]);
+        $super_admin = Role::create([
+            'name' => 'super-admin',
+            'guard_name' => 'api',
+        ]);
         $user = new User();
         $user->name = 'George Kimani';
         $user->email = 'george@progressive.co.ke';
         $user->password = bcrypt('qwertyuiop');
         $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
-        $user->assignRole(
-            Role::create([
-                'name' => 'admin',
-                'guard_name' => 'api',
-            ]));
+        $user->assignRole($admin);
         $user->save();
 
-        Role::create([
-            'name' => 'user',
-            'guard_name' => 'api',
-        ]);
+        $user = new User();
+        $user->name = 'Augustine Wafula';
+        $user->email = 'augustinetreezy@gmail.com';
+        $user->password = bcrypt('qwertyuiop');
+        $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
+        $user->assignRole($admin, $super_admin);
+        $user->save();
+
     }
 }
