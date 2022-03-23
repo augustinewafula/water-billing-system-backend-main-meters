@@ -25,6 +25,7 @@ class UpdateMeterStationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'paybill_number' => ['required', 'numeric', 'digits:6'],
         ];
     }
 }

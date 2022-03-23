@@ -24,7 +24,8 @@ class CreateMeterStationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'unique:meter_stations,name', 'max:255'],
+            'name' => ['required', 'string', 'unique:meter_stations', 'max:255'],
+            'paybill_number' => ['required', 'numeric', 'unique:meter_stations', 'digits:6'],
         ];
     }
 }
