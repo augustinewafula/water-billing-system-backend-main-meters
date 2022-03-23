@@ -16,13 +16,16 @@ class MeterStationSeeder extends Seeder
     {
         $meterStations = [
             [
-                'name' => 'Acc 1'
+                'name' => 'Acc 1',
+                'paybill_number' => 994470
             ],
             [
-                'name' => 'Acc 2'
+                'name' => 'Acc 2',
+                'paybill_number' => 994470
             ],
             [
-                'name' => 'Acc 3'
+                'name' => 'Acc 3',
+                'paybill_number' => 779774
             ]
         ];
         collect($meterStations)->each(function ($meterStation) {
