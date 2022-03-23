@@ -41,7 +41,7 @@ class SendMeterReadingsToUser implements ShouldQueue
             $user = User::where('meter_id', $meter_reading->meter_id)
                 ->first();
             if (!$user) {
-                break;
+                continue;
             }
             $meter = Meter::with('station', 'user')
                 ->find($meter_reading->meter_id);
