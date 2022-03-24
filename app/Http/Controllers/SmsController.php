@@ -25,7 +25,12 @@ class SmsController extends Controller
         $stationId = $request->query('station_id');
 
         if ($request->has('search') && Str::length($search) > 0) {
-            $sms = Sms::search($search);
+            $sms = $sms->where(function ($sms) use ($search) {
+                $sms->where('sms.phone', 'like', '%' . $search . '%')
+                    ->orWhere('sms.status', 'like', '%' . $search . '%')
+                    ->orWhere('sms.cost', 'like', '%' . $search . '%')
+                    ->orWhere('sms.message', 'like', '%' . $search . '%');
+            });
         }
 
         if ($request->has('sortBy')) {
