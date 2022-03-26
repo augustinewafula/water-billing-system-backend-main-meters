@@ -6,6 +6,7 @@ use App\Enums\MeterReadingStatus;
 use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Jobs\SendSMS;
+use App\Jobs\SwitchOnPaidMeter;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
@@ -145,7 +146,7 @@ class MeterBillingController extends Controller
             }
 
         }
-
+        SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
         return response()->json('created', 201);
     }
 
