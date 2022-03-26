@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->command('queue:work --max-time=3000')->everyThreeMinutes()->withoutOverlapping();
         $schedule->command('meters:switch-off-unpaid')->everyMinute()->withoutOverlapping();
+        $schedule->command('meters:confirm-valve-status')->everyMinute()->withoutOverlapping();
         $schedule->command('meter-readings:send')->everyTwoMinutes();
         $schedule->command('meter-readings:get --type=daily')->dailyAt('23:50');
         $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth('23:50');
