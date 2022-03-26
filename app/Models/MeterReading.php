@@ -26,6 +26,7 @@ class MeterReading extends Model
      */
     protected $casts = [
         'send_sms_at' => 'datetime',
+        'month' => 'datetime',
     ];
 
     /**
