@@ -5,7 +5,6 @@ namespace App\Traits;
 use App\Models\Meter;
 use Http;
 use JsonException;
-use Log;
 use Throwable;
 
 trait GetMetersInformation
@@ -29,7 +28,6 @@ trait GetMetersInformation
                 'PassWord' => env('SH_METER_PASSWORD')
             ]);
         if ($response->successful()) {
-            Log::info($response->body());
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->MeterDataList;
         }
         return null;
