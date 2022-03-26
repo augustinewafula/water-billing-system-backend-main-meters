@@ -67,7 +67,6 @@ class MeterBillingController extends Controller
             return response()->json($response, 418);
         }
 
-        $content = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);
         $request->validate([
             'TransID' => 'unique:mpesa_transactions'
         ]);
