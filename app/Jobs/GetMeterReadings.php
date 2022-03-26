@@ -5,12 +5,11 @@ namespace App\Jobs;
 use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
-use App\Traits\AuthenticateMeter;
+use App\Traits\GetMetersInformation;
 use App\Traits\StoreDailyMeterReading;
 use App\Traits\StoreMeterReading;
 use Carbon\Carbon;
 use DB;
-use Http;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -22,7 +21,7 @@ use Throwable;
 
 class GetMeterReadings implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoreDailyMeterReading, AuthenticateMeter;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoreDailyMeterReading, GetMetersInformation;
 
     protected $type;
 
@@ -45,71 +44,22 @@ class GetMeterReadings implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->getChangshaNbIotMeterReadings();
-        $this->getShMeterReadings();
-    }
-
-    /**
-     * @throws JsonException
-     * @throws Throwable
-     */
-    public function getShMeterReadings(): void
-    {
-        $database_meter_numbers = $this->getShDatabaseMeters();
-        $response = Http::retry(3, 3000)
-            ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYGetMeterData.ashx', [
-                'MeterIdList' => $database_meter_numbers,
-                'UserName' => env('SH_METER_USERNAME'),
-                'PassWord' => env('SH_METER_PASSWORD')
-            ]);
-        if ($response->successful()) {
-            $meters = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->MeterDataList;
-            foreach ($meters as $meter) {
+        if ($changshaMeters = $this->getChangshaNbIotMeterReadings()) {
+            foreach ($changshaMeters as $meter) {
+                $meter_number = $meter->meterno;
+                $meter_reading = $meter->lasttotalall;
+                $meter_voltage = $meter->battery;
+                $this->saveMeterReading($meter_number, $meter_reading, $meter_voltage);
+            }
+        }
+        if ($SHMeters = $this->getShMeterReadings()) {
+            foreach ($SHMeters as $meter) {
                 $meter_number = $meter->MeterId;
                 $meter_reading = $meter->PositiveCumulativeFlow;
                 $meter_voltage = $meter->MeterVoltage;
                 $this->saveMeterReading($meter_number, $meter_reading, $meter_voltage);
             }
         }
-    }
-
-    /**
-     * @throws JsonException
-     * @throws Throwable
-     */
-    public function getChangshaNbIotMeterReadings(): void
-    {
-        if ($token = $this->loginChangshaNbIot()) {
-            $response = Http::withHeaders([
-                'Token' => $token,
-            ])
-                ->retry(3, 100)
-                ->get('http://220.248.173.29:10004/collect/v3/getMeterDataList', [
-                    'pageIndex' => 1,
-                    'pageSize' => 2000000,
-                ]);
-            if ($response->successful()) {
-                $meters = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->body->recArr;
-                foreach ($meters as $key => $meter) {
-                    $meter_number = $meter->meterno;
-                    $meter_reading = $meter->lasttotalall;
-                    $meter_voltage = $meter->battery;
-                    $this->saveMeterReading($meter_number, $meter_reading, $meter_voltage);
-                }
-            }
-        }
-
-    }
-
-    public function getShDatabaseMeters(): array
-    {
-        return Meter::query()
-            ->whereHas('type', function ($query) {
-                $query->where('name', '=', 'Sh Gprs');
-                $query->orWhere('name', '=', 'Sh Nb-iot');
-            })
-            ->pluck('number')
-            ->all();
     }
 
     public function saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage): void
