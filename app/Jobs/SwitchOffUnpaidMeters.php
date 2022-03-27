@@ -44,16 +44,18 @@ class SwitchOffUnpaidMeters implements ShouldQueue
             $query->whereValveStatus(ValveStatus::Open)
                 ->orWhere('valve_status', null);
         }])
-            ->where('bill_due_at', '>=', now())
+            ->whereDate('bill_due_at', '<=', now())
             ->where(function ($query) {
                 $query->whereStatus(MeterReadingStatus::NotPaid)
                     ->orWhere('status', MeterReadingStatus::Balance);
             })
             ->get();
         Log::info($unpaid_meters);
-
         foreach ($unpaid_meters as $unpaid_meter) {
             try {
+                if (!$unpaid_meter->meter) {
+                    continue;
+                }
                 if ($unpaid_meter->meter->mode === MeterMode::Manual) {
                     //TODO:: Decide what to do with unpaid manual meters
                     continue;
@@ -71,8 +73,9 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 $paybill_number = $meter->station->paybill_number;
                 $account_number = $meter->user->account_number;
                 $first_name = explode(' ', trim($meter->user->name))[0];
-                //TODO:: Include total debt required to be paid on message
-                $message = "Hello $first_name, your water meter has been switched off due to late payment. \nPay via paybill number $paybill_number, account number $account_number";
+                $total_debt = $this->calculateUserDebt($unpaid_meter->meter->id);
+
+                $message = "Hello $first_name, your water meter has been switched off. Please pay your total debt of Ksh $total_debt. \nPay via paybill number $paybill_number, account number $account_number";
                 SendSMS::dispatch($meter->user->phone, $message, $meter->user->id);
             } catch (Throwable $th) {
                 DB::rollBack();
@@ -80,4 +83,20 @@ class SwitchOffUnpaidMeters implements ShouldQueue
             }
         }
     }
+
+    public function calculateUserDebt($meter_id)
+    {
+        $unpaid_bills = DB::table('meter_readings')
+            ->where('meter_id', $meter_id)
+            ->whereDate('bill_due_at', '<=', now())
+            ->whereStatus(MeterReadingStatus::NotPaid)
+            ->sum('bill');
+        $meter_reading = MeterReading::where('meter_id', $meter_id)->first();
+        $balance_bills = DB::table('meter_billings')
+            ->where('meter_reading_id', $meter_reading->id)
+            ->sum('balance');
+
+        return $unpaid_bills + $balance_bills;
+    }
+
 }
