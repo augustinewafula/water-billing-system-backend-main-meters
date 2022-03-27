@@ -255,7 +255,7 @@ class MeterBillingController extends Controller
     {
         $user = User::select('users.id as user_id', 'users.account_number', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
-            ->join('meter_types', 'meter_types.id', 'meters.type_id')
+            ->leftJoin('meter_types', 'meter_types.id', 'meters.type_id')
             ->where('account_number', $content->BillRefNumber)
             ->first();
         if (!$user) {
