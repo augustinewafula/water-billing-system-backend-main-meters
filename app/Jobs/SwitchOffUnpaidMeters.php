@@ -50,23 +50,24 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                     ->orWhere('status', MeterReadingStatus::Balance);
             })
             ->get();
-        Log::info($unpaid_meters);
+        $processed_meters = [];
         foreach ($unpaid_meters as $unpaid_meter) {
             try {
+                if (in_array($unpaid_meter->meter->id, $processed_meters, true)) {
+                    continue;
+                }
                 if (!$unpaid_meter->meter) {
                     continue;
                 }
-                if ($unpaid_meter->meter->mode === MeterMode::Manual) {
-                    //TODO:: Decide what to do with unpaid manual meters
-                    continue;
-                }
-                DB::beginTransaction();
                 $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter->meter->id);
-                $meter->update([
-                    'valve_status' => ValveStatus::Closed,
-                ]);
-                $this->toggleValve($meter, ValveStatus::Closed);
-                DB::commit();
+                if ($unpaid_meter->meter->mode !== MeterMode::Manual) {
+                    DB::beginTransaction();
+                    $meter->update([
+                        'valve_status' => ValveStatus::Closed,
+                    ]);
+                    $this->toggleValve($meter, ValveStatus::Closed);
+                    DB::commit();
+                }
                 if (!$meter->user) {
                     continue;
                 }
@@ -77,6 +78,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue
 
                 $message = "Hello $first_name, your water meter has been switched off. Please pay your total debt of Ksh $total_debt. \nPay via paybill number $paybill_number, account number $account_number";
                 SendSMS::dispatch($meter->user->phone, $message, $meter->user->id);
+                $processed_meters[] = $unpaid_meter->meter->id;
             } catch (Throwable $th) {
                 DB::rollBack();
                 Log::error($th);
