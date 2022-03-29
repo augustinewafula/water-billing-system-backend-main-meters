@@ -54,7 +54,7 @@ class StatisticsController extends Controller
 
         return response()->json([
             'previousMonthEarnings' => [
-                'month_name' => Carbon::now()->subtract(1, 'month')->isoFormat('MMMM'),
+                'month_name' => Carbon::now()->startOfMonth()->subMonthsNoOverflow()->isoFormat('MMMM'),
                 'value' => $previousMonthEarnings],
             'monthBeforeLastMonthEarnings' => $monthBeforeLastMonthEarnings,
             'previousMonthStationEarnings' => $previousMonthStationEarnings,
@@ -68,10 +68,10 @@ class StatisticsController extends Controller
         $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
-//        if ($from !== null && $to !== null) {
-//            $billingsSum = $billingsSum->where('meter_billings.created_at', '>', $from)
-//                ->where('meter_billings.created_at', '<', $to);
-//        }
+        if ($from !== null && $to !== null) {
+            $billingsSum = $billingsSum->where('meter_billings.created_at', '>', $from)
+                ->where('meter_billings.created_at', '<', $to);
+        }
         $billingsSum = $billingsSum->groupBy('name')
             ->selectRaw('sum(meter_billings.amount_paid) as total, meter_stations.name')
             ->get();
@@ -79,10 +79,10 @@ class StatisticsController extends Controller
         $tokenSum = MeterToken::join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
-//        if ($from !== null && $to !== null) {
-//            $tokenSum = $tokenSum->where('meter_tokens.created_at', '>', $from)
-//                ->where('meter_tokens.created_at', '<', $to);
-//        }
+        if ($from !== null && $to !== null) {
+            $tokenSum = $tokenSum->where('meter_tokens.created_at', '>', $from)
+                ->where('meter_tokens.created_at', '<', $to);
+        }
         $tokenSum = $tokenSum->groupBy('name')
             ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
             ->get();
@@ -121,10 +121,10 @@ class StatisticsController extends Controller
 
         $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
-//        if ($from !== null && $to !== null) {
-//            $tokenSum = $tokenSum->where('meter_tokens.created_at', '>', $from)
-//                ->where('meter_tokens.created_at', '<', $to);
-//        }
+        if ($from !== null && $to !== null) {
+            $tokenSum = $tokenSum->where('meter_tokens.created_at', '>', $from)
+                ->where('meter_tokens.created_at', '<', $to);
+        }
         $tokenSum = $tokenSum->sum('TransAmount');
 
         return $billingsSum + $tokenSum;
