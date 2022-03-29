@@ -183,9 +183,9 @@ class UserController extends Controller
             })->orWhere('name', 'like', '%' . $searchByNameAndMeterNo . '%');
         }
         if ($request->has('searchByNameAndAccountNo') && Str::length($searchByNameAndAccountNo) > 0) {
-            $users = $users->where(function ($users) use ($searchByNameAndPhone) {
-                $users->orWhere('name', 'like', '%' . $searchByNameAndPhone . '%')
-                    ->orWhere('account_number', 'like', '%' . $searchByNameAndPhone . '%');
+            $users = $users->where(function ($users) use ($searchByNameAndAccountNo) {
+                $users->orWhere('name', 'like', '%' . $searchByNameAndAccountNo . '%')
+                    ->orWhere('account_number', 'like', '%' . $searchByNameAndAccountNo . '%');
             });
         }
         if ($request->has('searchByMeterID') && Str::length($searchByMeterID) > 0) {
