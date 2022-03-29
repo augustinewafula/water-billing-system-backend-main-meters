@@ -156,6 +156,7 @@ class UserController extends Controller
         $searchByMeter = $request->query('searchByMeter');
         $searchByNameAndPhone = $request->query('searchByNameAndPhone');
         $searchByNameAndMeterNo = $request->query('searchByNameAndMeterNo');
+        $searchByNameAndAccountNo = $request->query('searchByNameAndAccountNo');
         $searchByMeterID = $request->query('searchByMeterID');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
@@ -180,6 +181,12 @@ class UserController extends Controller
             $users = $users->whereHas('meter', function ($query) use ($searchByNameAndMeterNo) {
                 $query->where('number', 'like', '%' . $searchByNameAndMeterNo . '%');
             })->orWhere('name', 'like', '%' . $searchByNameAndMeterNo . '%');
+        }
+        if ($request->has('searchByNameAndAccountNo') && Str::length($searchByNameAndAccountNo) > 0) {
+            $users = $users->where(function ($users) use ($searchByNameAndPhone) {
+                $users->orWhere('name', 'like', '%' . $searchByNameAndPhone . '%')
+                    ->orWhere('account_number', 'like', '%' . $searchByNameAndPhone . '%');
+            });
         }
         if ($request->has('searchByMeterID') && Str::length($searchByMeterID) > 0) {
             $users->where('meter_id', $searchByMeterID);
