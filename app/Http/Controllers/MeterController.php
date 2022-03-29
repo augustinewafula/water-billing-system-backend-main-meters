@@ -186,12 +186,14 @@ class MeterController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
 
-        //TODO::implement search by type and customer name
         if ($request->has('search') && Str::length($search) > 0) {
             $meters = $meters->where(function ($meters) use ($search) {
                 $meters->whereHas('type', function ($query) use ($search) {
                     $query->where('name', 'like', '%' . $search . '%');
-                })->orWhere('number', 'like', '%' . $search . '%');
+                })->orWhere('number', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($query) use ($search) {
+                        $query->where('name', 'like', '%' . $search . '%');
+                    });
             });
         }
         if ($request->has('station_id')) {
