@@ -93,6 +93,9 @@ class StatisticsController extends Controller
             $accumulator[$item['name']] += $item['total'];
             return $accumulator;
         });
+        if ($all === null) {
+            return [];
+        }
         $stationsEarning = [];
         foreach ($all as $key => $value) {
             $stationsEarning[] = [
