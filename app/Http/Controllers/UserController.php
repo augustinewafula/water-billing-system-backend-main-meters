@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\MeterStation;
 use App\Models\User;
 use App\Traits\GeneratePassword;
 use Exception;
@@ -42,10 +43,17 @@ class UserController extends Controller
             ->select('users.name as Name', 'users.phone as Phone', 'users.email as Email', 'meters.number as Meter Number', 'users.account_number as Account Number')
             ->join('meters', 'meters.id', 'users.meter_id');
 
+        $fileName = 'Customers';
         if ($request->has('station_id')) {
             $users = $users->where('meters.station_id', $stationId);
+            $station_name = MeterStation::find($stationId)->name;
+            $fileName = "$station_name $fileName";
         }
-        return response()->json($users->get());
+
+        return response()->json([
+            'users' => $users->get(),
+            'filename' => $fileName,
+        ]);
     }
 
     /**re
