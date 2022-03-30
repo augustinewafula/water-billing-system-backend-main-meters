@@ -279,7 +279,7 @@ class MeterBillingController extends Controller
             ]);
             $date = Carbon::now()->toDateTimeString();
             $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-            SendSMS::dispatch($content->MSISDN, $message, $user->id);
+            SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
             return;
 
         }
