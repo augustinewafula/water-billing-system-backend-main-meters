@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\MeterMode;
 use App\Enums\MeterReadingStatus;
 use App\Enums\ValveStatus;
 use App\Models\MeterReading;
@@ -53,11 +54,14 @@ class SwitchOnPaidMeter implements ShouldQueue
 
         try {
             DB::beginTransaction();
+            if ($this->meter->mode !== MeterMode::Manual) {
+                $this->toggleValve($meter, ValveStatus::Open);
+            }
             $this->meter->update([
                 'valve_status' => ValveStatus::Open,
             ]);
-            $this->toggleValve($this->meter, ValveStatus::Open);
             DB::commit();
+
         } catch (Throwable $th) {
             DB::rollBack();
             Log::error($th);
