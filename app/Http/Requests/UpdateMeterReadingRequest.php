@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\greaterThanBeforePreviousReading;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMeterReadingRequest extends FormRequest
@@ -25,7 +26,7 @@ class UpdateMeterReadingRequest extends FormRequest
     {
         return [
             'meter_id' => ['required', 'string', 'exists:meters,id'],
-            'current_reading' => ['required', 'numeric'],
+            'current_reading' => ['required', 'numeric', new greaterThanBeforePreviousReading()],
             'month' => ['required', 'string'],
         ];
     }
