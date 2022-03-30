@@ -60,14 +60,14 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                     continue;
                 }
                 $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter->meter->id);
+                DB::beginTransaction();
                 if ($unpaid_meter->meter->mode !== MeterMode::Manual) {
-                    DB::beginTransaction();
-                    $meter->update([
-                        'valve_status' => ValveStatus::Closed,
-                    ]);
                     $this->toggleValve($meter, ValveStatus::Closed);
-                    DB::commit();
                 }
+                $meter->update([
+                    'valve_status' => ValveStatus::Closed,
+                ]);
+                DB::commit();
                 if (!$meter->user) {
                     continue;
                 }
