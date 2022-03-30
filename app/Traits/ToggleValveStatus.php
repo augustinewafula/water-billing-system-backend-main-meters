@@ -38,7 +38,8 @@ trait ToggleValveStatus
             'CommandType' => 67,
             'CommandParameter' => $CommandParameter
         ];
-        $response = Http::retry(3, 300)
+        $response = Http::asForm()
+            ->retry(3, 300)
             ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYGetMeterData.ashx', [
                 'CommandList' => $CommandList,
                 'UserName' => env('SH_METER_USERNAME'),
