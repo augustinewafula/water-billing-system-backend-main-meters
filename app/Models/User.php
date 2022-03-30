@@ -19,6 +19,17 @@ class User extends Authenticatable
     protected $keyType = 'uuid';
 
     /**
+     * Set the user's name.
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['name'] = ucwords($value);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
