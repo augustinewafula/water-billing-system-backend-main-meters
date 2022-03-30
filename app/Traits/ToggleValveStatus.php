@@ -27,26 +27,28 @@ trait ToggleValveStatus
         return false;
     }
 
+    /**
+     * @throws JsonException
+     */
     public function toggleShMeterMeter($meter_number, $command): bool
     {
         $CommandParameter = 153;
         if ($command === ValveStatus::Open()) {
             $CommandParameter = 85;
         }
-        $CommandList = [
+        $collection = collect([[
             'MeterId' => $meter_number,
             'CommandType' => 67,
             'CommandParameter' => $CommandParameter
-        ];
-        $response = Http::asForm()
-            ->retry(3, 300)
-            ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYGetMeterData.ashx', [
-                'CommandList' => $CommandList,
+        ]])->toArray();
+        $response = Http::retry(3, 300)
+            ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYPostComm.ashx', [
+                'CommandList' => $collection,
                 'UserName' => env('SH_METER_USERNAME'),
                 'PassWord' => env('SH_METER_PASSWORD')
             ]);
         if ($response->successful()) {
-            Log::error($response->body());
+            Log::info($response->body());
             return true;
         }
         return false;
