@@ -290,6 +290,10 @@ class MeterBillingController extends Controller
             'meter_id' => $user->meter_id,
             'amount_paid' => $content->TransAmount
         ]);
+        //TODO::make organization name dynamic
+        $message = "Your payment of Ksh $content->TransAmount to Progressive Utility has been received";
+        SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
+
         $this->store($request, $mpesa_transaction_id);
     }
 
