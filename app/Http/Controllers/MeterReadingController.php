@@ -65,7 +65,7 @@ class MeterReadingController extends Controller
      */
     public function update(UpdateMeterReadingRequest $request, MeterReading $meterReading)
     {
-        if ($request->current_reading == $meterReading->current_reading) {
+        if ($request->current_reading === $meterReading->current_reading) {
             $meterReading->update($request->validated());
             return response()->json($meterReading);
         }
