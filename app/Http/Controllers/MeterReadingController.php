@@ -79,7 +79,9 @@ class MeterReadingController extends Controller
                     'meter_id' => $request->meter_id,
                     'current_reading' => $request->current_reading,
                     'month' => $request->month,
-                    'bill' => $bill
+                    'bill' => $bill,
+                    'sms_sent' => false,
+                    'send_sms_at' => now()
                 ]);
                 $meter->update([
                     'last_reading' => $request->current_reading,
