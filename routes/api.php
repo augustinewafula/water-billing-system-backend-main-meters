@@ -71,6 +71,7 @@ Route::prefix('v1')->group(function () {
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index']);
         Route::post('sms', [SmsController::class, 'send']);
+        Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::get('settings', [SettingController::class, 'index']);
         Route::get('download-users', [UserController::class, 'download']);
         Route::post('settings', [SettingController::class, 'update']);
