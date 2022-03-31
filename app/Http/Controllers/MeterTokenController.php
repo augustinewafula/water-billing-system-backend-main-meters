@@ -70,7 +70,7 @@ class MeterTokenController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $meter_reading = MeterToken::with('meter', 'user', 'mpesa_transaction')
+        $meter_reading = MeterToken::with('meter.type', 'user', 'mpesa_transaction')
             ->where('id', $id)
             ->first();
         return response()->json($meter_reading);

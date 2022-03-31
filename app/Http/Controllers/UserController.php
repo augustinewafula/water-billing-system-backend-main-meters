@@ -87,7 +87,7 @@ class UserController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $user = User::with('meter')
+        $user = User::with('meter.type')
             ->where('id', $id)
             ->first();
         return response()->json($user);
