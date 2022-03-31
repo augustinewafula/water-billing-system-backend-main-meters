@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendSMS;
 use App\Models\MeterToken;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Str;
@@ -74,6 +76,26 @@ class MeterTokenController extends Controller
             ->where('id', $id)
             ->first();
         return response()->json($meter_reading);
+    }
+
+    public function resend($meterTokenId)
+    {
+        $user = MeterToken::select('users.id as user_id', 'users.account_number', 'users.phone', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_tokens.token', 'meter_tokens.units', 'mpesa_transactions.TransID as transaction_id', 'mpesa_transactions.TransAmount as amount')
+            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
+            ->join('users', 'meters.id', 'users.meter_id')
+            ->where('meter_tokens.id', $meterTokenId)
+            ->first();
+
+        if (!$user) {
+            $response = ['message' => 'Meter user not found, please contact website admin for help'];
+            return response($response, 422);
+        }
+
+        $date = Carbon::now()->toDateTimeString();
+        $message = "Meter: $user->meter_number\nToken: $user->token\nUnits: $user->units\nAmount: $user->amount\nDate: $date\nRef: $user->transaction_id";
+        SendSMS::dispatch($user->phone, $message, $user->user_id);
+        return response()->json('sent');
     }
 
 }
