@@ -16,7 +16,7 @@ class MeterStation extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['name', 'paybill_number'];
+    protected $fillable = ['name', 'location', 'paybill_number'];
 
     /**
      * Get the meters for the meter station.
