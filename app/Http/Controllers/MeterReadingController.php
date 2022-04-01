@@ -67,36 +67,38 @@ class MeterReadingController extends Controller
     {
         if ($request->current_reading === $meterReading->current_reading) {
             $meterReading->update($request->validated());
-            return response()->json($meterReading);
+            return response()->json(['has_message_been_resent' => false]);
         }
 
         $meter = Meter::find($request->meter_id);
         $bill = $this->calculateBillUpdate($meter->last_reading, $request->current_reading, $meterReading->bill);
 
+        $has_message_been_resent = false;
         try {
-            DB::transaction(static function () use ($request, $bill, $meter, $meterReading) {
+            DB::beginTransaction();
+            $meterReading->update([
+                'meter_id' => $request->meter_id,
+                'current_reading' => $request->current_reading,
+                'month' => $request->month,
+                'bill' => $bill,
+                'sms_sent' => false
+            ]);
+            if ($meterReading->bill_due_at <= now()) {
                 $meterReading->update([
-                    'meter_id' => $request->meter_id,
-                    'current_reading' => $request->current_reading,
-                    'month' => $request->month,
-                    'bill' => $bill,
-                    'sms_sent' => false
+                    'send_sms_at' => now()
                 ]);
-                if ($meterReading->bill_due_at <= now()) {
-                    $meterReading->update([
-                        'send_sms_at' => now()
-                    ]);
-                }
-                $meter->update([
-                    'last_reading' => $request->current_reading,
-                ]);
-            });
+                $has_message_been_resent = true;
+            }
+            $meter->update([
+                'last_reading' => $request->current_reading,
+            ]);
+            DB::commit();
         } catch (Throwable $th) {
             Log::error($th);
             $response = ['message' => 'Something went wrong, please contact website admin for help'];
             return response($response, 422);
         }
-        return response()->json($bill);
+        return response()->json(['has_message_been_resent' => $has_message_been_resent]);
     }
 
     /**
