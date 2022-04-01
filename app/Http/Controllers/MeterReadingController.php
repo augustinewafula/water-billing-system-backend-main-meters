@@ -81,11 +81,11 @@ class MeterReadingController extends Controller
                 'meter_id' => $request->meter_id,
                 'current_reading' => $request->current_reading,
                 'month' => $request->month,
-                'bill' => $bill,
-                'sms_sent' => false
+                'bill' => $bill
             ]);
             if ($meterReading->bill_due_at <= now()) {
                 $meterReading->update([
+                    'sms_sent' => false,
                     'send_sms_at' => now()
                 ]);
                 $has_message_been_resent = true;
