@@ -27,7 +27,7 @@ class MeterReadingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $meter_readings = MeterReading::select('meter_readings.id', 'meter_readings.previous_reading', 'meter_readings.current_reading', 'meter_readings.month', 'meter_readings.bill', 'meter_readings.status', 'meters.id as meter_id', 'meters.number as meter_number', 'users.id as user_id', 'users.name as user_name', 'meter_readings.created_at')
+        $meter_readings = MeterReading::select('meter_readings.id', 'meter_readings.previous_reading', 'meter_readings.current_reading', 'meter_readings.month', 'meter_readings.bill', 'meter_readings.status', 'meter_readings.bill_due_at', 'meters.id as meter_id', 'meters.number as meter_number', 'users.id as user_id', 'users.name as user_name', 'meter_readings.created_at')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
             ->join('users', 'users.meter_id', 'meters.id');
         $meter_readings = $this->filterQuery($request, $meter_readings);
