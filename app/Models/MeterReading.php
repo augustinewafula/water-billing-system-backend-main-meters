@@ -42,7 +42,7 @@ class MeterReading extends Model
      * Get meter that owns the meter reading
      * @return hasOne
      */
-    public function user(): hasOne
+    public function user(): HasOne
     {
         return $this->hasOne(User::class, 'meter_id', 'meter_id');
     }
