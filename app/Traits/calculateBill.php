@@ -30,6 +30,9 @@ trait calculateBill
     {
         $meter_charges = MeterCharge::where('for', $for)
             ->first();
+        if ((int)$amount_paid === 0) {
+            $amount_paid = 1;
+        }
         $service_charge = $this->getServiceCharge($meter_charges->id, $amount_paid, $meter_charges->service_charge_in_percentage);
         return round($service_charge);
     }
