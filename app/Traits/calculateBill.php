@@ -49,6 +49,9 @@ trait calculateBill
             }
         }
         if ($isServiceChargeInPercentage) {
+            if ($amount_paid === 1) {
+                return 200;
+            }
             $service_fee = ($service_fee * $amount_paid) / 100;
         }
         return $service_fee;
