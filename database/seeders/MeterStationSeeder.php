@@ -17,14 +17,17 @@ class MeterStationSeeder extends Seeder
         $meterStations = [
             [
                 'name' => 'Acc 1',
+                'location' => 'Juja',
                 'paybill_number' => 994470
             ],
             [
                 'name' => 'Acc 2',
+                'location' => 'Kasarani',
                 'paybill_number' => 994470
             ],
             [
                 'name' => 'Acc 3',
+                'location' => 'Umoja',
                 'paybill_number' => 779774
             ]
         ];
