@@ -27,7 +27,7 @@ class UpdateMeterReadingRequest extends FormRequest
         return [
             'meter_id' => ['required', 'string', 'exists:meters,id'],
             'current_reading' => ['required', 'numeric', new greaterThanBeforePreviousReading()],
-            'month' => ['required', 'string'],
+            'month' => ['required', 'date_format:Y-m'],
         ];
     }
 }
