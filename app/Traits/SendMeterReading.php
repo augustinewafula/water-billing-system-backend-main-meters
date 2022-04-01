@@ -18,18 +18,27 @@ trait SendMeterReading
         }
         $meter = Meter::with('station', 'user')
             ->find($meter_reading->meter_id);
-        $user_name = ucwords($user->name);
+        $user_name = $user->name;
         $due_date = Carbon::parse($meter_reading->bill_due_at)->format('d/m/Y');
         $bill_month = Carbon::parse($meter_reading->created_at)->isoFormat('MMMM YYYY');
         $units_consumed = $meter_reading->current_reading - $meter_reading->previous_reading;
+        $bill = $meter_reading->bill - $meter_reading->service_charge;
         $carry_forward_balance = 0;
+        $over_paid_amount = 0;
         if ($user->account_balance < 0) {
             $carry_forward_balance = abs($user->account_balance);
         }
+        if ($user->account_balance > 0) {
+            $over_paid_amount = abs($user->account_balance);
+        }
         $paybill_number = $meter->station->paybill_number;
         $account_number = $meter->user->account_number;
+        $total_outstanding = ($bill + $carry_forward_balance) - $over_paid_amount;
+        if ($total_outstanding < 0) {
+            $total_outstanding = 0;
+        }
 
-        $message = "Hello $user_name, your water billing for $bill_month is as follows:\nReading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBill: Ksh $meter_reading->bill\nBalance brought forward: Ksh $carry_forward_balance\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
+        $message = "Dear $user_name, your water billing for $bill_month is as follows:\nCurrent Reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit Applied: Ksh $over_paid_amount\nService charge: Ksh $meter_reading->service_charge\nTotal outstanding: Ksh $total_outstanding\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
         SendSMS::dispatch($user->phone, $message, $user->id);
         $meter_reading->update([
             'sms_sent' => true,
