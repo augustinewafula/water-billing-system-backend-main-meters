@@ -154,6 +154,11 @@ class MeterBillingController extends Controller
         return $balance <= 0;
     }
 
+    public function userHasOverPaid($balance): bool
+    {
+        return $balance < 0;
+    }
+
     /**
      * @param $amount_paid
      * @param $balance
@@ -176,13 +181,24 @@ class MeterBillingController extends Controller
                     'last_billing_date' => Carbon::now()->toDateTimeString(),
                 ]);
                 $user_bill_balance = $balance;
+                $amount_over_paid = 0;
+                Log::info("balance: $balance");
                 if ($this->userHasFullyPaid($balance)) {
                     $user->update([
                         'account_balance' => abs($balance)
                     ]);
-                    $meter_reading->update([
-                        'status' => MeterReadingStatus::Paid,
-                    ]);
+                    Log::info("balance 1: $balance");
+                    if ($this->userHasOverPaid($balance)) {
+                        Log::info('balance 2:' . abs($balance));
+                        $amount_over_paid = abs($balance);
+                        $meter_reading->update([
+                            'status' => MeterReadingStatus::OverPaid,
+                        ]);
+                    } else {
+                        $meter_reading->update([
+                            'status' => MeterReadingStatus::Paid,
+                        ]);
+                    }
                     $user_bill_balance = 0;
                 } else {
                     $user->update([
@@ -195,6 +211,7 @@ class MeterBillingController extends Controller
                 MeterBilling::updateOrCreate([
                     'meter_reading_id' => $meter_reading->id,
                     'amount_paid' => $amount_paid,
+                    'amount_over_paid' => $amount_over_paid,
                     'balance' => $user_bill_balance,
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id
