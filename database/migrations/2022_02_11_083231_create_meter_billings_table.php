@@ -20,6 +20,7 @@ class CreateMeterBillingsTable extends Migration
             $table->decimal('amount_paid', 15);
             $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained()->cascadeOnDelete();
             $table->decimal('balance', 15)->default(0);
+            $table->decimal('amount_over_paid', 15)->default(0);
             $table->string('date_paid')->nullable();
             $table->timestamps();
         });
