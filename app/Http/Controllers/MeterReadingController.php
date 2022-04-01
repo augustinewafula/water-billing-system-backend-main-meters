@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
 use App\Models\MeterReading;
+use App\Traits\SendMeterReading;
 use App\Traits\StoreMeterReading;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
@@ -18,7 +19,7 @@ use Throwable;
 
 class MeterReadingController extends Controller
 {
-    use StoreMeterReading;
+    use StoreMeterReading, SendMeterReading;
     /**
      * Display a listing of the resource.
      *
@@ -99,6 +100,12 @@ class MeterReadingController extends Controller
             return response($response, 422);
         }
         return response()->json(['has_message_been_resent' => $has_message_been_resent]);
+    }
+
+    public function resend(MeterReading $meterReading): JsonResponse
+    {
+        $this->sendMeterReading($meterReading);
+        return response()->json('ok');
     }
 
     /**
