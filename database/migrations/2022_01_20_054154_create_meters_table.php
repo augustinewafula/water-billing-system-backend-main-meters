@@ -23,13 +23,14 @@ public function up()
         $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
         $table->foreignUuid('type_id')->nullable()->constrained('meter_types')->cascadeOnDelete();
         $table->integer('last_reading');
-            $table->dateTime('last_reading_date')->nullable();
-            $table->dateTime('last_billing_date')->nullable();
-            $table->decimal('voltage', 15)->nullable();
-            $table->integer('signal')->nullable();
-            $table->timestamps();
-        });
-    }
+        $table->dateTime('last_reading_date')->nullable();
+        $table->dateTime('last_billing_date')->nullable();
+        $table->decimal('voltage', 15)->nullable();
+        $table->integer('signal')->nullable();
+        $table->string('sim_card_number')->nullable();
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.
