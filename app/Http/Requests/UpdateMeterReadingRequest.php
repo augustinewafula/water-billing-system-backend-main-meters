@@ -28,6 +28,7 @@ class UpdateMeterReadingRequest extends FormRequest
             'meter_id' => ['required', 'string', 'exists:meters,id'],
             'current_reading' => ['required', 'numeric', new greaterThanBeforePreviousReading()],
             'month' => ['required', 'date_format:Y-m'],
+            'bill_due_at' => ['required', 'date_format:Y-m-d'],
         ];
     }
 }
