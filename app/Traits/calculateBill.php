@@ -11,7 +11,9 @@ trait calculateBill
     {
         $meter_charges = MeterCharge::where('for', 'post-pay')
             ->first();
-        $bill = ($current_reading - $previous_reading) * $meter_charges->cost_per_unit;
+        $units_consumed = $current_reading - $previous_reading;
+        $bill = $units_consumed * $meter_charges->cost_per_unit;
+
         return round($bill);
     }
 
