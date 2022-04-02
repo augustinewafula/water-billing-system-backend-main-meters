@@ -182,6 +182,10 @@ class MeterBillingController extends Controller
                 ]);
                 $user_bill_balance = $balance;
                 $amount_over_paid = 0;
+                $credit = 0;
+                if ($user->account_balance > 0) {
+                    $credit = $user->account_balance;
+                }
                 if ($this->userHasFullyPaid($balance)) {
                     $user->update([
                         'account_balance' => abs($balance)
@@ -210,6 +214,7 @@ class MeterBillingController extends Controller
                     'amount_paid' => $amount_paid,
                     'amount_over_paid' => $amount_over_paid,
                     'balance' => $user_bill_balance,
+                    'credit' => $credit,
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id
                 ]);
