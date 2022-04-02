@@ -182,14 +182,11 @@ class MeterBillingController extends Controller
                 ]);
                 $user_bill_balance = $balance;
                 $amount_over_paid = 0;
-                Log::info("balance: $balance");
                 if ($this->userHasFullyPaid($balance)) {
                     $user->update([
                         'account_balance' => abs($balance)
                     ]);
-                    Log::info("balance 1: $balance");
                     if ($this->userHasOverPaid($balance)) {
-                        Log::info('balance 2:' . abs($balance));
                         $amount_over_paid = abs($balance);
                         $meter_reading->update([
                             'status' => MeterReadingStatus::OverPaid,
