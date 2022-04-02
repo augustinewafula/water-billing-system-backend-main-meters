@@ -33,7 +33,7 @@ trait SendMeterReading
         }
         $paybill_number = $meter->station->paybill_number;
         $account_number = $meter->user->account_number;
-        $total_outstanding = round(($bill + $carry_forward_balance) - $over_paid_amount);
+        $total_outstanding = round(($meter_reading->bill + $carry_forward_balance) - $over_paid_amount);
         $service_fee = round($meter_reading->service_fee);
         if ($total_outstanding < 0) {
             $total_outstanding = 0;
