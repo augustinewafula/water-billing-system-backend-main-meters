@@ -60,12 +60,12 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
-        if (!$this->safaricomIpAddress($client_ip)) {
-            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-            Log::notice($request);
-            $response = ['message' => 'Nothing interesting around here.'];
-            return response()->json($response, 418);
-        }
+//        if (!$this->safaricomIpAddress($client_ip)) {
+//            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+//            Log::notice($request);
+//            $response = ['message' => 'Nothing interesting around here.'];
+//            return response()->json($response, 418);
+//        }
 
         $request->validate([
             'TransID' => 'unique:mpesa_transactions'
@@ -308,7 +308,7 @@ class MeterBillingController extends Controller
             'amount_paid' => $content->TransAmount
         ]);
         //TODO::make organization name dynamic
-        $message = "Your payment of Ksh $content->TransAmount to Progressive Utility has been received";
+        $message = "Dear $content->FirstName $content->LastName, your payment of Ksh $content->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
         SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
 
         $this->store($request, $mpesa_transaction_id);
