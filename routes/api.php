@@ -64,6 +64,7 @@ Route::prefix('v1')->group(function () {
         ]);
         Route::get('statistics', [StatisticsController::class, 'index']);
         Route::get('statistics/monthly-earnings', [StatisticsController::class, 'monthlyEarnings']);
+        Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
         Route::get('available-meters', [MeterController::class, 'availableIndex']);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);

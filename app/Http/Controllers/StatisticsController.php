@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DailyMeterReading;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterStation;
 use App\Models\MeterToken;
 use App\Models\User;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Log;
 use Throwable;
 
@@ -131,5 +134,27 @@ class StatisticsController extends Controller
         $tokenSum = $tokenSum->sum('TransAmount');
 
         return $billingsSum + $tokenSum;
+    }
+
+    public function meterReadings(Request $request, Meter $meter): JsonResponse
+    {
+        $meter_readings = [];
+        if ($request->has('filter')) {
+            if ($request->query('filter') === 'daily') {
+                $meter_readings = $this->dayWiseMeterReadings($meter->id);
+            }
+        }
+        return response()->json($meter_readings);
+    }
+
+    public function dayWiseMeterReadings($meter_id)
+    {
+        return DailyMeterReading::select('reading', DB::raw('DAYNAME(created_at) as dayName'))
+            ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+            ->whereYear('created_at', date('Y'))
+            ->where('meter_id', $meter_id)
+            ->oldest()
+            ->groupBy('dayName', 'reading')
+            ->get();
     }
 }
