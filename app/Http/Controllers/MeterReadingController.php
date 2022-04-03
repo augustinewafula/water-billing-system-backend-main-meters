@@ -116,10 +116,26 @@ class MeterReadingController extends Controller
      */
     public function destroy(MeterReading $meterReading): JsonResponse
     {
+        $meter = Meter::where('id', $meterReading->meter_id)->first();
+        if (!$meter) {
+            $response = ['message' => 'Something went wrong'];
+            return response()->json($response, 422);
+        }
+        $last_meter_reading = MeterReading::where('meter_id', $meter->id)
+            ->latest()
+            ->first();
         try {
+            DB::beginTransaction();
+            if ($last_meter_reading->id === $meterReading->id) {
+                $meter->update([
+                    'last_reading' => $last_meter_reading->previous_reading
+                ]);
+            }
             $meterReading->delete();
+            DB::commit();
             return response()->json('deleted');
         } catch (Throwable $throwable) {
+            DB::rollBack();
             Log::error($throwable);
             $response = ['message' => 'Failed to delete'];
             return response()->json($response, 422);
