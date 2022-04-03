@@ -2,10 +2,13 @@
 
 namespace App\Traits;
 
+use App\Http\Requests\CreateMeterBillingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
+use App\Models\MeterBilling;
 use App\Models\MeterReading;
 use App\Models\Setting;
+use App\Models\User;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
@@ -17,7 +20,8 @@ use Throwable;
 
 trait StoreMeterReading
 {
-    use calculateBill;
+    use calculateBill, StoreMeterBillings;
+
     /**
      * Store a newly created resource in storage.
      *
@@ -50,7 +54,8 @@ trait StoreMeterReading
             DB::beginTransaction();
             $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
             $service_fee = $this->calculateServiceFee($bill, 'post-pay');
-            MeterReading::create([
+            $previous_meter_reading = MeterReading::where('meter_id', $meter->id)->latest()->first();
+            $meter_reading = MeterReading::create([
                 'meter_id' => $request->meter_id,
                 'previous_reading' => $meter->last_reading,
                 'current_reading' => $request->current_reading,
@@ -64,6 +69,7 @@ trait StoreMeterReading
                 'last_reading' => $request->current_reading,
                 'last_reading_date' => Carbon::now()->toDateTimeString(),
             ]);
+            $this->processAvailableCredits($meter, $meter_reading, $previous_meter_reading);
             DB::commit();
         } catch (Throwable $th) {
             DB::rollBack();
@@ -73,6 +79,26 @@ trait StoreMeterReading
         }
         return response()->json($bill, 201);
 
+    }
+
+    public function processAvailableCredits($meter, $meter_reading, $previous_meter_reading): void
+    {
+        $user = User::where('meter_id', $meter->id)->first();
+        if ($this->userHasAccountBalance($user)) {
+            $request = new CreateMeterBillingRequest();
+            $request->setMethod('POST');
+            $request->request->add([
+                'meter_id' => $meter->id,
+                'amount_paid' => 0
+            ]);
+            $last_meter_billing = MeterBilling::where('meter_reading_id', $previous_meter_reading->id)->latest()->first();
+            $this->processMeterBillings($request, [$meter_reading], $user, $last_meter_billing->mpesa_transaction_id);
+        }
+    }
+
+    public function userHasAccountBalance($user): bool
+    {
+        return $user->account_balance > 0;
     }
 
 }
