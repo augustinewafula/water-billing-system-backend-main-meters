@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Uuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,9 +27,24 @@ class MeterReading extends Model
      */
     protected $casts = [
         'send_sms_at' => 'datetime',
-        'month' => 'datetime:Y-m',
         'bill_due_at' => 'datetime:Y-m-d',
     ];
+
+    public function setMonthAttribute(string $value): void
+    {
+        $this->attributes['month'] = Carbon::parse($value)->format('Y-m-d');
+    }
+
+    /**
+     * Get the user's first name.
+     *
+     * @param string $value
+     * @return string
+     */
+    public function getMonthAttribute(string $value): string
+    {
+        return Carbon::parse($value)->format('Y-m');
+    }
 
     /**
      * Get meter that owns the meter reading
