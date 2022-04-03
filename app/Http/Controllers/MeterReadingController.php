@@ -113,6 +113,7 @@ class MeterReadingController extends Controller
      *
      * @param MeterReading $meterReading
      * @return JsonResponse
+     * @throws Throwable
      */
     public function destroy(MeterReading $meterReading): JsonResponse
     {
