@@ -54,6 +54,6 @@ class MeterReading extends Model
      */
     public function meter_billings(): HasMany
     {
-        return $this->hasMany(MeterBilling::class);
+        return $this->hasMany(MeterBilling::class)->latest();
     }
 }
