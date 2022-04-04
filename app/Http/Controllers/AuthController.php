@@ -11,11 +11,17 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /**
+     * @throws ValidationException
+     */
     public function initiateAdminLogin(Request $request): JsonResponse
     {
         return $this->login($request, 'admin');
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function initiateUserLogin(Request $request): JsonResponse
     {
         return $this->login($request, 'user');
@@ -24,7 +30,7 @@ class AuthController extends Controller
     /**
      * @throws ValidationException
      */
-    public function login(Request $request, $user_type)
+    public function login(Request $request, $user_type): JsonResponse
     {
         $rules = [
             'email' => 'required|email|exists:users',
@@ -33,7 +39,7 @@ class AuthController extends Controller
         $customMessages = [
             'required' => 'The :attribute field is required.',
             'email' => 'Invalid email address',
-            'exists' => 'Email does not match any user'
+            'exists' => 'Invalid email or password'
         ];
         $this->validate($request, $rules, $customMessages);
         $user = User::where('email', $request->email)->first();
