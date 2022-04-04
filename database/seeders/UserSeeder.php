@@ -20,6 +20,10 @@ class UserSeeder extends Seeder
             'name' => 'user',
             'guard_name' => 'api',
         ]);
+        $supervisor = Role::create([
+            'name' => 'supervisor',
+            'guard_name' => 'api',
+        ]);
         $admin = Role::create([
             'name' => 'admin',
             'guard_name' => 'api',
@@ -28,12 +32,21 @@ class UserSeeder extends Seeder
             'name' => 'super-admin',
             'guard_name' => 'api',
         ]);
+
+        $user = new User();
+        $user->name = 'Nebstar Malash';
+        $user->email = 'nebstarmalala@gmail.com';
+        $user->password = bcrypt('qwertyuiop');
+        $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
+        $user->assignRole($supervisor);
+        $user->save();
+
         $user = new User();
         $user->name = 'George Kimani';
         $user->email = 'george@progressive.co.ke';
         $user->password = bcrypt('qwertyuiop');
         $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
-        $user->assignRole($admin);
+        $user->assignRole($supervisor, $admin);
         $user->save();
 
         $user = new User();
@@ -41,7 +54,7 @@ class UserSeeder extends Seeder
         $user->email = 'augustinetreezy@gmail.com';
         $user->password = bcrypt('qwertyuiop');
         $user->first_bill = Carbon::now()->isoFormat('YYYY-MM');
-        $user->assignRole($admin, $super_admin);
+        $user->assignRole($supervisor, $admin, $super_admin);
         $user->save();
 
     }
