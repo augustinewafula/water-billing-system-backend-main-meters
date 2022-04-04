@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyMeterReading;
 use App\Models\Meter;
 use App\Models\MeterBilling;
+use App\Models\MeterReading;
 use App\Models\MeterStation;
 use App\Models\MeterToken;
 use App\Models\User;
@@ -140,8 +141,11 @@ class StatisticsController extends Controller
     {
         $meter_readings = [];
         if ($request->has('filter')) {
-            if ($request->query('filter') === 'daily') {
+            if ($request->query('filter') === 'last-7-days') {
                 $meter_readings = $this->dayWiseMeterReadings($meter->id);
+            }
+            if ($request->query('filter') === 'monthly') {
+                $meter_readings = $this->monthWiseMeterReadings($meter->id);
             }
         }
         return response()->json($meter_readings);
@@ -149,12 +153,23 @@ class StatisticsController extends Controller
 
     public function dayWiseMeterReadings($meter_id)
     {
-        return DailyMeterReading::select('reading', DB::raw('DAYNAME(created_at) as dayName'))
-            ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+        return DailyMeterReading::select('reading', DB::raw('DAYNAME(created_at) as label'))
+            ->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
             ->whereYear('created_at', date('Y'))
             ->where('meter_id', $meter_id)
             ->oldest()
-            ->groupBy('dayName', 'reading')
+            ->groupBy('label', 'reading')
+            ->get();
+    }
+
+    public function monthWiseMeterReadings($meter_id)
+    {
+        return MeterReading::select('current_reading as reading', DB::raw('MONTHNAME(month) as label'))
+            ->whereYear('month', date('Y'))
+            ->where('meter_id', $meter_id)
+            ->distinct('label')
+            ->oldest()
+            ->groupBy('label', 'reading')
             ->get();
     }
 }
