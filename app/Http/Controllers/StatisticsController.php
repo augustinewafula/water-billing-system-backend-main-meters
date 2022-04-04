@@ -139,16 +139,18 @@ class StatisticsController extends Controller
 
     public function meterReadings(Request $request, Meter $meter): JsonResponse
     {
-        $meter_readings = [];
         if ($request->has('filter')) {
             if ($request->query('filter') === 'last-7-days') {
-                $meter_readings = $this->dayWiseMeterReadings($meter->id);
+                return response()->json($this->dayWiseMeterReadings($meter->id));
             }
             if ($request->query('filter') === 'monthly') {
-                $meter_readings = $this->monthWiseMeterReadings($meter->id);
+                return response()->json($this->monthWiseMeterReadings($meter->id));
+            }
+            if ($request->query('filter') === 'yearly') {
+                return response()->json($this->yearWiseMeterReadings($meter->id));
             }
         }
-        return response()->json($meter_readings);
+        return response()->json([]);
     }
 
     public function dayWiseMeterReadings($meter_id)
