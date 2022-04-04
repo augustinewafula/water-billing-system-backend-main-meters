@@ -28,19 +28,18 @@ trait ToggleValveStatus
     }
 
     /**
-     * @throws JsonException
      */
     public function toggleShMeterMeter($meter_number, $command): bool
     {
         $CommandParameter = 153;
-        if ($command === ValveStatus::Open()) {
+        if ($command === ValveStatus::Open) {
             $CommandParameter = 85;
         }
         $collection = collect([[
             'MeterId' => $meter_number,
             'CommandType' => 67,
             'CommandParameter' => $CommandParameter
-        ]])->toArray();
+        ]]);
         $response = Http::retry(3, 300)
             ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYPostComm.ashx', [
                 'CommandList' => $collection,
