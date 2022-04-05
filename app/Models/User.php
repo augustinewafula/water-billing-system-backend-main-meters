@@ -18,6 +18,8 @@ class User extends Authenticatable
 
     protected $keyType = 'uuid';
 
+    protected $guard_name = 'api';
+
     /**
      * Set the user's name.
      *
