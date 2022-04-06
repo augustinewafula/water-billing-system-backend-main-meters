@@ -54,6 +54,17 @@ class UserController extends Controller
         return response()->json($users->paginate(10));
     }
 
+    public function rolesIndex(): JsonResponse
+    {
+        return response()
+            ->json(
+                Role::where('name', '!=', 'super-admin')
+                    ->where('name', '!=', 'user')
+                    ->pluck('name')
+                    ->all()
+            );
+    }
+
     public function download(Request $request): JsonResponse
     {
         $stationId = $request->query('station_id');

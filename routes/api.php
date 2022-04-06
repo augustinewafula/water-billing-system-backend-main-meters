@@ -78,6 +78,7 @@ Route::prefix('v1')->group(function () {
         Route::get('settings', [SettingController::class, 'index']);
         Route::get('download-users', [UserController::class, 'download']);
         Route::post('settings', [SettingController::class, 'update']);
+        Route::get('roles', [UserController::class, 'rolesIndex']);
     });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
