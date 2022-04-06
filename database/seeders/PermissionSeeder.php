@@ -19,6 +19,7 @@ class PermissionSeeder extends Seeder
 
         $models = [
             'user',
+            'admin',
             'meter',
             'meter-station',
             'meter-token',
