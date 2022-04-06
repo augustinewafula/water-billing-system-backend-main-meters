@@ -47,7 +47,7 @@ Route::prefix('v1')->group(function () {
             });
         });
     });
-    Route::group(['middleware' => ['role:admin', 'auth:api']], static function () {
+    Route::group(['middleware' => ['auth:api']], static function () {
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
