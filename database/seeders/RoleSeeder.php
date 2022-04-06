@@ -19,28 +19,27 @@ class RoleSeeder extends Seeder
             ->all();
 
         $admin_permissions = $this->except($permissions, [
-            'view service charges',
-            'create service charges',
-            'edit service charges',
-            'delete service charges',
+            'service-charge-list',
+            'service-charge-create',
+            'service-charge-edit',
+            'service-charge-delete',
         ]);
         $supervisor_permissions = $this->except($admin_permissions, [
-            'delete users',
-            'delete meters',
-            'delete meter types',
-            'delete meter tokens',
-            'edit users',
-            'edit meters',
-            'edit meter types',
-            'edit meter tokens',
+            'user-delete',
+            'meter-delete',
+            'meter-type-delete',
+            'meter-token-delete',
+            'user-edit',
+            'meter-edit',
+            'meter-type-edit',
+            'meter-token-edit',
         ]);
         $user_permissions = [
-            'view meters',
-            'view users',
-            'edit users',
-            'view meter billings',
-            'view meter readings',
-            'delete service charges',
+            'meter-list',
+            'user-list',
+            'user-edit',
+            'meter-billing-list',
+            'meter-reading-list',
         ];
 
         $user = Role::create([

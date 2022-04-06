@@ -18,20 +18,20 @@ class PermissionSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $models = [
-            'users',
-            'meters',
-            'meter stations',
-            'meter tokens',
-            'meter types',
-            'meter billings',
-            'meter billings report',
-            'meter charges',
-            'meter readings',
-            'mpesa transactions',
-            'service charges',
-            'settings',
+            'user',
+            'meter',
+            'meter-station',
+            'meter-token',
+            'meter-type',
+            'meter-billing',
+            'meter-billing-report',
+            'meter-charge',
+            'meter-reading',
+            'mpesa-transaction',
+            'service-charge',
+            'settings-',
             'sms',
-            'unresolved mpesa transactions',
+            'unresolved-mpesa-transaction',
         ];
 
         foreach ($models as $model) {
@@ -46,14 +46,14 @@ class PermissionSeeder extends Seeder
     {
         $permission_name = [];
         $permissions = [
-            'view',
+            'list',
             'create',
             'edit',
             'delete',
         ];
 
         foreach ($permissions as $permission) {
-            $permission_name[] = "$permission $model";
+            $permission_name[] = "$model-$permission";
         }
         return $permission_name;
     }
