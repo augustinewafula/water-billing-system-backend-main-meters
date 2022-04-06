@@ -6,8 +6,12 @@ use App\Models\User;
 use Carbon\Carbon;
 use DB;
 use Hash;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Mail;
@@ -35,21 +39,22 @@ class ForgotPasswordController extends Controller
     {
         $this->middleware('guest');
     }
+
     /**
      * Send a reset link to the given user.
      *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
-    public function getResetToken(Request $request)
+    public function getResetToken(Request $request): JsonResponse
     {
         $rules = [
             'email' => 'required|email|exists:users|max:255',
         ];
         $customMessages = [
             'required' => 'The :attribute field is required.',
-            'email'=>'Invalid email address',
-            'exists'=>'The email does not exist'
+            'email' => 'Invalid email address',
+            'exists' => 'The email does not exist'
         ];
         $this->validate($request, $rules, $customMessages);
 
@@ -62,7 +67,7 @@ class ForgotPasswordController extends Controller
         ]);
 
         try {
-            Mail::send('email.forgetPassword', ['token' => $token, 'email' => $request->email], function($message) use($request){
+            Mail::send('emails.forgetPassword', ['token' => $token, 'email' => $request->email], static function ($message) use ($request) {
                 $message->to($request->email);
                 $message->subject('Reset Password');
             });
@@ -76,29 +81,30 @@ class ForgotPasswordController extends Controller
 
     }
 
-    public function showResetPasswordForm(Request $request, $token) {
+    public function showResetPasswordForm(Request $request, $token)
+    {
         $data = [
-            'token'=>$token,
-            'email'=>$request->email
+            'token' => $token,
+            'email' => $request->email
         ];
         return view('reset_password')->with($data);
-     }
+    }
 
-     /**
-      * Write code on Method
-      *
-      * @return response()
-      */
-     public function submitResetPasswordForm(Request $request)
-     {
-         $request->validate([
-             'email' => 'required|email|exists:users',
-             'password' => 'required|string|min:6|confirmed',
-             'password_confirmation' => 'required'
-         ]);
+    /**
+     * Write code on Method
+     *
+     * @return Application|RedirectResponse|Response|Redirector
+     */
+    public function submitResetPasswordForm(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users',
+            'password' => 'required|string|min:6|confirmed',
+            'password_confirmation' => 'required'
+        ]);
 
-         $updatePassword = DB::table('password_resets')
-                             ->where([
+        $updatePassword = DB::table('password_resets')
+            ->where([
                                'email' => $request->email,
                                'token' => $request->token
                              ])
