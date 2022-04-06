@@ -16,7 +16,7 @@ class AuthController extends Controller
      */
     public function initiateAdminLogin(Request $request): JsonResponse
     {
-        return $this->login($request, 'admin');
+        return $this->login($request, ['admin', 'supervisor']);
     }
 
     /**
@@ -44,18 +44,18 @@ class AuthController extends Controller
         $this->validate($request, $rules, $customMessages);
         $user = User::where('email', $request->email)->first();
 
-        if (!Hash::check($request->password, $user->password) || !$user->hasRole($user_type)) {
+        if (!Hash::check($request->password, $user->password) || !$user->hasRole($user_type, 'api')) {
             $response = ['message' => 'The given data was invalid.', 'errors' => ['password' => ['Incorrect email or password']]];
             return response()->json($response, 422);
         }
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-        $response = ['token' => $token, 'name' => $user->name, 'email' => $user->email];
-
-        if ($user_type === 'admin') {
-            $role = $user->hasRole('super-admin') ? 'super-admin' : 'admin';
-            $response['role'] = $role;
-        }
+        $response = [
+            'token' => $token,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->getRoleNames()[0]
+        ];
         return response()->json($response, 200);
 
     }
