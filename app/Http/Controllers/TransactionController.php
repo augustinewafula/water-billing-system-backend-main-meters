@@ -15,6 +15,11 @@ use Throwable;
 
 class TransactionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:mpesa-transaction-list|unresolved-mpesa-transaction-list', ['only' => ['index', 'unresolvedTransactionIndex', 'show']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
