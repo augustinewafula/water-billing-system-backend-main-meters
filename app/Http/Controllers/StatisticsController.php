@@ -43,11 +43,11 @@ class StatisticsController extends Controller
             'users' => $users,
             'main_meters' => $mainMeters,
             'meters' => $meters,
-            'revenue' => $this->calculateEarnings(null, null)
+            'revenue' => $this->calculateRevenue(null, null)
         ]);
     }
 
-    public function monthlyEarnings(): JsonResponse
+    public function monthlyRevenue(): JsonResponse
     {
         $firstDayOfPreviousMonth = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
         $lastDayOfPreviousMonth = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
@@ -55,24 +55,24 @@ class StatisticsController extends Controller
         $firstDayOfBeforeLastMonth = Carbon::now()->startOfMonth()->subMonthsNoOverflow(2)->toDateString();
         $lastDayOfBeforeLastMonth = Carbon::now()->subMonthsNoOverflow(2)->endOfMonth()->toDateString();
 
-        $previousMonthEarnings = $this->calculateEarnings($firstDayOfPreviousMonth, $lastDayOfPreviousMonth);
-        $monthBeforeLastMonthEarnings = $this->calculateEarnings($firstDayOfBeforeLastMonth, $lastDayOfBeforeLastMonth);
-        $previousMonthStationEarnings = $this->calculateStationEarnings($firstDayOfPreviousMonth, $lastDayOfPreviousMonth);
+        $previousMonthRevenue = $this->calculateRevenue($firstDayOfPreviousMonth, $lastDayOfPreviousMonth);
+        $monthBeforeLastMonthRevenue = $this->calculateRevenue($firstDayOfBeforeLastMonth, $lastDayOfBeforeLastMonth);
+        $previousMonthStationRevenue = $this->calculateStationRevenue($firstDayOfPreviousMonth, $lastDayOfPreviousMonth);
         $stations = MeterStation::pluck('name')
             ->all();
 
         return response()->json([
-            'previousMonthEarnings' => [
+            'previousMonthRevenue' => [
                 'month_name' => Carbon::now()->startOfMonth()->subMonthsNoOverflow()->isoFormat('MMMM'),
-                'value' => $previousMonthEarnings],
-            'monthBeforeLastMonthEarnings' => $monthBeforeLastMonthEarnings,
-            'previousMonthStationEarnings' => $previousMonthStationEarnings,
+                'value' => $previousMonthRevenue],
+            'monthBeforeLastMonthRevenue' => $monthBeforeLastMonthRevenue,
+            'previousMonthStationRevenue' => $previousMonthStationRevenue,
             'stations' => $stations
         ]);
 
     }
 
-    public function calculateStationEarnings(?string $from, ?string $to): array
+    public function calculateStationRevenue(?string $from, ?string $to): array
     {
         $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
@@ -105,24 +105,24 @@ class StatisticsController extends Controller
         if ($all === null) {
             return [];
         }
-        $stationsEarning = [];
+        $stationsRevenue = [];
         foreach ($all as $key => $value) {
-            $stationsEarning[] = [
+            $stationsRevenue[] = [
                 'name' => $key,
                 'value' => $value
             ];
         }
-        return $stationsEarning;
+        return $stationsRevenue;
     }
 
-    public function sumStationEarnings($accumulator, $item)
+    public function sumStationRevenue($accumulator, $item)
     {
         $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
         $accumulator[$item['name']] += $item['total'];
         return $accumulator;
     }
 
-    public function calculateEarnings(?string $from, ?string $to)
+    public function calculateRevenue(?string $from, ?string $to)
     {
         $billingsSum = MeterBilling::select('meter_billings.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id');

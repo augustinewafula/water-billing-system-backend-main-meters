@@ -65,7 +65,7 @@ Route::prefix('v1')->group(function () {
         Route::get('system-users', [UserController::class, 'systemUsersIndex']);
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
         Route::get('statistics', [StatisticsController::class, 'index']);
-        Route::get('statistics/monthly-earnings', [StatisticsController::class, 'monthlyEarnings']);
+        Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenue']);
         Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
         Route::get('available-meters', [MeterController::class, 'availableIndex']);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
