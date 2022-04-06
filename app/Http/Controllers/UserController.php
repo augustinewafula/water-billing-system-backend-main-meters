@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\MeterStation;
@@ -103,6 +104,21 @@ class UserController extends Controller
         $user->account_number = $request->account_number;
         $user->password = Hash::make($password);
         $user->assignRole(Role::findByName('user'));
+        $user->save();
+
+        return response()->json($user, 201);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function storeSystemUser(CreateSystemUserRequest $request): JsonResponse
+    {
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($this->generatePassword(10));
+        $user->assignRole(Role::findByName($request->role));
         $user->save();
 
         return response()->json($user, 201);
