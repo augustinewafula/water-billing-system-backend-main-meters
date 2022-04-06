@@ -30,7 +30,7 @@ class PermissionSeeder extends Seeder
             'meter-reading',
             'mpesa-transaction',
             'service-charge',
-            'settings-',
+            'setting',
             'sms',
             'unresolved-mpesa-transaction',
         ];
