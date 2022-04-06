@@ -124,18 +124,19 @@ class StatisticsController extends Controller
 
     public function calculateEarnings(?string $from, ?string $to)
     {
-        $billingsSum = MeterBilling::query();
+        $billingsSum = MeterBilling::select('meter_billings.*', 'mpesa_transactions.TransAmount')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id');
         if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->where('created_at', '>', $from)
-                ->where('created_at', '<', $to);
+            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
         }
         $billingsSum = $billingsSum->sum('amount_paid');
 
         $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
         if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('meter_tokens.created_at', '>', $from)
-                ->where('meter_tokens.created_at', '<', $to);
+            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
         }
         $tokenSum = $tokenSum->sum('TransAmount');
 
