@@ -14,6 +14,15 @@ use Throwable;
 
 class MeterStationController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:meter-station-list', ['only' => ['index', 'show']]);
+        $this->middleware('permission:meter-station-create', ['only' => ['store']]);
+        $this->middleware('permission:meter-station-edit', ['only' => ['update']]);
+        $this->middleware('permission:meter-station-delete', ['only' => ['destroy']]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $meter_stations = MeterStation::query();

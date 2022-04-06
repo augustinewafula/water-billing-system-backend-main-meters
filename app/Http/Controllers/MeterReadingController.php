@@ -20,6 +20,15 @@ use Throwable;
 class MeterReadingController extends Controller
 {
     use StoreMeterReading, SendMeterReading;
+
+    public function __construct()
+    {
+        $this->middleware('permission:meter-reading-list', ['only' => ['index', 'show']]);
+        $this->middleware('permission:meter-reading-create', ['only' => ['store', 'resend']]);
+        $this->middleware('permission:meter-reading-edit', ['only' => ['update']]);
+        $this->middleware('permission:meter-reading-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      *

@@ -11,9 +11,17 @@ use Str;
 
 class MeterTokenController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:meter-token-list', ['only' => ['index', 'show']]);
+        $this->middleware('permission:meter-token-edit', ['only' => ['update', 'resend']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return JsonResponse
      */
     public function index(Request $request): JsonResponse

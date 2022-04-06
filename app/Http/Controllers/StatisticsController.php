@@ -18,6 +18,11 @@ use Throwable;
 
 class StatisticsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['role:super-admin|admin|supervisor']);
+    }
+
     public function index(): JsonResponse
     {
         try {
@@ -42,7 +47,7 @@ class StatisticsController extends Controller
         ]);
     }
 
-    public function monthlyEarnings()
+    public function monthlyEarnings(): JsonResponse
     {
         $firstDayOfPreviousMonth = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
         $lastDayOfPreviousMonth = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
@@ -145,9 +150,6 @@ class StatisticsController extends Controller
             }
             if ($request->query('filter') === 'monthly') {
                 return response()->json($this->monthWiseMeterReadings($meter->id));
-            }
-            if ($request->query('filter') === 'yearly') {
-                return response()->json($this->yearWiseMeterReadings($meter->id));
             }
         }
         return response()->json([]);

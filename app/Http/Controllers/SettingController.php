@@ -13,6 +13,12 @@ use Throwable;
 
 class SettingController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:setting-list|setting-edit', ['only' => ['index', 'update']]);
+    }
+
     public function index(): JsonResponse
     {
         $settings = Setting::all();

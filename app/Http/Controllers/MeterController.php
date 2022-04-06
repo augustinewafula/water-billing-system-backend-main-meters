@@ -26,6 +26,15 @@ class MeterController extends Controller
 {
     use ProcessPrepaidMeterTransaction, ToggleValveStatus;
 
+    public function __construct()
+    {
+        $this->middleware('permission:meter-list', ['only' => ['index', 'availableIndex', 'show']]);
+        $this->middleware('permission:meter-create', ['only' => ['store']]);
+        $this->middleware('permission:meter-edit', ['only' => ['update']]);
+        $this->middleware('permission:meter-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:meter-type-list', ['only' => ['typeIndex']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -34,14 +43,9 @@ class MeterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $meters = Meter::with('user', 'station', 'type');
-            $meters = $this->filterQuery($request, $meters);
-            return response()->json($meters->paginate(10));
-
-        } catch (Throwable $throwable) {
-            Log::error($throwable);
-        }
+        $meters = Meter::with('user', 'station', 'type');
+        $meters = $this->filterQuery($request, $meters);
+        return response()->json($meters->paginate(10));
     }
 
     public function availableIndex(Request $request): JsonResponse

@@ -21,6 +21,16 @@ class UserController extends Controller
 {
     use GeneratePassword;
 
+    public function __construct()
+    {
+        $this->middleware('permission:user-list', ['only' => ['index', 'show', 'download']]);
+        $this->middleware('permission:user-create', ['only' => ['store']]);
+        $this->middleware('permission:user-edit', ['only' => ['update']]);
+        $this->middleware('permission:user-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:admin-list', ['only' => ['systemUsersIndex']]);
+        $this->middleware('permission:meter-billing-report-list', ['only' => ['billing_report', 'billing_report_years']]);
+    }
+
     /**
      * Display a listing of the resource.
      *

@@ -16,6 +16,12 @@ class SmsController extends Controller
 {
     use SendSms;
 
+    public function __construct()
+    {
+        $this->middleware('permission:sms-list', ['only' => ['index']]);
+        $this->middleware('permission:sms-create', ['only' => ['send', 'initiateSendSms']]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $sms = Sms::select('sms.*');

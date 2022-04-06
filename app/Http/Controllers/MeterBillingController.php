@@ -27,6 +27,14 @@ class MeterBillingController extends Controller
 {
     use ProcessPrepaidMeterTransaction, calculateBill, StoreMeterBillings;
 
+    public function __construct()
+    {
+        $this->middleware('permission:meter-reading-list', ['only' => ['index', 'show']]);
+        $this->middleware('permission:meter-reading-create', ['only' => ['store', 'resend']]);
+        $this->middleware('permission:meter-reading-edit', ['only' => ['update']]);
+        $this->middleware('permission:meter-reading-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * @throws JsonException
      */
