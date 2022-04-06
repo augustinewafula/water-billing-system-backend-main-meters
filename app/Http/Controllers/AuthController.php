@@ -16,7 +16,7 @@ class AuthController extends Controller
      */
     public function initiateAdminLogin(Request $request): JsonResponse
     {
-        return $this->login($request, ['admin', 'supervisor']);
+        return $this->login($request, ['super-admin', 'admin', 'supervisor']);
     }
 
     /**
