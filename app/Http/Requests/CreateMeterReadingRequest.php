@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\greaterThanPreviousReading;
 use App\Rules\notPrepaidMeter;
+use App\Rules\uniqueMeterReadingMonth;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateMeterReadingRequest extends FormRequest
@@ -28,7 +29,7 @@ class CreateMeterReadingRequest extends FormRequest
         return [
             'meter_id' => ['required', 'string', 'exists:meters,id', new notPrepaidMeter()],
             'current_reading' => ['required', 'numeric', new greaterThanPreviousReading()],
-            'month' => ['required', 'date_format:Y-m'],
+            'month' => ['required', 'date_format:Y-m', new uniqueMeterReadingMonth()],
         ];
     }
 }
