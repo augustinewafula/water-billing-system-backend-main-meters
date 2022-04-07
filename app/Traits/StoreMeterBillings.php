@@ -25,8 +25,10 @@ trait StoreMeterBillings
     public function processMeterBillings(CreateMeterBillingRequest $request, $pending_meter_readings, $user, $mpesa_transaction_id): void
     {
         $user_total_amount = $request->amount_paid;
+        $amount_paid = $request->amount_paid;
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
+            $user = $user->refresh();
             if ($user->account_balance > 0) {
                 $user_total_amount += $user->account_balance;
             }
@@ -45,12 +47,13 @@ trait StoreMeterBillings
             }
 
             if ($this->saveBillingInfo(
-                $request->amount_paid,
+                $amount_paid,
                 $balance,
                 $user,
                 $pending_meter_reading,
                 $mpesa_transaction_id)) {
-                $user_total_amount = 0 - $balance;
+                $user_total_amount = 0;
+                $amount_paid = 0;
             }
 
         }
@@ -100,7 +103,7 @@ trait StoreMeterBillings
                     $user_bill_balance = 0;
                 } else {
                     $user->update([
-                        'account_balance' => $user->account_balance + -abs($balance)
+                        'account_balance' => -$balance
                     ]);
                     $meter_reading->update([
                         'status' => MeterReadingStatus::Balance,
