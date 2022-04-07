@@ -47,7 +47,7 @@ class StatisticsController extends Controller
         ]);
     }
 
-    public function monthlyRevenue(): JsonResponse
+    public function previousMonthRevenueStatistics(): JsonResponse
     {
         $firstDayOfPreviousMonth = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
         $lastDayOfPreviousMonth = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
