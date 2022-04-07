@@ -14,6 +14,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Mail;
 use Throwable;
 
@@ -45,6 +46,7 @@ class ForgotPasswordController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws ValidationException
      */
     public function getResetToken(Request $request): JsonResponse
     {
