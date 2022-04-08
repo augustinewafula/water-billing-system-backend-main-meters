@@ -10,6 +10,7 @@ use App\Models\MeterReading;
 use App\Traits\ToggleValveStatus;
 use DB;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -18,7 +19,7 @@ use JsonException;
 use Log;
 use Throwable;
 
-class SwitchOffUnpaidMeters implements ShouldQueue
+class SwitchOffUnpaidMeters implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, ToggleValveStatus;
 
