@@ -165,8 +165,14 @@ class MeterController extends Controller
             $response = ['message' => 'Failed, please contact website admin for help'];
             return response($response, 422);
         }
+
+        $valve_last_switched_off_by = 'system';
+        if ((int)$request->valve_status === ValveStatus::Closed) {
+            $valve_last_switched_off_by = 'user';
+        }
         $meter->update([
-            'valve_status' => $request->valve_status
+            'valve_status' => $request->valve_status,
+            'valve_last_switched_off_by' => $valve_last_switched_off_by
         ]);
         return response()->json($meter->number);
     }
