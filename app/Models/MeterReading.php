@@ -35,12 +35,7 @@ class MeterReading extends Model
         $this->attributes['month'] = Carbon::parse($value)->format('Y-m-d');
     }
 
-    /**
-     * Get the user's first name.
-     *
-     * @param string $value
-     * @return string
-     */
+
     public function getMonthAttribute(string $value): string
     {
         return Carbon::parse($value)->format('Y-m');
