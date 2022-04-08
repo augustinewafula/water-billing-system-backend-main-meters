@@ -21,7 +21,7 @@ class CreateUsersTable extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->foreignUuid('meter_id')->nullable()->constrained('meters')->cascadeOnDelete();
-            $table->string('first_bill')->nullable();
+            $table->dateTime('first_monthly_service_fee_on')->nullable();
             $table->decimal('account_balance', 15)->default(0);
             $table->rememberToken();
             $table->timestamps();
