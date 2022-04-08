@@ -45,6 +45,7 @@ class SwitchOnPaidMeter implements ShouldQueue
         $meter = MeterReading::where('meter_id', $this->meter->id)
             ->where('month', '>=', $month_ago)
             ->whereStatus(MeterReadingStatus::Paid)
+            ->whereValveLastSwitchedOffBy('system')
             ->latest()
             ->limit(1)
             ->first();
