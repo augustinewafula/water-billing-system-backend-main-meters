@@ -16,7 +16,7 @@ class MeterToken extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['mpesa_transaction_id', 'token', 'service_fee', 'meter_id', 'units'];
+    protected $fillable = ['mpesa_transaction_id', 'token', 'service_fee', 'meter_id', 'units', 'monthly_service_charge_deducted'];
 
     /**
      * Get meter that owns the meter reading
