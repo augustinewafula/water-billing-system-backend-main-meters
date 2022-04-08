@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Uuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,16 @@ class MonthlyServiceCharge extends Model
     protected $keyType = 'uuid';
 
     protected $fillable = ['user_id', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'month'];
+
+    public function setMonthAttribute(string $value): void
+    {
+        $this->attributes['month'] = Carbon::parse($value)->format('Y-m-d');
+    }
+
+    public function getMonthAttribute(string $value): string
+    {
+        return Carbon::parse($value)->format('Y-m');
+    }
 
     /**
      * Get user that owns the user reading
