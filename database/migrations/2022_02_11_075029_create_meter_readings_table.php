@@ -20,7 +20,7 @@ class CreateMeterReadingsTable extends Migration
             $table->foreign('meter_id')->references('id')->on('meters')->cascadeOnDelete();
             $table->integer('previous_reading');
             $table->integer('current_reading');
-            $table->string('month');
+            $table->dateTime('month');
             $table->decimal('bill', 15);
             $table->decimal('service_fee', 15);
             $table->tinyInteger('status')->unsigned()->default(MeterReadingStatus::NotPaid);
