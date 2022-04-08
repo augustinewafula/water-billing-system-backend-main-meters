@@ -102,6 +102,7 @@ class UserController extends Controller
         $user->phone = $request->phone;
         $user->meter_id = $request->meter_id;
         $user->account_number = $request->account_number;
+        $user->first_monthly_service_fee_on = $request->first_monthly_service_fee_on;
         $user->password = Hash::make($password);
         $user->assignRole(Role::findByName('user'));
         $user->save();
