@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Uuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -31,6 +32,16 @@ class User extends Authenticatable
         $this->attributes['name'] = ucwords($value);
     }
 
+    public function setFirstMonthlyServiceFeeOnAttribute(string $value): void
+    {
+        $this->attributes['first_monthly_service_fee_on'] = Carbon::parse($value)->format('Y-m-d');
+    }
+
+    public function getFirstMonthlyServiceFeeAttribute(string $value): string
+    {
+        return Carbon::parse($value)->format('Y-m');
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -42,7 +53,7 @@ class User extends Authenticatable
         'email',
         'meter_id',
         'password',
-        'first_bill',
+        'first_monthly_service_fee_on',
         'account_balance',
         'account_number'
     ];
