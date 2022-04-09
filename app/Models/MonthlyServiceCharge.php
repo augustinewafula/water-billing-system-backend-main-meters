@@ -16,7 +16,7 @@ class MonthlyServiceCharge extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['user_id', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'month'];
+    protected $fillable = ['user_id', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'month', 'mpesa_transaction_id'];
 
     public function setMonthAttribute(string $value): void
     {
