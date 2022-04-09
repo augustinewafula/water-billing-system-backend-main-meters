@@ -13,11 +13,11 @@ trait ProcessMonthlyServiceChargeTransaction
             ->latest()
             ->limit(1)
             ->first();
-        $firstDayOfPreviousMonth = Carbon::now()->startOfMonth()->subMonthsNoOverflow();
+        $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
 
         if ($last_monthly_service_charge) {
             $last_monthly_service_charge_month = Carbon::createFromFormat('Y-m-d H:i:s', $last_monthly_service_charge->month);
-            if ($last_monthly_service_charge_month->greaterThanOrEqualTo($firstDayOfPreviousMonth)) {
+            if ($last_monthly_service_charge_month->greaterThanOrEqualTo($firstDayOfCurrentMonth)) {
                 return true;
             }
             return false;
@@ -25,7 +25,7 @@ trait ProcessMonthlyServiceChargeTransaction
         }
 
         $user_first_monthly_service_fee_on = Carbon::createFromFormat('Y-m-d H:i:s', $user->first_monthly_service_fee_on);
-        if ($user_first_monthly_service_fee_on->greaterThanOrEqualTo($firstDayOfPreviousMonth)) {
+        if ($user_first_monthly_service_fee_on->greaterThanOrEqualTo($firstDayOfCurrentMonth)) {
             return true;
         }
         return false;
