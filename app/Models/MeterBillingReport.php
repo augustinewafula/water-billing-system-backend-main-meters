@@ -15,4 +15,8 @@ class MeterBillingReport extends Model
     protected $keyType = 'uuid';
 
     protected $fillable = ['meter_id', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'year'];
+
+    protected $casts = [
+        'year' => 'datetime:Y',
+    ];
 }
