@@ -6,13 +6,18 @@ use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\MeterStation;
+use App\Models\MonthlyServiceChargeReport;
 use App\Models\User;
 use App\Traits\GeneratePassword;
+use DB;
 use Exception;
 use Hash;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Log;
 use Spatie\Permission\Models\Role;
 use Str;
@@ -90,22 +95,34 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      *
      * @param CreateUserRequest $request
-     * @return JsonResponse
-     * @throws Exception
+     * @return Application|ResponseFactory|JsonResponse|Response
+     * @throws Exception|Throwable
      */
-    public function store(CreateUserRequest $request): JsonResponse
+    public function store(CreateUserRequest $request)
     {
-        $password = $this->generatePassword(10);
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        $user->meter_id = $request->meter_id;
-        $user->account_number = $request->account_number;
-        $user->first_monthly_service_fee_on = $request->first_monthly_service_fee_on;
-        $user->password = Hash::make($password);
-        $user->assignRole(Role::findByName('user'));
-        $user->save();
+        try {
+            DB::beginTransaction();
+            $password = $this->generatePassword(10);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'meter_id' => $request->meter_id,
+                'account_number' => $request->account_number,
+                'first_monthly_service_fee_on' => $request->first_monthly_service_fee_on,
+                'password' => Hash::make($password),
+            ]);
+            $user->assignRole(Role::findByName('user'));
+            MonthlyServiceChargeReport::create([
+                'user_id' => $user->id,
+                'year' => now()->year,
+            ]);
+            DB::commit();
+        } catch (Throwable $th) {
+            DB::rollBack();
+            $response = ['message' => 'Something went wrong, please try again later'];
+            return response($response, 422);
+        }
 
         return response()->json($user, 201);
     }
