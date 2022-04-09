@@ -14,7 +14,7 @@ class CreateMonthlyServiceChargesTable extends Migration
     public function up()
     {
         Schema::create('monthly_service_charges', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount_paid', 15);
