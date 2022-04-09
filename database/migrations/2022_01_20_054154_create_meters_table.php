@@ -21,7 +21,7 @@ public function up()
         $table->uuid('station_id');
         $table->foreign('station_id')->references('id')->on('meter_stations')->cascadeOnDelete();
         $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
-        $table->foreignUuid('type_id')->nullable()->constrained('meter_types')->cascadeOnDelete();
+        $table->foreignUuid('type_id')->constrained('meter_types')->cascadeOnDelete();
         $table->integer('last_reading');
         $table->dateTime('last_reading_date')->nullable();
         $table->dateTime('last_billing_date')->nullable();

@@ -15,7 +15,7 @@ class CreateUnresolvedMpesaTransactionsTable extends Migration
     {
         Schema::create('unresolved_mpesa_transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('reason')->unsigned();
             $table->timestamps();
         });

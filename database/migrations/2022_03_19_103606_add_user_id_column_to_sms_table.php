@@ -14,7 +14,7 @@ class AddUserIdColumnToSmsTable extends Migration
     public function up()
     {
         Schema::table('sms', function (Blueprint $table) {
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
         });
     }
 

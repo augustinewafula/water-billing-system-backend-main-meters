@@ -15,7 +15,7 @@ class CreateMonthlyServiceChargeReportsTable extends Migration
     {
         Schema::create('monthly_service_charge_reports', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('jan')->nullable();
             $table->string('feb')->nullable();
             $table->string('mar')->nullable();
