@@ -26,5 +26,9 @@ class SettingSeeder extends Seeder
             'key' => 'meter_reading_sms_delay_days',
             'value' => 2
         ]);
+        Setting::create([
+            'key' => 'monthly_service_charge',
+            'value' => 200
+        ]);
     }
 }
