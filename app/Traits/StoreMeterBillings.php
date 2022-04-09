@@ -36,7 +36,7 @@ trait StoreMeterBillings
             $bill_to_pay = $pending_meter_reading->bill;
             if ($pending_meter_reading->status === MeterReadingStatus::Balance) {
                 $bill_to_pay = MeterBilling::where('meter_reading_id', $pending_meter_reading->id)
-                    ->latest()
+                    ->latest('month')
                     ->first()
                     ->balance;
             }
