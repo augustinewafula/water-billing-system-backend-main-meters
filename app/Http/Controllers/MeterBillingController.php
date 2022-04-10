@@ -14,6 +14,7 @@ use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use App\Traits\calculateBill;
+use App\Traits\ProcessMonthlyServiceChargeTransaction;
 use App\Traits\ProcessPrepaidMeterTransaction;
 use App\Traits\StoreMeterBillings;
 use Carbon\Carbon;
@@ -22,10 +23,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
 use Log;
+use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use ProcessPrepaidMeterTransaction, calculateBill, StoreMeterBillings;
+    use ProcessPrepaidMeterTransaction, calculateBill, StoreMeterBillings, ProcessMonthlyServiceChargeTransaction;
 
     public function __construct()
     {
@@ -59,7 +61,7 @@ class MeterBillingController extends Controller
 
 
     /**
-     * @throws JsonException
+     * @throws JsonException|Throwable
      */
     public function mpesaConfirmation(Request $request)
     {
@@ -91,6 +93,7 @@ class MeterBillingController extends Controller
      * @param CreateMeterBillingRequest $request
      * @param $mpesa_transaction_id
      * @return JsonResponse
+     * @throws Throwable
      */
     public function store(CreateMeterBillingRequest $request, $mpesa_transaction_id): JsonResponse
     {
@@ -150,10 +153,11 @@ class MeterBillingController extends Controller
 
     /**
      * @throws JsonException
+     * @throws Throwable
      */
     private function processMpesaTransaction(Request $content, $mpesa_transaction_id): void
     {
-        $user = User::select('users.id as user_id', 'users.account_number', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
+        $user = User::select('users.id as user_id', 'users.account_number', 'users.first_monthly_service_fee_on', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->leftJoin('meter_types', 'meter_types.id', 'meters.type_id')
             ->where('account_number', $content->BillRefNumber)
@@ -164,6 +168,11 @@ class MeterBillingController extends Controller
                 'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
             ]);
             return;
+        }
+
+        $monthly_service_charge_deducted = 0;
+        if ($this->hasMonthlyServiceChargeDebt($user)) {
+            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction_id, $content->TransAmount);
         }
 
         if ($user->meter_type_name === 'Prepaid') {
@@ -188,7 +197,8 @@ class MeterBillingController extends Controller
         $request->setMethod('POST');
         $request->request->add([
             'meter_id' => $user->meter_id,
-            'amount_paid' => $content->TransAmount
+            'amount_paid' => $content->TransAmount,
+            'monthly_service_charge_deducted' => $monthly_service_charge_deducted
         ]);
         //TODO::make organization name dynamic
         $message = "Dear $content->FirstName $content->LastName, your payment of Ksh $content->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
