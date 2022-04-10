@@ -23,6 +23,6 @@ class MeterBilling extends Model
      */
     public function meter_reading(): BelongsTo
     {
-        return $this->belongsTo(MeterBilling::class);
+        return $this->belongsTo(MeterReading::class);
     }
 }
