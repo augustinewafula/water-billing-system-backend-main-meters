@@ -38,9 +38,9 @@ trait ProcessMonthlyServiceChargeTransaction
         return $user->account_balance > 0;
     }
 
-    public function userHasPaidFully($user_total_amount, $monthly_service_charge): bool
+    public function userHasPaidFully($user_total_amount, $expected_amount): bool
     {
-        return $user_total_amount >= $monthly_service_charge;
+        return $user_total_amount >= $expected_amount;
     }
 
     public function storeMonthlyServiceCharge($user_id, $mpesa_transaction_id, $transaction_amount)
@@ -50,7 +50,6 @@ trait ProcessMonthlyServiceChargeTransaction
         $amount_paid = $transaction_amount;
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getFirstMonthToBill($user);
-        Log::info($month_to_bill);
         $total_monthly_service_charge_paid = 0;
 
         while ($month_to_bill->lessThanOrEqualTo($firstDayOfCurrentMonth)) {
@@ -63,16 +62,16 @@ trait ProcessMonthlyServiceChargeTransaction
                 $user_total_amount += $user->account_balance;
                 $credit = $user->account_balance;
             }
-            if ($user_total_amount < 0 && $amount_paid === 0) {
+            if ($user_total_amount <= 0 && $amount_paid === 0) {
                 break;
             }
-            $last_monthly_service_charge = MonthlyServiceCharge::where('user_id', $user->id)
-                ->latest('month')
-                ->limit(1)
-                ->first();
             $expected_amount = $monthly_service_charge->service_charge;
-            if ($last_monthly_service_charge && $last_monthly_service_charge->balance > 0) {
-                $expected_amount = $last_monthly_service_charge->balance;
+            if ($monthly_service_charge->status === MonthlyServiceChargeStatus::Balance) {
+                $monthly_service_charge_payment = MonthlyServiceChargePayment::where('monthly_service_charge_id', $monthly_service_charge->id)
+                    ->latest('created_at')
+                    ->take(1)
+                    ->first();
+                $expected_amount = $monthly_service_charge_payment->balance;
             }
             if ($this->userHasPaidFully($user_total_amount, $expected_amount)) {
                 $status = MonthlyServiceChargeStatus::Paid;
