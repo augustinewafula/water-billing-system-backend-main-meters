@@ -9,8 +9,8 @@ use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\Setting;
 use App\Models\User;
-use App\Traits\GeneratePassword;
 use App\Traits\GeneratesMonthlyServiceCharge;
+use App\Traits\GeneratesPassword;
 use DB;
 use Exception;
 use Hash;
@@ -27,7 +27,7 @@ use Throwable;
 
 class UserController extends Controller
 {
-    use GeneratePassword, GeneratesMonthlyServiceCharge;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge;
 
     public function __construct()
     {

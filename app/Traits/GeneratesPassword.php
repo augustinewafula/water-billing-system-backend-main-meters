@@ -5,14 +5,14 @@ namespace App\Traits;
 use Exception;
 use RuntimeException;
 
-trait GeneratePassword
+trait GeneratesPassword
 {
     /**
      * @throws Exception
      */
     public function generatePassword($length)
     {
-        return substr(preg_replace("/[A-Za-z0-9_@.\/&#$%()+-]*$/", "", base64_encode($this->getRandomBytes($length + 1))), 0, $length);
+        return substr(preg_replace('/[A-Za-z0-9_@.\/&#$%()+-]*$/', '', base64_encode($this->getRandomBytes($length + 1))), 0, $length);
     }
 
     /**
@@ -25,7 +25,7 @@ trait GeneratePassword
             return $bytes;
         }
 
-        throw new RuntimeException("Unable to generate secure token from OpenSSL.");
+        throw new RuntimeException('Unable to generate secure token from OpenSSL.');
 
     }
 
