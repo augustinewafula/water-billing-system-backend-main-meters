@@ -15,7 +15,7 @@ class MeterBilling extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'mpesa_transaction_id', 'date_paid', 'amount_over_paid', 'credit'];
+    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'mpesa_transaction_id', 'date_paid', 'amount_over_paid', 'credit', 'monthly_service_charge_deducted'];
 
     /**
      * Get meter reading that owns the meter billing
