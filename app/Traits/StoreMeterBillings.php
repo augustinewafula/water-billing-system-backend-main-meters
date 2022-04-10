@@ -21,10 +21,12 @@ trait StoreMeterBillings
      * @param $user
      * @param $mpesa_transaction_id
      * @return void
+     * @throws Throwable
      */
     public function processMeterBillings(CreateMeterBillingRequest $request, $pending_meter_readings, $user, $mpesa_transaction_id): void
     {
-        $user_total_amount = $request->amount_paid;
+        $monthly_service_charge_deducted = $request->monthly_service_charge_deducted;
+        $user_total_amount = ($request->amount_paid - $monthly_service_charge_deducted);
         $amount_paid = $request->amount_paid;
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
@@ -50,10 +52,12 @@ trait StoreMeterBillings
                 $amount_paid,
                 $balance,
                 $user,
+                $monthly_service_charge_deducted,
                 $pending_meter_reading,
                 $mpesa_transaction_id)) {
                 $user_total_amount = 0;
                 $amount_paid = 0;
+                $monthly_service_charge_deducted = 0;
             }
 
         }
@@ -63,20 +67,23 @@ trait StoreMeterBillings
      * @param $amount_paid
      * @param $balance
      * @param $user
+     * @param $monthly_service_charge_deducted
      * @param $meter_reading
      * @param $mpesa_transaction_id
      * @return bool
+     * @throws Throwable
      */
     public function saveBillingInfo(
         $amount_paid,
         $balance,
         $user,
+        $monthly_service_charge_deducted,
         $meter_reading,
         $mpesa_transaction_id): bool
     {
         try {
-            DB::transaction(function () use ($amount_paid, $balance, $user, $meter_reading, $mpesa_transaction_id) {
-                $meter = Meter::find($meter_reading->meter_id);
+            DB::beginTransaction();
+            $meter = Meter::find($meter_reading->meter_id);
                 $meter->update([
                     'last_billing_date' => Carbon::now()->toDateTimeString(),
                 ]);
@@ -114,20 +121,22 @@ trait StoreMeterBillings
                     'amount_paid' => $amount_paid,
                     'amount_over_paid' => $amount_over_paid,
                     'balance' => $user_bill_balance,
+                    'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
                     'credit' => $credit,
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id
                 ]);
                 $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m', $meter_reading->month)->format('M'));
                 $bill_year = Carbon::createFromFormat('Y-m', $meter_reading->month)->format('Y');
-                $this->saveMeterBillingReport([
-                    'meter_id' => $meter->id,
-                    $bill_month_name => $user_bill_balance,
-                    'year' => $bill_year,
-                ]);
-            });
+            $this->saveMeterBillingReport([
+                'meter_id' => $meter->id,
+                $bill_month_name => $user_bill_balance,
+                'year' => $bill_year,
+            ]);
+            DB::commit();
             return true;
         } catch (Throwable $th) {
+            DB::rollBack();
             Log::error($th);
             return false;
         }
