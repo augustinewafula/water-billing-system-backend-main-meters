@@ -4,8 +4,8 @@ namespace App\Traits;
 
 use App\Enums\MonthlyServiceChargeStatus;
 use App\Models\MonthlyServiceCharge;
+use App\Models\MonthlyServiceChargePayment;
 use App\Models\MonthlyServiceChargeReport;
-use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
@@ -24,18 +24,11 @@ trait ProcessMonthlyServiceChargeTransaction
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
 
         if ($last_monthly_service_charge) {
-            $last_monthly_service_charge_month = Carbon::createFromFormat('Y-m', $last_monthly_service_charge->month);
-            if ($last_monthly_service_charge_month->lessThan($firstDayOfCurrentMonth)) {
-                return true;
-            }
-            return false;
+            $last_monthly_service_charge_month = Carbon::createFromFormat('Y-m', $last_monthly_service_charge->month)->startOfMonth();
+            return ($last_monthly_service_charge->status === MonthlyServiceChargeStatus::NotPaid || $last_monthly_service_charge->status === MonthlyServiceChargeStatus::Balance) && $last_monthly_service_charge_month->lessThanOrEqualTo($firstDayOfCurrentMonth);
 
         }
 
-        $user_first_monthly_service_fee_on = Carbon::createFromFormat('Y-m-d H:i:s', $user->first_monthly_service_fee_on);
-        if ($user_first_monthly_service_fee_on->lessThan($firstDayOfCurrentMonth)) {
-            return true;
-        }
         return false;
 
     }
@@ -55,16 +48,17 @@ trait ProcessMonthlyServiceChargeTransaction
         $user = User::findOrFail($user_id);
         $user_total_amount = $transaction_amount;
         $amount_paid = $transaction_amount;
-        $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
-            ->first()
-            ->value;
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getFirstMonthToBill($user);
+        Log::info($month_to_bill);
         $total_monthly_service_charge_paid = 0;
 
         while ($month_to_bill->lessThanOrEqualTo($firstDayOfCurrentMonth)) {
             $credit = 0;
             $user = $user->refresh();
+            $monthly_service_charge = MonthlyServiceCharge::where('user_id', $user->id)
+                ->where('month', $month_to_bill)
+                ->first();
             if ($this->userHasFundsInAccount($user)) {
                 $user_total_amount += $user->account_balance;
                 $credit = $user->account_balance;
@@ -76,7 +70,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 ->latest('month')
                 ->limit(1)
                 ->first();
-            $expected_amount = $monthly_service_charge;
+            $expected_amount = $monthly_service_charge->service_charge;
             if ($last_monthly_service_charge && $last_monthly_service_charge->balance > 0) {
                 $expected_amount = $last_monthly_service_charge->balance;
             }
@@ -96,17 +90,18 @@ trait ProcessMonthlyServiceChargeTransaction
             }
             try {
                 DB::beginTransaction();
-                MonthlyServiceCharge::create([
-                    'user_id' => $user->id,
-                    'service_charge' => $monthly_service_charge,
+                MonthlyServiceChargePayment::create([
+                    'monthly_service_charge_id' => $monthly_service_charge->id,
                     'amount_paid' => $amount_paid,
                     'balance' => $balance,
                     'credit' => $credit,
                     'amount_over_paid' => $amount_over_paid,
-                    'month' => $month_to_bill,
                     'mpesa_transaction_id' => $mpesa_transaction_id,
+                ]);
+                $monthly_service_charge->update([
                     'status' => $status
                 ]);
+
                 $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m-d H:i:s', $month_to_bill)->format('M'));
                 $monthly_service_charge_report = MonthlyServiceChargeReport::where('user_id', $user->id)
                     ->where('year', $month_to_bill->year)
@@ -137,13 +132,14 @@ trait ProcessMonthlyServiceChargeTransaction
     public function getFirstMonthToBill($user)
     {
         $last_monthly_service_charge = MonthlyServiceCharge::where('user_id', $user->id)
-            ->latest('month')
+            ->where(function ($users) {
+                $users->orWhere('status', MonthlyServiceChargeStatus::NotPaid)
+                    ->orWhere('status', MonthlyServiceChargeStatus::Balance);
+            })
+            ->oldest('month')
             ->limit(1)
             ->first();
-        if ($last_monthly_service_charge) {
-            return Carbon::createFromFormat('Y-m', $last_monthly_service_charge->month)->startOfMonth()->add(1, 'month');
-        }
-        return Carbon::createFromFormat('Y-m-d H:i:s', $user->first_monthly_service_fee_on);
+        return Carbon::createFromFormat('Y-m', $last_monthly_service_charge->month)->startOfMonth();
     }
 
 }
