@@ -22,7 +22,7 @@ class CreateMonthlyServiceChargePaymentsTable extends Migration
             $table->decimal('credit', 15)->default(0);
             $table->decimal('amount_over_paid', 15)->default(0);
             $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

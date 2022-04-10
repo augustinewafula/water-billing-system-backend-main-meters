@@ -14,6 +14,7 @@ class MonthlyServiceChargePayment extends Model
     public $incrementing = false;
 
     protected $keyType = 'uuid';
+    protected $dateFormat = 'Y-m-d H:i:s.u';
 
     protected $fillable = ['monthly_service_charge_id', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'mpesa_transaction_id'];
 
