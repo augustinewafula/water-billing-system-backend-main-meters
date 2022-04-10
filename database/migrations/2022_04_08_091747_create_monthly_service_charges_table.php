@@ -22,6 +22,7 @@ class CreateMonthlyServiceChargesTable extends Migration
             $table->decimal('balance', 15)->default(0);
             $table->decimal('credit', 15)->default(0);
             $table->decimal('amount_over_paid', 15)->default(0);
+            $table->tinyInteger('status')->unsigned();
             $table->dateTime('month');
             $table->timestamps();
         });
