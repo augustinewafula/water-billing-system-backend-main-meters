@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\MonthlyServiceChargeStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -7,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 class CreateMonthlyServiceChargesTable extends Migration
 {
     /**
-     * Run the migrations.
+     * Run the migrations.set sts
      *
      * @return void
      */
@@ -17,7 +18,7 @@ class CreateMonthlyServiceChargesTable extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->decimal('service_charge', 15);
-            $table->tinyInteger('status')->unsigned();
+            $table->tinyInteger('status')->unsigned()->default(MonthlyServiceChargeStatus::NotPaid);
             $table->dateTime('month');
             $table->timestamps();
         });
