@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MonthlyServiceCharge extends Model
 {
@@ -16,7 +17,7 @@ class MonthlyServiceCharge extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['user_id', 'service_charge', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'status', 'month', 'mpesa_transaction_id'];
+    protected $fillable = ['user_id', 'service_charge', 'status', 'month'];
 
     public function setMonthAttribute(string $value): void
     {
@@ -35,5 +36,14 @@ class MonthlyServiceCharge extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the monthly service charge payments for the monthly service charge.
+     * @return HasMany
+     */
+    public function monthly_service_charge_payments(): HasMany
+    {
+        return $this->hasMany(MonthlyServiceChargePayment::class)->latest();
     }
 }
