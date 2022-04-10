@@ -17,6 +17,7 @@ class CreateMonthlyServiceChargesTable extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
+            $table->decimal('service_charge', 15);
             $table->decimal('amount_paid', 15);
             $table->decimal('balance', 15)->default(0);
             $table->decimal('credit', 15)->default(0);
