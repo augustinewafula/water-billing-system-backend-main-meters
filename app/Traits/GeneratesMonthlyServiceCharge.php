@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 trait GeneratesMonthlyServiceCharge
 {
-    public function generate($user, $monthly_service_charge): void
+    public function generateUserMonthlyServiceCharge($user, $monthly_service_charge): void
     {
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $monthToGenerate = $this->fromMonth($user);

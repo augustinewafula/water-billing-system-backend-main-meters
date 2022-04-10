@@ -38,7 +38,7 @@ class GenerateMonthlyServiceCharge implements ShouldQueue
             ->first()
             ->value;
         foreach ($users as $user) {
-            $this->generate($user, $monthly_service_charge);
+            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
         }
     }
 
