@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Traits\Uuid;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -30,16 +29,6 @@ class User extends Authenticatable
     public function setNameAttribute(string $value): void
     {
         $this->attributes['name'] = ucwords($value);
-    }
-
-    public function setFirstMonthlyServiceFeeOnAttribute(string $value): void
-    {
-        $this->attributes['first_monthly_service_fee_on'] = Carbon::parse($value)->format('Y-m-d');
-    }
-
-    public function getFirstMonthlyServiceFeeAttribute(string $value): string
-    {
-        return Carbon::parse($value)->format('Y-m');
     }
 
     /**
@@ -75,6 +64,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'first_monthly_service_fee_on' => 'datetime',
     ];
 
     /**
