@@ -7,8 +7,10 @@ use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
+use App\Models\Setting;
 use App\Models\User;
 use App\Traits\GeneratePassword;
+use App\Traits\GeneratesMonthlyServiceCharge;
 use DB;
 use Exception;
 use Hash;
@@ -25,7 +27,7 @@ use Throwable;
 
 class UserController extends Controller
 {
-    use GeneratePassword;
+    use GeneratePassword, GeneratesMonthlyServiceCharge;
 
     public function __construct()
     {
@@ -117,9 +119,15 @@ class UserController extends Controller
                 'user_id' => $user->id,
                 'year' => now()->year,
             ]);
+
+            $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
+                ->first()
+                ->value;
+            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
             DB::commit();
         } catch (Throwable $th) {
             DB::rollBack();
+            Log::error($th);
             $response = ['message' => 'Something went wrong, please try again later'];
             return response($response, 422);
         }
