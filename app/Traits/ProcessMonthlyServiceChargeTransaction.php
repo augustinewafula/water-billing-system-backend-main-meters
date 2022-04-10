@@ -43,6 +43,9 @@ trait ProcessMonthlyServiceChargeTransaction
         return $user_total_amount >= $expected_amount;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function storeMonthlyServiceCharge($user_id, $mpesa_transaction_id, $transaction_amount)
     {
         $user = User::findOrFail($user_id);
@@ -114,6 +117,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 $total_monthly_service_charge_paid += $amount_paid;
                 DB::commit();
             } catch (Throwable $th) {
+                DB::rollBack();
                 Log::error($th);
             }
             $month_to_bill = $month_to_bill->add(1, 'month');
