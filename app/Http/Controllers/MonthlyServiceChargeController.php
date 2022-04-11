@@ -16,7 +16,7 @@ class MonthlyServiceChargeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $monthly_service_charges = MonthlyServiceCharge::with('user', 'monthly_service_charge_payments');
+        $monthly_service_charges = MonthlyServiceCharge::with('user');
         $monthly_service_charges = $this->filterQuery($request, $monthly_service_charges);
         return response()->json(
             $monthly_service_charges->paginate(10));
@@ -44,14 +44,16 @@ class MonthlyServiceChargeController extends Controller
         $stationId = $request->query('station_id');
 
         if ($request->has('station_id')) {
-            $monthly_service_charge = $monthly_service_charge->join('meters', 'meters.id', 'users.meter_id')
+            $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
+                ->join('users', 'users.id', 'monthly_service_charges.user_id')
+                ->join('meters', 'meters.id', 'users.meter_id')
                 ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
                 ->where('meter_stations.id', $stationId);
         }
 
-        if ($request->has('sortBy')) {
-            $monthly_service_charge = $monthly_service_charge->orderBy($sortBy, $sortOrder);
-        }
+//        if ($request->has('sortBy')) {
+//            $monthly_service_charge = $monthly_service_charge->orderBy($sortBy, $sortOrder);
+//        }
 
         return $monthly_service_charge;
     }
