@@ -26,8 +26,11 @@ trait StoreMeterBillings
     public function processMeterBillings(CreateMeterBillingRequest $request, $pending_meter_readings, $user, $mpesa_transaction_id): void
     {
         $monthly_service_charge_deducted = $request->monthly_service_charge_deducted;
-        $user_total_amount = ($request->amount_paid - $monthly_service_charge_deducted);
         $amount_paid = $request->amount_paid;
+        $user_total_amount = $amount_paid;
+        if ($monthly_service_charge_deducted > 0) {
+            $user_total_amount = 0;
+        }
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
             $user = $user->refresh();
