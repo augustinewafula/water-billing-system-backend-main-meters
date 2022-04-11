@@ -81,6 +81,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 $amount_over_paid = $user_total_amount - $expected_amount;
                 $balance = 0;
                 $user_account_balance = $amount_over_paid;
+                $amount_to_deduct = $expected_amount;
                 if ($amount_over_paid > 0) {
                     $status = MonthlyServiceChargeStatus::OverPaid;
                 }
@@ -89,6 +90,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 $amount_over_paid = 0;
                 $user_account_balance = -$balance;
                 $status = MonthlyServiceChargeStatus::Balance;
+                $amount_to_deduct = $user_total_amount;
             }
             try {
                 DB::beginTransaction();
@@ -114,7 +116,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 $user->update([
                     'account_balance' => $user_account_balance
                 ]);
-                $total_monthly_service_charge_paid += $amount_paid;
+                $total_monthly_service_charge_paid += $amount_to_deduct;
                 DB::commit();
             } catch (Throwable $th) {
                 DB::rollBack();
