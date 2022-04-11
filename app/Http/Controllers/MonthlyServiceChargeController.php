@@ -3,63 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Models\MonthlyServiceCharge;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class MonthlyServiceChargeController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        //
+        $monthly_service_charges = MonthlyServiceCharge::with('user', 'monthly_service_charge_payments');
+        $monthly_service_charges = $this->filterQuery($request, $monthly_service_charges);
+        return response()->json(
+            $monthly_service_charges->paginate(10));
     }
 
     /**
      * Display the specified resource.
      *
-     * @param MonthlyServiceCharge $monthlyServiceCharge
-     * @return Response
+     * @param $monthlyServiceChargeID
+     * @return JsonResponse
      */
-    public function show(MonthlyServiceCharge $monthlyServiceCharge)
+    public function show($monthlyServiceChargeID): JsonResponse
     {
-        //
+        $monthly_service_charge = MonthlyServiceCharge::with('user', 'monthly_service_charge_payments')
+            ->where('id', $monthlyServiceChargeID)
+            ->first();
+        return response()->json($monthly_service_charge);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param MonthlyServiceCharge $monthlyServiceCharge
-     * @return Response
-     */
-    public function update(Request $request, MonthlyServiceCharge $monthlyServiceCharge)
+    public function filterQuery(Request $request, $monthly_service_charge)
     {
-        //
-    }
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param MonthlyServiceCharge $monthlyServiceCharge
-     * @return Response
-     */
-    public function destroy(MonthlyServiceCharge $monthlyServiceCharge)
-    {
-        //
+        if ($request->has('station_id')) {
+            $monthly_service_charge = $monthly_service_charge->join('meters', 'meters.id', 'users.meter_id')
+                ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+                ->where('meter_stations.id', $stationId);
+        }
+
+        if ($request->has('sortBy')) {
+            $monthly_service_charge = $monthly_service_charge->orderBy($sortBy, $sortOrder);
+        }
+
+        return $monthly_service_charge;
     }
 }
