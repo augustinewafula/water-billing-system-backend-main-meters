@@ -7,6 +7,7 @@ use App\Http\Controllers\MeterController;
 use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
 use App\Http\Controllers\MeterTokenController;
+use App\Http\Controllers\MonthlyServiceChargeController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\StatisticsController;
@@ -53,6 +54,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
         Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
+        Route::apiResource('monthly-service-charge', MonthlyServiceChargeController::class)->only([
+            'index', 'show'
+        ]);
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
         ]);
