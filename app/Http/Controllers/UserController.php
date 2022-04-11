@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Jobs\SendSetPasswordEmail;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\Setting;
@@ -146,6 +147,8 @@ class UserController extends Controller
         $user->password = Hash::make($this->generatePassword(10));
         $user->assignRole(Role::findByName($request->role));
         $user->save();
+
+        SendSetPasswordEmail::dispatch($request->email);
 
         return response()->json($user, 201);
     }
