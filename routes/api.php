@@ -54,7 +54,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
         Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
-        Route::apiResource('monthly-service-charge', MonthlyServiceChargeController::class)->only([
+        Route::apiResource('monthly-service-charges', MonthlyServiceChargeController::class)->only([
             'index', 'show'
         ]);
         Route::apiResource('transactions', TransactionController::class)->only([
