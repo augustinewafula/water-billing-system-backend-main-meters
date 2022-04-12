@@ -2,30 +2,28 @@
 
 namespace App\Jobs;
 
-use Carbon\Carbon;
-use DB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Mail;
-use Str;
 
 class SendSetPasswordEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $email;
+    protected $email, $action_url;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($email)
+    public function __construct($email, $action_url)
     {
         $this->email = $email;
+        $this->action_url = $action_url;
     }
 
     /**
@@ -35,14 +33,8 @@ class SendSetPasswordEmail implements ShouldQueue
      */
     public function handle(): void
     {
-        $token = Str::random(64);
-        DB::table('password_resets')->insert([
-            'email' => $this->email,
-            'token' => $token,
-            'created_at' => Carbon::now()
-        ]);
 
-        Mail::send('emails.setPassword', ['token' => $token, 'email' => $this->email], function ($message) {
+        Mail::send('emails.setPassword', ['email' => $this->email, 'action_url' => $this->action_url], function ($message) {
             $message->to($this->email);
             $message->subject('Set Password');
 
