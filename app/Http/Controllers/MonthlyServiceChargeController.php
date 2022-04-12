@@ -47,6 +47,7 @@ class MonthlyServiceChargeController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $userId = $request->query('user_id');
 
         if ($request->has('station_id')) {
             $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
@@ -54,6 +55,12 @@ class MonthlyServiceChargeController extends Controller
                 ->join('meters', 'meters.id', 'users.meter_id')
                 ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
                 ->where('meter_stations.id', $stationId);
+        }
+
+        if ($request->has('user_id')) {
+            $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
+                ->join('users', 'users.id', 'monthly_service_charges.user_id')
+                ->where('users.id', $userId);
         }
 
 //        if ($request->has('sortBy')) {
