@@ -232,9 +232,19 @@ class MeterBillingController extends Controller
             if ($monthly_service_charge_deducted > 0) {
                 $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
             }
-            $user->update([
-                'account_balance' => $user_total_amount
-            ]);
+            try {
+                DB::beginTransaction();
+                $user->update([
+                    'account_balance' => $user_total_amount
+                ]);
+                MpesaTransaction::find($mpesa_transaction_id)->update([
+                    'Consumed' => true,
+                ]);
+                DB::commit();
+            } catch (Throwable $throwable) {
+                DB::rollBack();
+                Log::error($throwable);
+            }
             SendSMS::dispatch($content->MSISDN, $message, $user->id);
             return;
         }
@@ -252,6 +262,9 @@ class MeterBillingController extends Controller
             ]);
             $user->update([
                 'account_balance' => 0
+            ]);
+            MpesaTransaction::find($mpesa_transaction_id)->update([
+                'Consumed' => true,
             ]);
             DB::commit();
 

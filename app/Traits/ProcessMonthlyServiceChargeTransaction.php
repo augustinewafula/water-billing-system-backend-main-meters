@@ -6,6 +6,7 @@ use App\Enums\MonthlyServiceChargeStatus;
 use App\Models\MonthlyServiceCharge;
 use App\Models\MonthlyServiceChargePayment;
 use App\Models\MonthlyServiceChargeReport;
+use App\Models\MpesaTransaction;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
@@ -115,6 +116,9 @@ trait ProcessMonthlyServiceChargeTransaction
                 ]);
                 $user->update([
                     'account_balance' => $user_account_balance
+                ]);
+                MpesaTransaction::find($mpesa_transaction_id)->update([
+                    'Consumed' => true,
                 ]);
                 $total_monthly_service_charge_paid += $amount_to_deduct;
                 DB::commit();

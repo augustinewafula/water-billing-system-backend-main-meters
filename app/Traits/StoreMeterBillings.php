@@ -7,6 +7,7 @@ use App\Http\Requests\CreateMeterBillingRequest;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
+use App\Models\MpesaTransaction;
 use Carbon\Carbon;
 use DB;
 use Log;
@@ -129,12 +130,15 @@ trait StoreMeterBillings
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id
                 ]);
-                $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m', $meter_reading->month)->format('M'));
-                $bill_year = Carbon::createFromFormat('Y-m', $meter_reading->month)->format('Y');
+            $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m', $meter_reading->month)->format('M'));
+            $bill_year = Carbon::createFromFormat('Y-m', $meter_reading->month)->format('Y');
             $this->saveMeterBillingReport([
                 'meter_id' => $meter->id,
                 $bill_month_name => $user_bill_balance,
                 'year' => $bill_year,
+            ]);
+            MpesaTransaction::find($mpesa_transaction_id)->update([
+                'Consumed' => true,
             ]);
             DB::commit();
             return true;
