@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class MonthlyServiceChargeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:monthly-service-charge-list', ['only' => ['index', 'show']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
