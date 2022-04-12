@@ -248,10 +248,10 @@ class MeterBillingController extends Controller
             SendSMS::dispatch($content->MSISDN, $message, $user->id);
             return;
         }
-        $token = strtok($this->top_up($user->meter_number, $user_total_amount), ',');
 
         try {
             DB::beginTransaction();
+            $token = strtok($this->top_up($user->meter_number, $user_total_amount), ',');
             MeterToken::create([
                 'mpesa_transaction_id' => $mpesa_transaction_id,
                 'token' => strtok($token, ','),
@@ -266,15 +266,15 @@ class MeterBillingController extends Controller
             MpesaTransaction::find($mpesa_transaction_id)->update([
                 'Consumed' => true,
             ]);
+            $date = Carbon::now()->toDateTimeString();
+            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
+            SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
             DB::commit();
 
         } catch (Throwable $throwable) {
             DB::rollBack();
             Log::error($throwable);
         }
-        $date = Carbon::now()->toDateTimeString();
-        $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-        SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
     }
 
     /**
