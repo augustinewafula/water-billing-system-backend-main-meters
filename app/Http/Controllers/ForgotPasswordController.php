@@ -56,7 +56,7 @@ class ForgotPasswordController extends Controller
         $customMessages = [
             'required' => 'The :attribute field is required.',
             'email' => 'Invalid email address',
-            'exists' => 'The email does not exist'
+            'exists' => 'There is no user registered with this email'
         ];
         $this->validate($request, $rules, $customMessages);
 
