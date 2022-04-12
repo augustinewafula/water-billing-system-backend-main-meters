@@ -212,6 +212,7 @@ class MeterBillingController extends Controller
      * @param $monthly_service_charge_deducted
      * @param $mpesa_transaction_id
      * @return void
+     * @throws JsonException|Throwable
      */
     private function processPrepaidTransaction($user_id, Request $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
     {
