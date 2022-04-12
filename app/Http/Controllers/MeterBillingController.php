@@ -9,7 +9,6 @@ use App\Jobs\SendSMS;
 use App\Jobs\SwitchOnPaidMeter;
 use App\Models\Meter;
 use App\Models\MeterReading;
-use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
@@ -17,14 +16,11 @@ use App\Traits\calculateBill;
 use App\Traits\ProcessMonthlyServiceChargeTransaction;
 use App\Traits\ProcessPrepaidMeterTransaction;
 use App\Traits\StoreMeterBillings;
-use Carbon\Carbon;
-use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
 use Log;
-use RuntimeException;
 use Throwable;
 
 class MeterBillingController extends Controller
@@ -207,77 +203,6 @@ class MeterBillingController extends Controller
         return in_array($clientIpAddress, $whitelist, true);
     }
 
-    /**
-     * @param $user_id
-     * @param Request $content
-     * @param $monthly_service_charge_deducted
-     * @param $mpesa_transaction_id
-     * @return void
-     * @throws JsonException|Throwable
-     */
-    private function processPrepaidTransaction($user_id, Request $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
-    {
-        $user = User::findOrFail($user_id);
-        $user_total_amount = $content->TransAmount - $monthly_service_charge_deducted;
-        if ($user->account_balance > 0) {
-            $user_total_amount += $user->account_balance;
-        }
-        if ($user_total_amount <= 0) {
-            $message = "Your paid amount is not enough to purchase tokens, Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
-            SendSMS::dispatch($content->MSISDN, $message, $user->id);
-            return;
-        }
-        $units = $this->calculateUnits($user_total_amount);
-        if ($units < 1) {
-            $message = 'Your paid amount is not enough to purchase tokens. ';
-            if ($monthly_service_charge_deducted > 0) {
-                $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
-            }
-            try {
-                DB::beginTransaction();
-                $user->update([
-                    'account_balance' => $user_total_amount
-                ]);
-                MpesaTransaction::find($mpesa_transaction_id)->update([
-                    'Consumed' => true,
-                ]);
-                DB::commit();
-            } catch (Throwable $throwable) {
-                DB::rollBack();
-                Log::error($throwable);
-            }
-            SendSMS::dispatch($content->MSISDN, $message, $user->id);
-            return;
-        }
-
-        try {
-            DB::beginTransaction();
-            $token = strtok($this->generateMeterToken($user->meter_number, $user_total_amount), ',');
-            throw_if($token === null, RuntimeException::class, 'Failed to generate token');
-            MeterToken::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
-                'token' => strtok($token, ','),
-                'units' => $units,
-                'service_fee' => $this->calculateServiceFee($user_total_amount, 'prepay'),
-                'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
-                'meter_id' => $user->meter_id,
-            ]);
-            $user->update([
-                'account_balance' => 0
-            ]);
-            MpesaTransaction::find($mpesa_transaction_id)->update([
-                'Consumed' => true,
-            ]);
-            $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-            SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
-            DB::commit();
-
-        } catch (Throwable $throwable) {
-            DB::rollBack();
-            Log::error($throwable);
-        }
-    }
 
     /**
      * @param $user
