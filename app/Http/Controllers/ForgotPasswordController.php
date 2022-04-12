@@ -108,10 +108,9 @@ class ForgotPasswordController extends Controller
 
         $updatePassword = DB::table('password_resets')
             ->where([
-                               'email' => $request->email,
-                               'token' => $request->token
-                             ])
-                             ->first();
+                'email' => $request->email,
+                'token' => $request->token])
+            ->first();
 
          if(!$updatePassword){
              return back()->withInput()->withMessages(['password' => 'Invalid token!']);
