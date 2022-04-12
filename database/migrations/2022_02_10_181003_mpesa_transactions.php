@@ -28,6 +28,7 @@ class MpesaTransactions extends Migration
             $table->string('MSISDN')->nullable();
             $table->decimal('TransAmount', 8, 2)->nullable();
             $table->decimal('OrgAccountBalance', 8, 2)->nullable();
+            $table->tinyInteger('Consumed')->unsigned()->default(false);
             $table->softDeletes();
             $table->timestamps();
         });
