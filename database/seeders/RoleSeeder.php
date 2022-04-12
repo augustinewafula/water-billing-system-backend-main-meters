@@ -23,10 +23,6 @@ class RoleSeeder extends Seeder
             'service-charge-create',
             'service-charge-edit',
             'service-charge-delete',
-            'monthly-service-charge-list',
-            'monthly-service-charge-create',
-            'monthly-service-charge-edit',
-            'monthly-service-charge-delete',
         ]);
         $supervisor_permissions = $this->except($admin_permissions, [
             'admin-list',
@@ -44,6 +40,9 @@ class RoleSeeder extends Seeder
             'meter-edit',
             'meter-type-edit',
             'meter-token-edit',
+            'monthly-service-charge-create',
+            'monthly-service-charge-edit',
+            'monthly-service-charge-delete',
         ]);
         $user_permissions = [
             'meter-list',
