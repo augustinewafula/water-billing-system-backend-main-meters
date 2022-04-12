@@ -51,7 +51,7 @@
                                         password, click the
                                         following link and follow the instructions.
                                     </p>
-                                    <a href="{{ route('password.reset', $token) . '?email=' . $email }}"
+                                    <a href="{{ $action_url }}"
                                        style="background:#FF7643;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Set
                                         Password</a>
                                 </td>
