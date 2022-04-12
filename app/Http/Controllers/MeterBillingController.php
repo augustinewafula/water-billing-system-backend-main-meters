@@ -251,7 +251,7 @@ class MeterBillingController extends Controller
 
         try {
             DB::beginTransaction();
-            $token = strtok($this->top_up($user->meter_number, $user_total_amount), ',');
+            $token = strtok($this->generateMeterToken($user->meter_number, $user_total_amount), ',');
             MeterToken::create([
                 'mpesa_transaction_id' => $mpesa_transaction_id,
                 'token' => strtok($token, ','),

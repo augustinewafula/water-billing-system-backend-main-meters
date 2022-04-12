@@ -43,7 +43,10 @@ trait ProcessPrepaidMeterTransaction
         return null;
     }
 
-    public function top_up($meter_id, $amount): ?string
+    /**
+     * @throws JsonException
+     */
+    public function generateMeterToken($meter_id, $amount): ?string
     {
         $response = Http::retry(3, 100)
             ->post($this->baseUrl . 'vending', [
