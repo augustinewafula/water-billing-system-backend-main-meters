@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('admin')->group(function () {
             Route::post('login', [AuthController::class, 'initiateAdminLogin']);
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
+            Route::post('password/reset', [ForgotPasswordController::class, 'submitResetPasswordForm']);
             Route::group(['middleware' => ['role:super-admin|admin|supervisor', 'auth:api']], function () {
                 Route::get('profile', [AuthController::class, 'user']);
                 Route::put('profile/{user}', [AuthController::class, 'update']);
