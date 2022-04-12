@@ -6,12 +6,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use DB;
 use Hash;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -93,11 +89,7 @@ class ForgotPasswordController extends Controller
         return view('reset_password')->with($data);
     }
 
-    /**
-     * Write code on Method
-     *
-     * @return Application|RedirectResponse|Response|Redirector
-     */
+
     public function submitResetPasswordForm(Request $request)
     {
         $request->validate([
@@ -112,15 +104,23 @@ class ForgotPasswordController extends Controller
                 'token' => $request->token])
             ->first();
 
-         if(!$updatePassword){
+         if(!$updatePassword) {
+             if ($request->isJson()) {
+                 $response = ['message' => 'The given data was invalid.', 'errors' => ['password' => ['Invalid token']]];
+                 return response()->json($response, 422);
+             }
              return back()->withInput()->withMessages(['password' => 'Invalid token!']);
          }
 
-         User::where('email', $request->email)
-                     ->update(['password' => Hash::make($request->password)]);
+        User::where('email', $request->email)
+            ->update(['password' => Hash::make($request->password)]);
 
-         DB::table('password_resets')->where(['email'=> $request->email])->delete();
+        DB::table('password_resets')->where(['email' => $request->email])->delete();
 
-         return redirect($this->redirectTo);
-     }
+        if ($request->isJson()) {
+            return response()->json(['message' => 'Password reset successfully']);
+        }
+
+        return redirect($this->redirectTo);
+    }
 }
