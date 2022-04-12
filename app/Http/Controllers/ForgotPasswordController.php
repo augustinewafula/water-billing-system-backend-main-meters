@@ -73,7 +73,7 @@ class ForgotPasswordController extends Controller
                 $message->to($request->email);
                 $message->subject('Reset Password');
             });
-            $response = ['message'=>'Reset link sent to your email.'];
+            $response = ['message' => 'Instructions on how to reset your password have been sent to your email.'];
             return response()->json($response);
         } catch (Throwable $th) {
             Log::error($th);
@@ -87,7 +87,8 @@ class ForgotPasswordController extends Controller
     {
         $data = [
             'token' => $token,
-            'email' => $request->email
+            'email' => $request->email,
+            'action' => ucfirst($request->action)
         ];
         return view('reset_password')->with($data);
     }
