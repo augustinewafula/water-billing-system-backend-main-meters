@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
 use Log;
+use RuntimeException;
 use Throwable;
 
 class MeterBillingController extends Controller
@@ -252,6 +253,7 @@ class MeterBillingController extends Controller
         try {
             DB::beginTransaction();
             $token = strtok($this->generateMeterToken($user->meter_number, $user_total_amount), ',');
+            throw_if($token === null, RuntimeException::class, 'Failed to generate token');
             MeterToken::create([
                 'mpesa_transaction_id' => $mpesa_transaction_id,
                 'token' => strtok($token, ','),
