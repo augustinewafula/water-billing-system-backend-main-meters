@@ -93,7 +93,7 @@ class MeterController extends Controller
 
             try {
                 if (MeterType::find($request->type_id)->name === 'Prepaid') {
-                    $this->register_meter($meter->id);
+                    $this->registerPrepaidMeter($meter->id);
                 }
             } catch (Throwable $exception) {
                 Log::error('Failed to register prepaid meter id: ' . $meter->id);
@@ -140,7 +140,7 @@ class MeterController extends Controller
         ]);
         try {
             if ($request->number !== $meter->number & MeterType::find($request->type_id)->name === 'Prepaid') {
-                $this->register_meter($meter->id);
+                $this->registerPrepaidMeter($meter->id);
             }
         } catch (Throwable $exception) {
             Log::error('Failed to register prepaid meter id: ' . $meter->id);

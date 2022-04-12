@@ -13,7 +13,7 @@ trait ProcessPrepaidMeterTransaction
     /**
      * @throws JsonException
      */
-    public function register_meter($meter_id): void
+    public function registerPrepaidMeter($meter_id): void
     {
         $response = Http::retry(3, 100)
             ->post($this->baseUrl . 'Meter', [
