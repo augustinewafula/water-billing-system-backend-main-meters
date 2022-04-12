@@ -50,7 +50,7 @@
                                             password has been generated for you. To reset your password, click the
                                             following link and follow the instructions.
                                         </p>
-                                        <a href="{{ route('password.reset', $token) . '?email=' . $email . '&action=reset'}}"
+                                        <a href="{{ env('APP_FRONTEND_URL'). '/reset-password/' . $token . '?email=' . $email . '&action=reset'}}"
                                            style="background:#FF7643;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Reset
                                             Password</a>
                                     </td>
