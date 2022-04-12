@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
+use Carbon\Carbon;
 use DB;
 use Exception;
 use Hash;
@@ -148,7 +149,7 @@ class UserController extends Controller
         $user->assignRole(Role::findByName($request->role));
         $user->save();
 
-        SendSetPasswordEmail::dispatch($request->email);
+        $this->sendSetPasswordEmail($request->email);
 
         return response()->json($user, 201);
     }
@@ -279,5 +280,22 @@ class UserController extends Controller
             $users = $users->orderBy($sortBy, $sortOrder);
         }
         return $users;
+    }
+
+    /**
+     * @param $email
+     * @return void
+     */
+    public function sendSetPasswordEmail($email): void
+    {
+        $token = Str::random(64);
+        DB::table('password_resets')->insert([
+            'email' => $email,
+            'token' => $token,
+            'created_at' => Carbon::now()
+        ]);
+
+        $url = route('password.reset', $token) . "?email=$email&action=set";
+        SendSetPasswordEmail::dispatch($email, $url);
     }
 }
