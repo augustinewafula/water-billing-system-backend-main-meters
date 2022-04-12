@@ -18,6 +18,7 @@ use App\Traits\ProcessMonthlyServiceChargeTransaction;
 use App\Traits\ProcessPrepaidMeterTransaction;
 use App\Traits\StoreMeterBillings;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -176,35 +177,12 @@ class MeterBillingController extends Controller
         }
 
         if ($user->meter_type_name === 'Prepaid') {
-            $token = strtok($this->top_up($user->meter_number, $content->TransAmount), ',');
-            $units = $this->calculateUnits($content->TransAmount);
-
-            MeterToken::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
-                'token' => strtok($token, ','),
-                'units' => $units,
-                'service_fee' => $this->calculateServiceFee($content->TransAmount, 'prepay'),
-                'meter_id' => $user->meter_id,
-            ]);
-            $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-            SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
+            $this->processPrepaidTransaction($user->user_id, $content, $monthly_service_charge_deducted, $mpesa_transaction_id);
             return;
 
         }
 
-        $request = new CreateMeterBillingRequest();
-        $request->setMethod('POST');
-        $request->request->add([
-            'meter_id' => $user->meter_id,
-            'amount_paid' => $content->TransAmount,
-            'monthly_service_charge_deducted' => $monthly_service_charge_deducted
-        ]);
-        //TODO::make organization name dynamic
-        $message = "Dear $content->FirstName $content->LastName, your payment of Ksh $content->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
-        SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
-
-        $this->store($request, $mpesa_transaction_id);
+        $this->processPostPaidTransaction($user, $content, $monthly_service_charge_deducted, $mpesa_transaction_id);
     }
 
     private function safaricomIpAddress($clientIpAddress): bool
@@ -226,5 +204,86 @@ class MeterBillingController extends Controller
             '196.201.212.69'];
 
         return in_array($clientIpAddress, $whitelist, true);
+    }
+
+    /**
+     * @param $user_id
+     * @param Request $content
+     * @param $monthly_service_charge_deducted
+     * @param $mpesa_transaction_id
+     * @return void
+     */
+    private function processPrepaidTransaction($user_id, Request $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    {
+        $user = User::findOrFail($user_id);
+        $user_total_amount = $content->TransAmount - $monthly_service_charge_deducted;
+        if ($user->account_balance > 0) {
+            $user_total_amount += $user->account_balance;
+        }
+        if ($user_total_amount <= 0) {
+            $message = "Your paid amount is not enough to purchase tokens, Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
+            SendSMS::dispatch($content->MSISDN, $message, $user->id);
+            return;
+        }
+        $units = $this->calculateUnits($user_total_amount);
+        if ($units < 1) {
+            $message = 'Your paid amount is not enough to purchase tokens. ';
+            if ($monthly_service_charge_deducted > 0) {
+                $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
+            }
+            $user->update([
+                'account_balance' => $user_total_amount
+            ]);
+            SendSMS::dispatch($content->MSISDN, $message, $user->id);
+            return;
+        }
+        $token = strtok($this->top_up($user->meter_number, $user_total_amount), ',');
+
+        try {
+            DB::beginTransaction();
+            MeterToken::create([
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'token' => strtok($token, ','),
+                'units' => $units,
+                'service_fee' => $this->calculateServiceFee($user_total_amount, 'prepay'),
+                'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
+                'meter_id' => $user->meter_id,
+            ]);
+            $user->update([
+                'account_balance' => 0
+            ]);
+            DB::commit();
+
+        } catch (Throwable $throwable) {
+            DB::rollBack();
+            Log::error($throwable);
+        }
+        $date = Carbon::now()->toDateTimeString();
+        $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
+        SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
+    }
+
+    /**
+     * @param $user
+     * @param Request $content
+     * @param $monthly_service_charge_deducted
+     * @param $mpesa_transaction_id
+     * @return void
+     * @throws Throwable
+     */
+    private function processPostPaidTransaction($user, Request $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    {
+        $request = new CreateMeterBillingRequest();
+        $request->setMethod('POST');
+        $request->request->add([
+            'meter_id' => $user->meter_id,
+            'amount_paid' => $content->TransAmount,
+            'monthly_service_charge_deducted' => $monthly_service_charge_deducted
+        ]);
+        //TODO::make organization name dynamic
+        $message = "Dear $content->FirstName $content->LastName, your payment of Ksh $content->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
+        SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
+
+        $this->store($request, $mpesa_transaction_id);
     }
 }
