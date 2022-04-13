@@ -20,7 +20,7 @@ use Throwable;
 
 trait StoreMeterReading
 {
-    use calculatesBill, StoreMeterBillings;
+    use CalculatesBill, StoreMeterBillings;
 
     /**
      * Store a newly created resource in storage.

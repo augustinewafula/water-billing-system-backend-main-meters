@@ -12,7 +12,7 @@ use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
-use App\Traits\calculatesBill;
+use App\Traits\CalculatesBill;
 use App\Traits\ProcessMonthlyServiceChargeTransaction;
 use App\Traits\ProcessPrepaidMeterTransaction;
 use App\Traits\StoreMeterBillings;
@@ -25,7 +25,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use ProcessPrepaidMeterTransaction, calculatesBill, StoreMeterBillings, ProcessMonthlyServiceChargeTransaction;
+    use ProcessPrepaidMeterTransaction, CalculatesBill, StoreMeterBillings, ProcessMonthlyServiceChargeTransaction;
 
     public function __construct()
     {
