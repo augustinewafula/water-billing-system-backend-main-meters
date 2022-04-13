@@ -33,7 +33,7 @@ Route::prefix('v1')->group(function () {
             Route::post('password/reset', [ForgotPasswordController::class, 'submitResetPasswordForm']);
             Route::group(['middleware' => ['role:super-admin|admin|supervisor', 'auth:api']], function () {
                 Route::get('profile', [AuthController::class, 'user']);
-                Route::put('profile/{user}', [AuthController::class, 'update']);
+                Route::put('profile/{user}', [AuthController::class, 'update'])->middleware('cacheResponse:User');
                 Route::get('logout', [AuthController::class, 'logout']);
             });
         });
@@ -43,48 +43,48 @@ Route::prefix('v1')->group(function () {
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
             Route::group(['middleware' => 'role:user'], function () {
                 Route::group(['middleware' => 'auth:api'], function () {
-                    Route::get('profile', [AuthController::class, 'user']);
+                    Route::get('profile', [AuthController::class, 'user'])->middleware('cacheResponse:User');
                     Route::get('logout', [AuthController::class, 'logout']);
                 });
             });
         });
     });
     Route::group(['middleware' => ['auth:api']], static function () {
-        Route::apiResource('meters', MeterController::class);
-        Route::apiResource('meter-readings', MeterReadingController::class);
-        Route::apiResource('users', UserController::class);
-        Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
+        Route::apiResource('meters', MeterController::class)->middleware('cacheResponse:Meter');
+        Route::apiResource('meter-readings', MeterReadingController::class)->middleware('cacheResponse:MeterReading');
+        Route::apiResource('users', UserController::class)->middleware('cacheResponse:User');
+        Route::apiResource('meter-stations', MeterStationController::class)->except(['show'])->middleware('cacheResponse:MeterStation');
         Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
         Route::apiResource('monthly-service-charges', MonthlyServiceChargeController::class)->only([
             'index', 'show'
-        ]);
+        ])->middleware('cacheResponse:MonthlyServiceCharge');
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
-        ]);
+        ])->middleware('cacheResponse:Transaction');
         Route::apiResource('meter-tokens', MeterTokenController::class)->except([
             'update', 'destroy'
-        ]);
+        ])->middleware('cacheResponse:MeterToken');
         Route::apiResource('settings', SettingController::class)->only([
             'index', 'update'
-        ]);
+        ])->middleware('cacheResponse:Setting');
         Route::get('system-users', [UserController::class, 'systemUsersIndex']);
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
-        Route::get('statistics', [StatisticsController::class, 'index']);
-        Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
-        Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
-        Route::get('available-meters', [MeterController::class, 'availableIndex']);
-        Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
-        Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
-        Route::get('meter-types', [MeterController::class, 'typeIndex']);
+        Route::group(['middleware' => ['doNotCacheResponse']], static function () {
+            Route::get('statistics', [StatisticsController::class, 'index']);
+            Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
+            Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
+            Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
+            Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
+            Route::get('download-users', [UserController::class, 'download']);
+        });
+        Route::get('available-meters', [MeterController::class, 'availableIndex'])->middleware('cacheResponse:Meter');
+        Route::get('meter-types', [MeterController::class, 'typeIndex'])->middleware('cacheResponse:MeterType');
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
-        Route::get('sms', [SmsController::class, 'index']);
+        Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
         Route::post('sms', [SmsController::class, 'send']);
         Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
-        Route::get('settings', [SettingController::class, 'index']);
-        Route::get('download-users', [UserController::class, 'download']);
-        Route::post('settings', [SettingController::class, 'update']);
-        Route::get('roles', [UserController::class, 'rolesIndex']);
+        Route::get('roles', [UserController::class, 'rolesIndex'])->middleware('cacheResponse:Role');
     });
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);

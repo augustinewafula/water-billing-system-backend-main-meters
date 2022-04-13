@@ -63,6 +63,7 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
+            CacheResponse::class,
         ],
 
         'api' => [
@@ -94,5 +95,6 @@ class Kernel extends HttpKernel
         'role' => RoleMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
         'doNotCacheResponse' => DoNotCacheResponse::class,
+        'cacheResponse' => CacheResponse::class,
     ];
 }
