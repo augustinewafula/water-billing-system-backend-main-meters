@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\Uuid;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +10,7 @@ use Laravel\Scout\Searchable;
 
 class Sms extends Model
 {
-    use HasFactory, Uuid, Searchable;
+    use HasFactory, HasUuid, Searchable;
 
     public $incrementing = false;
 

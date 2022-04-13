@@ -6,7 +6,7 @@ use App\Enums\MeterMode;
 use App\Enums\MeterReadingStatus;
 use App\Enums\ValveStatus;
 use App\Models\MeterReading;
-use App\Traits\ToggleValveStatus;
+use App\Traits\TogglesValveStatus;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Bus\Queueable;
@@ -19,7 +19,7 @@ use Throwable;
 
 class SwitchOnPaidMeter implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, ToggleValveStatus;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus;
 
     protected $meter;
 

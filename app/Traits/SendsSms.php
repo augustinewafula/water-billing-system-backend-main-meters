@@ -8,9 +8,9 @@ use Log;
 use stdClass;
 use Throwable;
 
-trait SendSms
+trait SendsSms
 {
-    use StoreSms;
+    use StoresSms;
 
     /**
      * @throws Exception

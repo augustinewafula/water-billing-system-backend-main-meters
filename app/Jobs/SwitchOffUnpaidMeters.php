@@ -7,7 +7,7 @@ use App\Enums\MeterReadingStatus;
 use App\Enums\ValveStatus;
 use App\Models\Meter;
 use App\Models\MeterReading;
-use App\Traits\ToggleValveStatus;
+use App\Traits\TogglesValveStatus;
 use DB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -21,7 +21,7 @@ use Throwable;
 
 class SwitchOffUnpaidMeters implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, ToggleValveStatus;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus;
 
     /**
      * Create a new job instance.

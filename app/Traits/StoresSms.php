@@ -5,7 +5,7 @@ namespace App\Traits;
 use App\Models\Sms;
 use Exception;
 
-trait StoreSms
+trait StoresSms
 {
 
     /**

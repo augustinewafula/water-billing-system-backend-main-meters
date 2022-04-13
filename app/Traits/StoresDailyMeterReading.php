@@ -5,7 +5,7 @@ namespace App\Traits;
 use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Models\DailyMeterReading;
 
-trait StoreDailyMeterReading
+trait StoresDailyMeterReading
 {
     public function storeDailyReading(CreateDailyMeterReadingRequest $request): void
     {

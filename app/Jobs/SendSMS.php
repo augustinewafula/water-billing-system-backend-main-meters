@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Traits\SendsSms;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class SendSMS implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, \App\Traits\SendSms;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SendsSms;
 
     protected $to, $message, $user_id;
 

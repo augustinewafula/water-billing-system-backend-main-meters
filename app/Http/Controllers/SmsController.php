@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sms;
 use App\Models\User;
-use App\Traits\SendSms;
+use App\Traits\SendsSms;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Throwable;
 
 class SmsController extends Controller
 {
-    use SendSms;
+    use SendsSms;
 
     public function __construct()
     {

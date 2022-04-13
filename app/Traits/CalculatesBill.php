@@ -5,7 +5,7 @@ namespace App\Traits;
 use App\Models\MeterCharge;
 use App\Models\ServiceCharge;
 
-trait calculateBill
+trait calculatesBill
 {
     public function calculateBill($previous_reading, $current_reading): float
     {

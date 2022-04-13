@@ -7,7 +7,7 @@ use App\Models\Meter;
 use App\Models\User;
 use Carbon\Carbon;
 
-trait SendMeterReading
+trait SendsMeterReading
 {
     public function sendMeterReading($meter_reading): void
     {

@@ -8,9 +8,9 @@ use Http;
 use JsonException;
 use Log;
 
-trait ToggleValveStatus
+trait TogglesValveStatus
 {
-    use AuthenticateMeter;
+    use AuthenticatesMeter;
 
     /**
      * @throws JsonException

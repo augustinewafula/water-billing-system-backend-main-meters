@@ -9,7 +9,7 @@ use Throwable;
 
 trait GetMetersInformation
 {
-    use AuthenticateMeter;
+    use AuthenticatesMeter;
 
     /**
      * @throws JsonException

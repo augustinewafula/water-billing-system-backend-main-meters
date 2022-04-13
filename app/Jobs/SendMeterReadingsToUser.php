@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\MeterReading;
-use App\Traits\SendMeterReading;
+use App\Traits\SendsMeterReading;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -14,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 
 class SendMeterReadingsToUser implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SendMeterReading;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SendsMeterReading;
 
     /**
      * Create a new job instance.

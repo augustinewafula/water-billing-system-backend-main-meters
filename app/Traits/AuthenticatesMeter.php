@@ -6,7 +6,7 @@ use Http;
 use JsonException;
 use Log;
 
-trait AuthenticateMeter
+trait AuthenticatesMeter
 {
     /**
      * @throws JsonException|JsonException
