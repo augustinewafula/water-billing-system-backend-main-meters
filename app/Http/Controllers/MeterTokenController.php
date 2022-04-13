@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateMeterTokenRequest;
 use App\Jobs\SendSMS;
 use App\Models\MeterToken;
+use App\Models\MpesaTransaction;
+use App\Traits\ProcessPrepaidMeterTransaction;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Log;
 use Str;
+use Throwable;
 
 class MeterTokenController extends Controller
 {
+    use ProcessPrepaidMeterTransaction;
 
     public function __construct()
     {
@@ -32,6 +39,23 @@ class MeterTokenController extends Controller
             ->join('users', 'users.meter_id', 'meters.id');
         $meter_tokens = $this->filterQuery($request, $meter_tokens);
         return response()->json($meter_tokens->paginate(10));
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function store(CreateMeterTokenRequest $request): JsonResponse
+    {
+        try {
+            $mpesa_transaction = MpesaTransaction::where('TransID', $request->mpesa_transaction_reference)->first();
+            $this->processPrepaidTransaction($request->meter_id, $mpesa_transaction, 0);
+        } catch (Throwable $throwable) {
+            DB::rollBack();
+            Log::error($throwable);
+            $response = ['message' => 'Failed to generate token.'];
+            return response()->json($response, 422);
+        }
+        return response()->json('generated');
     }
 
     /**
