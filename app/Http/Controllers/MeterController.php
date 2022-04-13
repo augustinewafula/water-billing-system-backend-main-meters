@@ -139,7 +139,7 @@ class MeterController extends Controller
             'mode' => $request->mode
         ]);
         try {
-            if ($request->number !== $meter->number & MeterType::find($request->type_id)->name === 'Prepaid') {
+            if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid') {
                 $this->registerPrepaidMeter($meter->id);
             }
         } catch (Throwable $exception) {
