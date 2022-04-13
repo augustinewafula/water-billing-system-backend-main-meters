@@ -55,11 +55,10 @@ trait ProcessPrepaidMeterTransaction
      * @param $meter_id
      * @param $mpesa_transaction
      * @param $monthly_service_charge_deducted
-     * @param $mpesa_transaction_id
      * @return void
      * @throws Throwable
      */
-    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted): void
     {
         $user = User::where('meter_id', $meter_id)->first();
         throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
@@ -83,7 +82,7 @@ trait ProcessPrepaidMeterTransaction
                 $user->update([
                     'account_balance' => $user_total_amount
                 ]);
-                MpesaTransaction::find($mpesa_transaction_id)->update([
+                MpesaTransaction::find($mpesa_transaction->id)->update([
                     'Consumed' => true,
                 ]);
                 DB::commit();
@@ -97,10 +96,11 @@ trait ProcessPrepaidMeterTransaction
 
         try {
             DB::beginTransaction();
-            $token = strtok($this->generateMeterToken($user->meter_number, $user_total_amount), ',');
+            $token = $this->generateMeterToken($user->meter_number, $user_total_amount);
             throw_if($token === null, RuntimeException::class, 'Failed to generate token');
+            $token = strtok($token, ',');
             MeterToken::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'mpesa_transaction_id' => $mpesa_transaction->id,
                 'token' => strtok($token, ','),
                 'units' => $units,
                 'service_fee' => $this->calculateServiceFee($user_total_amount, 'prepay'),
@@ -110,7 +110,7 @@ trait ProcessPrepaidMeterTransaction
             $user->update([
                 'account_balance' => 0
             ]);
-            MpesaTransaction::find($mpesa_transaction_id)->update([
+            MpesaTransaction::find($mpesa_transaction->id)->update([
                 'Consumed' => true,
             ]);
             $date = Carbon::now()->toDateTimeString();

@@ -47,11 +47,11 @@ trait ProcessMonthlyServiceChargeTransaction
     /**
      * @throws Throwable
      */
-    public function storeMonthlyServiceCharge($user_id, $mpesa_transaction_id, $transaction_amount)
+    public function storeMonthlyServiceCharge($user_id, $mpesa_transaction)
     {
         $user = User::findOrFail($user_id);
-        $user_total_amount = $transaction_amount;
-        $amount_paid = $transaction_amount;
+        $user_total_amount = $mpesa_transaction->TransAmount;
+        $amount_paid = $mpesa_transaction->TransAmount;
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getFirstMonthToBill($user);
         $total_monthly_service_charge_paid = 0;
@@ -101,7 +101,7 @@ trait ProcessMonthlyServiceChargeTransaction
                     'balance' => $balance,
                     'credit' => $credit,
                     'amount_over_paid' => $amount_over_paid,
-                    'mpesa_transaction_id' => $mpesa_transaction_id,
+                    'mpesa_transaction_id' => $mpesa_transaction->id,
                 ]);
                 $monthly_service_charge->update([
                     'status' => $status
@@ -117,7 +117,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 $user->update([
                     'account_balance' => $user_account_balance
                 ]);
-                MpesaTransaction::find($mpesa_transaction_id)->update([
+                MpesaTransaction::find($mpesa_transaction->id)->update([
                     'Consumed' => true,
                 ]);
                 $total_monthly_service_charge_paid += $amount_to_deduct;

@@ -74,10 +74,9 @@ class MeterBillingController extends Controller
         $request->validate([
             'TransID' => 'unique:mpesa_transactions'
         ]);
-        $mpesa_transaction_id = $this->storeMpesaTransaction($request);
-        if ($mpesa_transaction_id) {
-            $this->processMpesaTransaction($request, $mpesa_transaction_id);
-        }
+        $mpesa_transaction = $this->storeMpesaTransaction($request);
+        $this->processMpesaTransaction($mpesa_transaction);
+
 
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
@@ -128,9 +127,9 @@ class MeterBillingController extends Controller
 
     /**
      * @param Request $mpesa_transaction
-     * @return String
+     * @return mixed
      */
-    public function storeMpesaTransaction(Request $mpesa_transaction): ?string
+    public function storeMpesaTransaction(Request $mpesa_transaction): MpesaTransaction
     {
         return MpesaTransaction::create([
             'TransactionType' => $mpesa_transaction->TransactionType,
@@ -146,14 +145,14 @@ class MeterBillingController extends Controller
             'FirstName' => $mpesa_transaction->FirstName,
             'MiddleName' => $mpesa_transaction->MiddleName,
             'LastName' => $mpesa_transaction->LastName,
-        ])->id;
+        ]);
     }
 
     /**
      * @throws JsonException
      * @throws Throwable
      */
-    private function processMpesaTransaction(Request $mpesa_transaction, $mpesa_transaction_id): void
+    private function processMpesaTransaction(MpesaTransaction $mpesa_transaction): void
     {
         $user = User::select('users.id as user_id', 'users.account_number', 'users.first_monthly_service_fee_on', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
@@ -162,7 +161,7 @@ class MeterBillingController extends Controller
             ->first();
         if (!$user) {
             UnresolvedMpesaTransaction::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
+                'mpesa_transaction_id' => $mpesa_transaction->id,
                 'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
             ]);
             return;
@@ -170,16 +169,16 @@ class MeterBillingController extends Controller
 
         $monthly_service_charge_deducted = 0;
         if ($this->hasMonthlyServiceChargeDebt($user)) {
-            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction_id, $mpesa_transaction->TransAmount);
+            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction);
         }
 
         if ($user->meter_type_name === 'Prepaid') {
-            $this->processPrepaidTransaction($user->user_id, $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id);
+            $this->processPrepaidTransaction($user->meter_id, $mpesa_transaction, $monthly_service_charge_deducted);
             return;
 
         }
 
-        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id);
+        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted);
     }
 
     private function safaricomIpAddress($clientIpAddress): bool
@@ -206,13 +205,12 @@ class MeterBillingController extends Controller
 
     /**
      * @param $user
-     * @param Request $mpesa_transaction
+     * @param MpesaTransaction $mpesa_transaction
      * @param $monthly_service_charge_deducted
-     * @param $mpesa_transaction_id
      * @return void
      * @throws Throwable
      */
-    private function processPostPaidTransaction($user, Request $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $monthly_service_charge_deducted): void
     {
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
@@ -225,6 +223,6 @@ class MeterBillingController extends Controller
         $message = "Dear $mpesa_transaction->FirstName $mpesa_transaction->LastName, your payment of Ksh $mpesa_transaction->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
         SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
 
-        $this->store($request, $mpesa_transaction_id);
+        $this->store($request, $mpesa_transaction->id);
     }
 }
