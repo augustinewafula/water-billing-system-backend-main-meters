@@ -7,7 +7,7 @@ use Http;
 use JsonException;
 use Throwable;
 
-trait GetMetersInformation
+trait GetsMeterInformation
 {
     use AuthenticatesMeter;
 

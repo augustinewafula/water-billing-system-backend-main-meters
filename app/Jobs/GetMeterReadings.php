@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
-use App\Traits\GetMetersInformation;
+use App\Traits\GetsMeterInformation;
 use App\Traits\StoreMeterReading;
 use App\Traits\StoresDailyMeterReading;
 use Carbon\Carbon;
@@ -21,7 +21,7 @@ use Throwable;
 
 class GetMeterReadings implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoresDailyMeterReading, GetMetersInformation;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoreMeterReading, StoresDailyMeterReading, GetsMeterInformation;
 
     protected $type;
 
