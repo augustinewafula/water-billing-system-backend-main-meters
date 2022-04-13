@@ -27,6 +27,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Spatie\Permission\Middlewares\PermissionMiddleware;
 use Spatie\Permission\Middlewares\RoleMiddleware;
 use Spatie\Permission\Middlewares\RoleOrPermissionMiddleware;
+use Spatie\ResponseCache\Middlewares\CacheResponse;
+use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
 class Kernel extends HttpKernel
 {
@@ -67,6 +69,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             SubstituteBindings::class,
+            CacheResponse::class,
         ],
     ];
 
@@ -90,5 +93,6 @@ class Kernel extends HttpKernel
         'permission' => PermissionMiddleware::class,
         'role' => RoleMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
+        'doNotCacheResponse' => DoNotCacheResponse::class,
     ];
 }
