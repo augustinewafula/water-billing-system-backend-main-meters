@@ -46,38 +46,49 @@ class GetMeterReadings implements ShouldQueue
     {
         if ($changshaMeters = $this->getChangshaNbIotMeterReadings()) {
             foreach ($changshaMeters as $meter) {
-                $meter_number = $meter->meterno;
-                $meter_reading = $meter->lasttotalall;
-                $meter_voltage = $meter->battery;
-                $this->saveMeterReading($meter_number, $meter_reading, $meter_voltage);
+                $meter_details = (object)[
+                    'meter_number' => $meter->meterno,
+                    'meter_reading' => $meter->lasttotalall,
+                    'meter_voltage' => $meter->battery,
+                    'signal_intensity' => $meter->rssi,
+                    'last_communication_date' => $meter->mdate
+                ];
+                $this->saveMeterReading($meter_details);
             }
         }
         if ($SHMeters = $this->getShMeterReadings()) {
             foreach ($SHMeters as $meter) {
-                $meter_number = $meter->MeterId;
-                $meter_reading = $meter->PositiveCumulativeFlow;
-                $meter_voltage = $meter->MeterVoltage;
-                $this->saveMeterReading($meter_number, $meter_reading, $meter_voltage);
+                $meter_details = (object)[
+                    'meter_number' => $meter->MeterId,
+                    'meter_reading' => $meter->PositiveCumulativeFlow,
+                    'meter_voltage' => $meter->MeterVoltage,
+                    'signal_intensity' => $meter->SignalIntensity,
+                    'last_communication_date' => $meter->CommunicationTime
+                ];
+                $this->saveMeterReading($meter_details);
             }
         }
     }
 
-    public function saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage): void
+    public function saveDailyMeterReadings($database_meter, $meter_details): void
     {
         $request = new CreateDailyMeterReadingRequest();
         $request->setMethod('POST');
         $request->request->add([
             'meter_id' => $database_meter->id,
-            'reading' => round($meter_reading)
+            'reading' => round($meter_details->meter_reading)
         ]);
         try {
-            DB::transaction(function () use ($request, $database_meter, $meter_voltage) {
-                $this->storeDailyReading($request);
-                $database_meter->update([
-                    'battery_voltage' => $meter_voltage
-                ]);
-            });
+            DB::beginTransaction();
+            $this->storeDailyReading($request);
+            $database_meter->update([
+                'battery_voltage' => $meter_details->meter_voltage,
+                'last_communication_date' => $meter_details->last_communication_date,
+                'signal_intensity' => $meter_details->signal_intensity
+            ]);
+            DB::commit();
         } catch (Throwable $exception) {
+            DB::rollBack();
             Log::error($exception);
         }
     }
@@ -109,20 +120,18 @@ class GetMeterReadings implements ShouldQueue
     }
 
     /**
-     * @param $meter_number
-     * @param $meter_reading
-     * @param $meter_voltage
+     * @param $meter_details
      * @return void
      */
-    public function saveMeterReading($meter_number, $meter_reading, $meter_voltage): void
+    public function saveMeterReading($meter_details): void
     {
-        Log::info('Checking Meter number: ' . $meter_number);
-        $database_meter = Meter::where('number', $meter_number)->first();
+//        Log::info('Checking Meter number: ' . $meter_details->meter_number);
+        $database_meter = Meter::where('number', $meter_details->meter_number)->first();
         if ($database_meter) {
             if ($this->type === 'daily') {
-                $this->saveDailyMeterReadings($database_meter, $meter_reading, $meter_voltage);
+                $this->saveDailyMeterReadings($database_meter, $meter_details);
             } else {
-                $this->saveMonthlyMeterReadings($database_meter, $meter_reading);
+                $this->saveMonthlyMeterReadings($database_meter, $meter_details->meter_reading);
             }
         }
     }
