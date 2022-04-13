@@ -52,16 +52,17 @@ trait ProcessPrepaidMeterTransaction
     }
 
     /**
-     * @param $user_id
+     * @param $meter_id
      * @param $content
      * @param $monthly_service_charge_deducted
      * @param $mpesa_transaction_id
      * @return void
-     * @throws JsonException|Throwable
+     * @throws Throwable
      */
-    private function processPrepaidTransaction($user_id, $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    private function processPrepaidTransaction($meter_id, $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
     {
-        $user = User::findOrFail($user_id);
+        $user = User::where('meter_id', $meter_id)->first();
+        throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
         $user_total_amount = $content->TransAmount - $monthly_service_charge_deducted;
         if ($user->account_balance > 0) {
             $user_total_amount += $user->account_balance;
