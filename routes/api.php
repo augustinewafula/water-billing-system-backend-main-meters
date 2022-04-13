@@ -61,8 +61,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
         ]);
-        Route::apiResource('meter-tokens', MeterTokenController::class)->only([
-            'index', 'show'
+        Route::apiResource('meter-tokens', MeterTokenController::class)->except([
+            'update', 'destroy'
         ]);
         Route::apiResource('settings', SettingController::class)->only([
             'index', 'update'
