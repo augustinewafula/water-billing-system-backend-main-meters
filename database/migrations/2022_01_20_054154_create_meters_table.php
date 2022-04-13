@@ -26,7 +26,7 @@ public function up()
         $table->dateTime('last_reading_date')->nullable();
         $table->dateTime('last_billing_date')->nullable();
         $table->dateTime('last_communication_date')->nullable();
-        $table->decimal('voltage', 15)->nullable();
+        $table->decimal('battery_voltage', 15)->nullable();
         $table->integer('signal')->nullable();
         $table->string('valve_last_switched_off_by')->default('system')->comment('user or system');
         $table->string('sim_card_number')->nullable();

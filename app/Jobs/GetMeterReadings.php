@@ -74,7 +74,7 @@ class GetMeterReadings implements ShouldQueue
             DB::transaction(function () use ($request, $database_meter, $meter_voltage) {
                 $this->storeDailyReading($request);
                 $database_meter->update([
-                    'voltage' => $meter_voltage
+                    'battery_voltage' => $meter_voltage
                 ]);
             });
         } catch (Throwable $exception) {
