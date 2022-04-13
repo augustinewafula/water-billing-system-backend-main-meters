@@ -16,7 +16,7 @@ class Meter extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'voltage', 'signal', 'main_meter', 'sim_card_number', 'valve_last_switched_off_by'];
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'last_communication_date', 'voltage', 'signal', 'main_meter', 'sim_card_number', 'valve_last_switched_off_by'];
 
     /**
      * The attributes that should be cast.
@@ -26,6 +26,7 @@ class Meter extends Model
     protected $casts = [
         'last_reading_date' => 'datetime',
         'last_billing_date' => 'datetime',
+        'last_communication_date' => 'datetime',
     ];
 
     /**
