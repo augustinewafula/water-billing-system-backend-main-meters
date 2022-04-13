@@ -7,4 +7,5 @@
 * Run ` php artisan key:generate` to generate the app key
 * Run ` php artisan migrate:fresh --seed ` 
 * Run ` php artisan passport:install ` 
+* Install Redis
 * Done !!!
