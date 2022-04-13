@@ -9,7 +9,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use DB;
 use Http;
-use Illuminate\Http\Request;
 use JsonException;
 use Log;
 use RuntimeException;
@@ -54,13 +53,13 @@ trait ProcessPrepaidMeterTransaction
 
     /**
      * @param $user_id
-     * @param Request $content
+     * @param $content
      * @param $monthly_service_charge_deducted
      * @param $mpesa_transaction_id
      * @return void
      * @throws JsonException|Throwable
      */
-    private function processPrepaidTransaction($user_id, Request $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    private function processPrepaidTransaction($user_id, $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
     {
         $user = User::findOrFail($user_id);
         $user_total_amount = $content->TransAmount - $monthly_service_charge_deducted;
