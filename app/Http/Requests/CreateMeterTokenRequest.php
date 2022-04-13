@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CreateMeterTokenRequest extends FormRequest
 {
+    protected $stopOnFirstFailure = true;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -27,7 +28,7 @@ class CreateMeterTokenRequest extends FormRequest
     {
         return [
             'meter_id' => ['required', 'string', 'exists:meters,id', new prepaidMeter()],
-            'mpesa_transaction_reference' => ['required', 'string', 'exists:mpesa_transactions,TransID', new mpesaTransactionNotConsumed()],
+            'mpesa_transaction_reference' => ['bail', 'required', 'string', 'exists:mpesa_transactions,TransID', new mpesaTransactionNotConsumed()],
         ];
     }
 }
