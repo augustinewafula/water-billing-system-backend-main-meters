@@ -53,23 +53,23 @@ trait ProcessPrepaidMeterTransaction
 
     /**
      * @param $meter_id
-     * @param $content
+     * @param $mpesa_transaction
      * @param $monthly_service_charge_deducted
      * @param $mpesa_transaction_id
      * @return void
      * @throws Throwable
      */
-    private function processPrepaidTransaction($meter_id, $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id): void
     {
         $user = User::where('meter_id', $meter_id)->first();
         throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
-        $user_total_amount = $content->TransAmount - $monthly_service_charge_deducted;
+        $user_total_amount = $mpesa_transaction->TransAmount - $monthly_service_charge_deducted;
         if ($user->account_balance > 0) {
             $user_total_amount += $user->account_balance;
         }
         if ($user_total_amount <= 0) {
             $message = "Your paid amount is not enough to purchase tokens, Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
-            SendSMS::dispatch($content->MSISDN, $message, $user->id);
+            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
             return;
         }
         $units = $this->calculateUnits($user_total_amount);
@@ -91,7 +91,7 @@ trait ProcessPrepaidMeterTransaction
                 DB::rollBack();
                 Log::error($throwable);
             }
-            SendSMS::dispatch($content->MSISDN, $message, $user->id);
+            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
             return;
         }
 
@@ -114,8 +114,8 @@ trait ProcessPrepaidMeterTransaction
                 'Consumed' => true,
             ]);
             $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $content->TransAmount\nDate: $date\nRef: $content->TransID";
-            SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
+            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $mpesa_transaction->TransAmount\nDate: $date\nRef: $mpesa_transaction->TransID";
+            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
             DB::commit();
 
         } catch (Throwable $throwable) {

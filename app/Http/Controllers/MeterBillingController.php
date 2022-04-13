@@ -127,25 +127,25 @@ class MeterBillingController extends Controller
 
 
     /**
-     * @param Request $content
+     * @param Request $mpesa_transaction
      * @return String
      */
-    public function storeMpesaTransaction(Request $content): ?string
+    public function storeMpesaTransaction(Request $mpesa_transaction): ?string
     {
         return MpesaTransaction::create([
-            'TransactionType' => $content->TransactionType,
-            'TransID' => $content->TransID,
-            'TransTime' => $content->TransTime,
-            'TransAmount' => $content->TransAmount,
-            'BusinessShortCode' => $content->BusinessShortCode,
-            'BillRefNumber' => $content->BillRefNumber,
-            'InvoiceNumber' => $content->InvoiceNumber,
-            'OrgAccountBalance' => $content->OrgAccountBalance,
-            'ThirdPartyTransID' => $content->ThirdPartyTransID,
-            'MSISDN' => $content->MSISDN,
-            'FirstName' => $content->FirstName,
-            'MiddleName' => $content->MiddleName,
-            'LastName' => $content->LastName,
+            'TransactionType' => $mpesa_transaction->TransactionType,
+            'TransID' => $mpesa_transaction->TransID,
+            'TransTime' => $mpesa_transaction->TransTime,
+            'TransAmount' => $mpesa_transaction->TransAmount,
+            'BusinessShortCode' => $mpesa_transaction->BusinessShortCode,
+            'BillRefNumber' => $mpesa_transaction->BillRefNumber,
+            'InvoiceNumber' => $mpesa_transaction->InvoiceNumber,
+            'OrgAccountBalance' => $mpesa_transaction->OrgAccountBalance,
+            'ThirdPartyTransID' => $mpesa_transaction->ThirdPartyTransID,
+            'MSISDN' => $mpesa_transaction->MSISDN,
+            'FirstName' => $mpesa_transaction->FirstName,
+            'MiddleName' => $mpesa_transaction->MiddleName,
+            'LastName' => $mpesa_transaction->LastName,
         ])->id;
     }
 
@@ -153,12 +153,12 @@ class MeterBillingController extends Controller
      * @throws JsonException
      * @throws Throwable
      */
-    private function processMpesaTransaction(Request $content, $mpesa_transaction_id): void
+    private function processMpesaTransaction(Request $mpesa_transaction, $mpesa_transaction_id): void
     {
         $user = User::select('users.id as user_id', 'users.account_number', 'users.first_monthly_service_fee_on', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->leftJoin('meter_types', 'meter_types.id', 'meters.type_id')
-            ->where('account_number', $content->BillRefNumber)
+            ->where('account_number', $mpesa_transaction->BillRefNumber)
             ->first();
         if (!$user) {
             UnresolvedMpesaTransaction::create([
@@ -170,16 +170,16 @@ class MeterBillingController extends Controller
 
         $monthly_service_charge_deducted = 0;
         if ($this->hasMonthlyServiceChargeDebt($user)) {
-            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction_id, $content->TransAmount);
+            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction_id, $mpesa_transaction->TransAmount);
         }
 
         if ($user->meter_type_name === 'Prepaid') {
-            $this->processPrepaidTransaction($user->user_id, $content, $monthly_service_charge_deducted, $mpesa_transaction_id);
+            $this->processPrepaidTransaction($user->user_id, $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id);
             return;
 
         }
 
-        $this->processPostPaidTransaction($user, $content, $monthly_service_charge_deducted, $mpesa_transaction_id);
+        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id);
     }
 
     private function safaricomIpAddress($clientIpAddress): bool
@@ -206,24 +206,24 @@ class MeterBillingController extends Controller
 
     /**
      * @param $user
-     * @param Request $content
+     * @param Request $mpesa_transaction
      * @param $monthly_service_charge_deducted
      * @param $mpesa_transaction_id
      * @return void
      * @throws Throwable
      */
-    private function processPostPaidTransaction($user, Request $content, $monthly_service_charge_deducted, $mpesa_transaction_id): void
+    private function processPostPaidTransaction($user, Request $mpesa_transaction, $monthly_service_charge_deducted, $mpesa_transaction_id): void
     {
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
         $request->request->add([
             'meter_id' => $user->meter_id,
-            'amount_paid' => $content->TransAmount,
+            'amount_paid' => $mpesa_transaction->TransAmount,
             'monthly_service_charge_deducted' => $monthly_service_charge_deducted
         ]);
         //TODO::make organization name dynamic
-        $message = "Dear $content->FirstName $content->LastName, your payment of Ksh $content->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
-        SendSMS::dispatch($content->MSISDN, $message, $user->user_id);
+        $message = "Dear $mpesa_transaction->FirstName $mpesa_transaction->LastName, your payment of Ksh $mpesa_transaction->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
+        SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
 
         $this->store($request, $mpesa_transaction_id);
     }
