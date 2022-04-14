@@ -7,6 +7,8 @@ use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterReading;
+use App\Models\MonthlyServiceCharge;
+use App\Models\MonthlyServiceChargePayment;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
@@ -81,24 +83,58 @@ trait StoreMeterReading
 
     }
 
+    /**
+     * @throws Throwable
+     */
     public function processAvailableCredits($meter, $meter_reading, $previous_meter_reading): void
     {
         $user = User::where('meter_id', $meter->id)->first();
+        throw_if($user === null, 'RuntimeException', 'Meter user not found');
         if ($this->userHasAccountBalance($user)) {
             $request = new CreateMeterBillingRequest();
             $request->setMethod('POST');
             $request->request->add([
                 'meter_id' => $meter->id,
-                'amount_paid' => 0
+                'amount_paid' => 0,
+                'monthly_service_charge_deducted' => 0,
             ]);
-            $last_meter_billing = MeterBilling::where('meter_reading_id', $previous_meter_reading->id)->latest()->first();
-            $this->processMeterBillings($request, [$meter_reading], $user, $last_meter_billing->mpesa_transaction_id);
+
+            $this->processMeterBillings($request, [$meter_reading], $user, $this->getPreviousMpesaTransactionId($user->id, $previous_meter_reading));
         }
     }
 
     public function userHasAccountBalance($user): bool
     {
         return $user->account_balance > 0;
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function getPreviousMpesaTransactionId($user_id, $previous_meter_reading)
+    {
+        if ($previous_meter_reading !== null){
+            $last_meter_billing = MeterBilling::where('meter_reading_id', $previous_meter_reading->id)->latest()->first();
+            if ($last_meter_billing){
+                return $last_meter_billing->mpesa_transaction_id;
+            }
+
+        }
+
+        $monthly_service_charge = MonthlyServiceCharge::where('user_id', $user_id)
+            ->latest()
+            ->limit(1)
+            ->first();
+        throw_if($monthly_service_charge === null, 'RuntimeException', 'Last monthly service charge record not found');
+
+        $monthly_service_charge_payment = MonthlyServiceChargePayment::where('monthly_service_charge_id', $monthly_service_charge->id)
+            ->latest()
+            ->limit(1)
+            ->first();
+        throw_if($monthly_service_charge_payment === null, 'RuntimeException', 'Last monthly service charge transaction not found');
+
+        return $monthly_service_charge_payment->mpesa_transaction_id;
+
     }
 
 }
