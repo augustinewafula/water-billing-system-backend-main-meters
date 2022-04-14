@@ -64,10 +64,9 @@ trait ProcessPrepaidMeterTransaction
     {
         $user = User::where('meter_id', $meter_id)->first();
         throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
-        $user_total_amount = $mpesa_transaction->TransAmount - $monthly_service_charge_deducted;
-        if ($user->account_balance > 0) {
-            $user_total_amount += $user->account_balance;
-        }
+
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted);
+
         if ($user_total_amount <= 0) {
             $message = "Your paid amount is not enough to purchase tokens, Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
             SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
@@ -124,6 +123,25 @@ trait ProcessPrepaidMeterTransaction
             DB::rollBack();
             Log::error($throwable);
         }
+    }
+
+    public function calculateUserTotalAmount($user_account_balance, $transaction_amount, $monthly_service_charge_deducted)
+    {
+        $user_total_amount = $transaction_amount;
+        $service_charge_overpaid = 0;
+        if ($monthly_service_charge_deducted > 0) {
+            $user_total_amount = $transaction_amount - $monthly_service_charge_deducted;
+            $service_charge_overpaid = $user_total_amount;
+        }
+        if ($user_account_balance > 0) {
+            $user_total_amount += $user_account_balance;
+
+        }
+        if($service_charge_overpaid > 0){
+            $user_total_amount -= $service_charge_overpaid;
+        }
+
+        return $user_total_amount;
     }
 
     /**
