@@ -67,7 +67,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('settings', SettingController::class)->only([
             'index', 'update'
         ])->middleware('cacheResponse:Setting');
-        Route::get('system-users', [UserController::class, 'systemUsersIndex']);
+        Route::get('system-users', [UserController::class, 'systemUsersIndex'])->middleware('cacheResponse:User');
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
         Route::group(['middleware' => ['doNotCacheResponse']], static function () {
             Route::get('statistics', [StatisticsController::class, 'index']);
