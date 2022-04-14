@@ -50,11 +50,28 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException
      */
-    public function mpesaValidation(Request $request): Response
+    public function mpesaValidation(Request $mpesa_transaction): Response
     {
-        $result_code = '0';
-        $result_description = 'Accepted validation request.';
+        if ($this->accountNumberExists($mpesa_transaction->BillRefNumber)){
+            $result_code = '0';
+            $result_description = 'Accepted validation request.';
+        }else{
+            $result_code = '1';
+            $result_description = 'Rejected validation request.';
+        }
         return $this->createValidationResponse($result_code, $result_description);
+    }
+
+    public function accountNumberExists($bill_reference_number): bool
+    {
+        $user = User::select('account_number')
+            ->where('account_number', $bill_reference_number)
+            ->first();
+        if ($user){
+            return true;
+        }
+        return false;
+
     }
 
 
