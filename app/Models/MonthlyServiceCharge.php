@@ -18,6 +18,8 @@ class MonthlyServiceCharge extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['user_id', 'service_charge', 'status', 'month'];
 
     public function setMonthAttribute(string $value): void

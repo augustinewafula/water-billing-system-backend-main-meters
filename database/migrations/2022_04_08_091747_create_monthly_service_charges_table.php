@@ -20,7 +20,7 @@ class CreateMonthlyServiceChargesTable extends Migration
             $table->decimal('service_charge', 15);
             $table->tinyInteger('status')->unsigned()->default(MonthlyServiceChargeStatus::NotPaid);
             $table->dateTime('month');
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 
