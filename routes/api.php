@@ -60,7 +60,7 @@ Route::prefix('v1')->group(function () {
         ]);
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
-        ]);
+        ])->middleware('doNotCacheResponse');
         Route::apiResource('meter-tokens', MeterTokenController::class)->except([
             'update', 'destroy'
         ]);
