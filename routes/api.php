@@ -50,23 +50,23 @@ Route::prefix('v1')->group(function () {
         });
     });
     Route::group(['middleware' => ['auth:api']], static function () {
-        Route::apiResource('meters', MeterController::class)->middleware('cacheResponse:Meter')->only('index','show');
-        Route::apiResource('meter-readings', MeterReadingController::class)->middleware('cacheResponse:MeterReading')->only('index','show');
-        Route::apiResource('users', UserController::class)->middleware('cacheResponse:User')->only('index','show');
-        Route::apiResource('meter-stations', MeterStationController::class)->except(['show'])->middleware('cacheResponse:MeterStation')->only('index','show');
+        Route::apiResource('meters', MeterController::class);
+        Route::apiResource('meter-readings', MeterReadingController::class);
+        Route::apiResource('users', UserController::class);
+        Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
         Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
         Route::apiResource('monthly-service-charges', MonthlyServiceChargeController::class)->only([
             'index', 'show'
-        ])->middleware('cacheResponse:MonthlyServiceCharge');
+        ]);
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
-        ])->middleware('cacheResponse:Transaction');
+        ]);
         Route::apiResource('meter-tokens', MeterTokenController::class)->except([
             'update', 'destroy'
-        ])->middleware('cacheResponse:MeterToken')->only('index','show');
+        ]);
         Route::apiResource('settings', SettingController::class)->only([
             'index', 'update'
-        ])->middleware('cacheResponse:Setting')->only('index','show');
+        ]);
         Route::get('system-users', [UserController::class, 'systemUsersIndex'])->middleware('cacheResponse:User');
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
         Route::group(['middleware' => ['doNotCacheResponse']], static function () {
