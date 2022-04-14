@@ -19,7 +19,7 @@ trait ProcessMonthlyServiceChargeTransaction
     public function hasMonthlyServiceChargeDebt($user_id): bool
     {
         $last_monthly_service_charge = MonthlyServiceCharge::where('user_id', $user_id)
-            ->latest('month')
+            ->latest()
             ->limit(1)
             ->first();
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
@@ -145,7 +145,7 @@ trait ProcessMonthlyServiceChargeTransaction
                 $users->orWhere('status', MonthlyServiceChargeStatus::NotPaid)
                     ->orWhere('status', MonthlyServiceChargeStatus::Balance);
             })
-            ->oldest('month')
+            ->oldest()
             ->limit(1)
             ->first();
         return Carbon::createFromFormat('Y-m', $last_monthly_service_charge->month)->startOfMonth();
