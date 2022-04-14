@@ -16,9 +16,9 @@ use Throwable;
 
 trait ProcessMonthlyServiceChargeTransaction
 {
-    public function hasMonthlyServiceChargeDebt($user): bool
+    public function hasMonthlyServiceChargeDebt($user_id): bool
     {
-        $last_monthly_service_charge = MonthlyServiceCharge::where('user_id', $user->user_id)
+        $last_monthly_service_charge = MonthlyServiceCharge::where('user_id', $user_id)
             ->latest('month')
             ->limit(1)
             ->first();

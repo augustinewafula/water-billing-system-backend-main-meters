@@ -160,7 +160,7 @@ class MeterBillingController extends Controller
         }
 
         $monthly_service_charge_deducted = 0;
-        if ($this->hasMonthlyServiceChargeDebt($user)) {
+        if ($this->hasMonthlyServiceChargeDebt($user->user_id)) {
             $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction);
         }
 
