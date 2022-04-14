@@ -111,14 +111,6 @@ class MeterBillingController extends Controller
 
         $user = User::where('meter_id', $request->meter_id)->first();
 
-        if (!$user) {
-            UnresolvedMpesaTransaction::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
-                'reason' => UnresolvedMpesaTransactionReason::UserNotFound
-            ]);
-            return response()->json('No user assigned to this meter', 422);
-        }
-
         $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id);
         SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
         return response()->json('created', 201);
