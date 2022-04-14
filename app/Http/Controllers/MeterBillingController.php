@@ -94,6 +94,10 @@ class MeterBillingController extends Controller
      */
     public function store(CreateMeterBillingRequest $request, $mpesa_transaction_id): JsonResponse
     {
+        $user = User::where('meter_id', $request->meter_id)->first();
+        if (!$user){
+            return response()->json('User not found', 422);
+        }
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
             ->where(function ($query) {
                 $query->where('status', MeterReadingStatus::NotPaid);
@@ -102,14 +106,15 @@ class MeterBillingController extends Controller
             ->orderBy('created_at', 'ASC')->get();
 
         if ($pending_meter_readings->count() === 0) {
-            UnresolvedMpesaTransaction::create([
-                'mpesa_transaction_id' => $mpesa_transaction_id,
-                'reason' => UnresolvedMpesaTransactionReason::MeterReadingNotFound
-            ]);
+            $user_account_balance = 0;
+            if ($user->account_balance > 0){
+                $user_account_balance += $user->account_balance;
+                $user->update([
+                    'account_balance' => $user_account_balance
+                ]);
+            }
             return response()->json('Meter reading not found', 422);
         }
-
-        $user = User::where('meter_id', $request->meter_id)->first();
 
         $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id);
         SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
