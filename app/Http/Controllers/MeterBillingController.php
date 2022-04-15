@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Traits\ProcessMpesaTransaction;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
@@ -66,7 +67,7 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException|Throwable
      */
-    public function mpesaConfirmation(Request $request): Response
+    public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
         if (!$this->safaricomIpAddress($client_ip)) {
