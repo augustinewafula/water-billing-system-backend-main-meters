@@ -79,7 +79,7 @@ class UserController extends Controller
     {
         $stationId = $request->query('station_id');
         $users = User::role('user')
-            ->select('users.name as Name', 'users.phone as Phone', 'users.email as Email', 'meters.number as Meter Number', 'users.account_number as Account Number')
+            ->select('users.name as Name', 'users.phone as Contact', 'users.account_number as Account Number', 'meters.last_reading as Previous Reading', )
             ->join('meters', 'meters.id', 'users.meter_id');
 
         $fileName = 'Customers';
@@ -88,6 +88,10 @@ class UserController extends Controller
             $station_name = MeterStation::find($stationId)->name;
             $fileName = "$station_name $fileName";
         }
+        $month_and_year = Carbon::now()->isoFormat('MMMM YYYY');
+        $fileName = "$fileName $month_and_year";
+        $current_month = Carbon::now()->isoFormat('MMMM');
+        $users = $users->addSelect(DB::raw("'' as 'Current Reading'"), DB::raw("'$current_month' as Month"));
 
         return response()->json([
             'users' => $users->get(),
