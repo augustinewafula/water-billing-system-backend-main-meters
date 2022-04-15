@@ -16,7 +16,7 @@ use Throwable;
 
 trait ProcessPrepaidMeterTransaction
 {
-    use CalculatesBill;
+    use CalculatesBill, CalculatesUserTotalAmount;
 
     protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
@@ -123,25 +123,6 @@ trait ProcessPrepaidMeterTransaction
             DB::rollBack();
             Log::error($throwable);
         }
-    }
-
-    public function calculateUserTotalAmount($user_account_balance, $transaction_amount, $monthly_service_charge_deducted)
-    {
-        $user_total_amount = $transaction_amount;
-        $service_charge_overpaid = 0;
-        if ($monthly_service_charge_deducted > 0) {
-            $user_total_amount = $transaction_amount - $monthly_service_charge_deducted;
-            $service_charge_overpaid = $user_total_amount;
-        }
-        if ($user_account_balance > 0) {
-            $user_total_amount += $user_account_balance;
-
-        }
-        if($service_charge_overpaid > 0){
-            $user_total_amount -= $service_charge_overpaid;
-        }
-
-        return $user_total_amount;
     }
 
     /**

@@ -14,6 +14,7 @@ use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use JsonException;
+use Log;
 use Throwable;
 
 trait ProcessMpesaTransaction
@@ -73,7 +74,9 @@ trait ProcessMpesaTransaction
         //TODO::make organization name dynamic
         $message = "Dear $mpesa_transaction->FirstName $mpesa_transaction->LastName, your payment of Ksh $mpesa_transaction->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
         SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
-
+        Log::info('meter_id: ' . $user->meter_id. PHP_EOL.
+            'amount_paid: ' . $mpesa_transaction->TransAmount. PHP_EOL.
+            'monthly_service_charge_deducted: ' . $monthly_service_charge_deducted. PHP_EOL);
         $this->store($request, $mpesa_transaction->id);
     }
 
@@ -91,6 +94,10 @@ trait ProcessMpesaTransaction
         if (!$user){
             return response()->json('User not found', 422);
         }
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted);
+        if ($user_total_amount < 0){
+            return response()->json('Amount exhausted', 422);
+        }
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
             ->where(function ($query) {
                 $query->where('status', MeterReadingStatus::NotPaid);
@@ -99,13 +106,9 @@ trait ProcessMpesaTransaction
             ->orderBy('created_at', 'ASC')->get();
 
         if ($pending_meter_readings->count() === 0) {
-            $user_account_balance = 0;
-            if ($user->account_balance > 0){
-                $user_account_balance += $user->account_balance;
-                $user->update([
-                    'account_balance' => $user_account_balance
-                ]);
-            }
+            $user->update([
+                'account_balance' => $user_total_amount
+            ]);
             return response()->json('Meter reading not found', 422);
         }
 
