@@ -66,15 +66,15 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException|Throwable
      */
-    public function mpesaConfirmation(Request $request)
+    public function mpesaConfirmation(Request $request): Response
     {
         $client_ip = $request->ip();
-//        if (!$this->safaricomIpAddress($client_ip)) {
-//            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-//            Log::notice($request);
-//            $response = ['message' => 'Nothing interesting around here.'];
-//            return response()->json($response, 418);
-//        }
+        if (!$this->safaricomIpAddress($client_ip)) {
+            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+            Log::notice($request);
+            $response = ['message' => 'Nothing interesting around here.'];
+            return response()->json($response, 418);
+        }
 
         $request->validate([
             'TransID' => 'unique:mpesa_transactions'
