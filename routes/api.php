@@ -12,7 +12,9 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UnresolvedTransactionController;
 use App\Http\Controllers\UserController;
+use App\Models\UnresolvedMpesaTransaction;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,7 +56,6 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
         Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
-        Route::get('unresolved-transactions', [TransactionController::class, 'unresolvedTransactionIndex']);
         Route::apiResource('monthly-service-charges', MonthlyServiceChargeController::class)->only([
             'index', 'show'
         ]);
@@ -79,8 +80,10 @@ Route::prefix('v1')->group(function () {
         });
         Route::get('available-meters', [MeterController::class, 'availableIndex'])->middleware('cacheResponse:Meter');
         Route::get('meter-types', [MeterController::class, 'typeIndex'])->middleware('cacheResponse:MeterType');
+        Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index'])->middleware('doNotCacheResponse');
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
+        Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);
         Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
