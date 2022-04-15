@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
+use App\Models\MonthlyServiceCharge;
+use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
@@ -65,20 +67,40 @@ class TransactionController extends Controller
      */
     public function show($id): JsonResponse
     {
-        try {
-            $meter_id = MeterBilling::select('meter_readings.meter_id')
-                ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
-                ->where('mpesa_transaction_id', $id)
-                ->first()->meter_id;
-        } catch (Throwable $throwable) {
-            $meter_id = MeterToken::where('mpesa_transaction_id', $id)->first()->meter_id;
-        }
-        $user = User::where('meter_id', $meter_id)->first();
+
+        $user = $this->getUser($id);
         $transaction = MpesaTransaction::where('id', $id)->first();
         return response()->json([
             'user' => $user,
             'transaction' => $transaction
         ]);
+    }
+
+    public function getUser($transaction_id)
+    {
+        try {
+            $user = MeterBilling::select('users.*')
+                ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+                ->join('users', 'meter_readings.meter_id', 'users.meter_id')
+                ->where('mpesa_transaction_id', $transaction_id)
+                ->first();
+            throw_if($user === null);
+        } catch (Throwable $throwable) {
+            try {
+                $user = MonthlyServiceChargePayment::select('users.*')
+                    ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+                    ->join('users', 'monthly_service_charges.user_id', 'users.id')
+                    ->where('mpesa_transaction_id', $transaction_id)
+                    ->first();
+                throw_if($user === null);
+            } catch (Throwable $throwable){
+                $user = MeterToken::select('users.*')
+                    ->join('users', 'meter_tokens.meter_id', 'users.meter_id')
+                    ->where('mpesa_transaction_id', $transaction_id)
+                    ->first();
+            }
+        }
+        return $user;
     }
 
     private function filterQuery(Builder $query, Request $request): Builder
