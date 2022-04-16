@@ -121,7 +121,9 @@ class TransactionController extends Controller
         }
 
         if ($request->has('user_id')) {
-            $query = $query->join('users', 'users.meter_id', 'meters.id');
+            if (!self::isJoined($query, 'users')){
+                $query = $query->join('users', 'users.meter_id', 'meters.id');
+            }
             $query = $query->where('users.id', $request->query('user_id'));
         }
 
@@ -130,5 +132,10 @@ class TransactionController extends Controller
         }
 
         return $query;
+    }
+
+    public static function isJoined($query, $table): bool
+    {
+        return collect($query->getQuery()->joins)->pluck('table')->contains($table);
     }
 }
