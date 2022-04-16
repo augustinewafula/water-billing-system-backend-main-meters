@@ -8,6 +8,7 @@ use App\Models\MeterBilling;
 use App\Models\MeterReading;
 use App\Models\MeterStation;
 use App\Models\MeterToken;
+use App\Models\MonthlyServiceChargePayment;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
@@ -72,6 +73,11 @@ class StatisticsController extends Controller
 
     }
 
+    public function monthlyRevenueStatistics()
+    {
+
+    }
+
     public function calculateStationRevenue(?string $from, ?string $to): array
     {
         $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
@@ -125,23 +131,13 @@ class StatisticsController extends Controller
 
     public function calculateRevenue(?string $from, ?string $to)
     {
-        $billingsSum = MeterBilling::select('meter_billings.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id');
-        if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
-        }
-        $billingsSum = $billingsSum->sum('amount_paid');
+        $serviceChargeSum = $this->calculateMonthlyServiceChargeSum($from, $to);
 
-        $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
-        if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
-        }
-        $tokenSum = $tokenSum->sum('TransAmount');
+        $billingsSum = $this->calculateMeterBillingsSum($from, $to);
 
-        return $billingsSum + $tokenSum;
+        $tokenSum = $this->calculateMeterTokensSum($from, $to);
+
+        return $billingsSum + $tokenSum + $serviceChargeSum;
     }
 
     public function meterReadings(Request $request, Meter $meter): JsonResponse
@@ -177,5 +173,53 @@ class StatisticsController extends Controller
             ->oldest()
             ->groupBy('label', 'reading')
             ->get();
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return mixed
+     */
+    private function calculateMonthlyServiceChargeSum(?string $from, ?string $to)
+    {
+        $serviceChargeSum = MonthlyServiceChargePayment::select('monthly_service_charge_payments.*', 'mpesa_transactions.TransAmount')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id');
+        if ($from !== null && $to !== null) {
+            $serviceChargeSum = $serviceChargeSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        return $serviceChargeSum->sum('amount_paid');
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return mixed
+     */
+    private function calculateMeterBillingsSum(?string $from, ?string $to)
+    {
+        $billingsSum = MeterBilling::select('meter_billings.*', 'mpesa_transactions.TransAmount')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id');
+        if ($from !== null && $to !== null) {
+            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        return $billingsSum->sum('amount_paid');
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return mixed
+     */
+    private function calculateMeterTokensSum(?string $from, ?string $to)
+    {
+        $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
+        if ($from !== null && $to !== null) {
+            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        return $tokenSum->sum('TransAmount');
     }
 }
