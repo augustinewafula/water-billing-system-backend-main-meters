@@ -80,9 +80,10 @@ class StatisticsController extends Controller
 
     public function calculateStationRevenue(?string $from, ?string $to): array
     {
+        $monthlyServiceChargeSum = $this->calculateMonthlyServiceChargeSumPerStation($from, $to);
         $billingsSum = $this->calculateMeterBillingSumPerStation($from, $to);
-
         $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
+
         $all = $this->calculateTotalSumPerStation($billingsSum, $tokenSum);
         if ($all === null) {
             return [];
@@ -189,6 +190,28 @@ class StatisticsController extends Controller
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
         return $tokenSum->sum('TransAmount');
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return mixed
+     */
+    private function calculateMonthlyServiceChargeSumPerStation(?string $from, ?string $to)
+    {
+        $monthlyServiceCharge = MonthlyServiceChargePayment::join('monthly_service_charge_payments', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
+            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+            ->join('users', 'users.id', 'monthly_service_charges.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+        if ($from !== null && $to !== null) {
+            $monthlyServiceCharge = $monthlyServiceCharge->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        $monthlyServiceCharge = $monthlyServiceCharge->groupBy('name')
+            ->selectRaw('sum(monthly_service_charge_payments.amount_paid) as total, meter_stations.name')
+            ->get();
+        return $monthlyServiceCharge;
     }
 
     /**
