@@ -80,35 +80,10 @@ class StatisticsController extends Controller
 
     public function calculateStationRevenue(?string $from, ?string $to): array
     {
-        $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
-            ->join('meters', 'meters.id', 'meter_readings.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id');
-        if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
-        }
-        $billingsSum = $billingsSum->groupBy('name')
-            ->selectRaw('sum(meter_billings.amount_paid) as total, meter_stations.name')
-            ->get();
+        $billingsSum = $this->calculateMeterBillingSumPerStation($from, $to);
 
-        $tokenSum = MeterToken::join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
-            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
-        if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
-        }
-        $tokenSum = $tokenSum->groupBy('name')
-            ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
-            ->get();
-        $all = $billingsSum->concat($tokenSum)->toArray();
-
-        $all = array_reduce($all, static function ($accumulator, $item) {
-            $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
-            $accumulator[$item['name']] += $item['total'];
-            return $accumulator;
-        });
+        $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
+        $all = $this->calculateTotalSumPerStation($billingsSum, $tokenSum);
         if ($all === null) {
             return [];
         }
@@ -120,13 +95,6 @@ class StatisticsController extends Controller
             ];
         }
         return $stationsRevenue;
-    }
-
-    public function sumStationRevenue($accumulator, $item)
-    {
-        $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
-        $accumulator[$item['name']] += $item['total'];
-        return $accumulator;
     }
 
     public function calculateRevenue(?string $from, ?string $to)
@@ -221,5 +189,63 @@ class StatisticsController extends Controller
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
         return $tokenSum->sum('TransAmount');
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return mixed
+     */
+    private function calculateMeterBillingSumPerStation(?string $from, ?string $to)
+    {
+        $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+            ->join('meters', 'meters.id', 'meter_readings.meter_id')
+            ->join('meter_stations', 'meters.station_id', 'meter_stations.id')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id');
+        if ($from !== null && $to !== null) {
+            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        $billingsSum = $billingsSum->groupBy('name')
+            ->selectRaw('sum(meter_billings.amount_paid) as total, meter_stations.name')
+            ->get();
+        return $billingsSum;
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return mixed
+     */
+    private function calculateMeterTokenSumPerStation(?string $from, ?string $to)
+    {
+        $tokenSum = MeterToken::join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
+            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
+            ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
+        if ($from !== null && $to !== null) {
+            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        $tokenSum = $tokenSum->groupBy('name')
+            ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
+            ->get();
+        return $tokenSum;
+    }
+
+    /**
+     * @param $billingsSum
+     * @param $tokenSum
+     * @return mixed
+     */
+    private function calculateTotalSumPerStation($billingsSum, $tokenSum)
+    {
+        $all = $billingsSum->concat($tokenSum)->toArray();
+
+        $all = array_reduce($all, static function ($accumulator, $item) {
+            $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
+            $accumulator[$item['name']] += $item['total'];
+            return $accumulator;
+        });
+        return $all;
     }
 }
