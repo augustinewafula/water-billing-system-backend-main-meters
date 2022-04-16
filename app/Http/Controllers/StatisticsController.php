@@ -73,8 +73,14 @@ class StatisticsController extends Controller
 
     }
 
-    public function monthlyRevenueStatistics()
+    public function monthlyRevenueStatistics(): JsonResponse
     {
+        $monthlyServiceChargeMonthWiseRevenue = $this->getMonthlyServiceChargeMonthWiseRevenue();
+        $meterBillingMonthWiseRevenue = $this->getMeterBillingMonthWiseRevenue();
+        $meterTokenMonthWiseRevenue = $this->getMeterTokenMonthWiseRevenue();
+
+        $revenueSum = $this->calculateRevenueSum($monthlyServiceChargeMonthWiseRevenue, $meterBillingMonthWiseRevenue, $meterTokenMonthWiseRevenue);
+        return response()->json($revenueSum);
 
     }
 
@@ -84,7 +90,7 @@ class StatisticsController extends Controller
         $billingsSum = $this->calculateMeterBillingSumPerStation($from, $to);
         $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
 
-        $all = $this->calculateTotalSumPerStation($billingsSum, $tokenSum, $monthlyServiceChargeSum);
+        $all = $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum);
         if ($all === null) {
             return [];
         }
@@ -258,7 +264,7 @@ class StatisticsController extends Controller
      * @param $monthlyServiceCharge
      * @return mixed
      */
-    private function calculateTotalSumPerStation($billingsSum, $tokenSum, $monthlyServiceCharge)
+    private function calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceCharge)
     {
         $all = $billingsSum->concat($tokenSum)->concat($monthlyServiceCharge)->toArray();
 
@@ -267,5 +273,44 @@ class StatisticsController extends Controller
             $accumulator[$item['name']] += $item['total'];
             return $accumulator;
         });
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getMonthlyServiceChargeMonthWiseRevenue()
+    {
+        return MonthlyServiceChargePayment::select('monthly_service_charge_payments.amount_paid as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getMeterBillingMonthWiseRevenue()
+    {
+        return MeterBilling::select('meter_billings.amount_paid as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getMeterTokenMonthWiseRevenue()
+    {
+        return MeterToken::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
     }
 }
