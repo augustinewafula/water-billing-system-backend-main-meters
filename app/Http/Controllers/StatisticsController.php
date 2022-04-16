@@ -84,7 +84,7 @@ class StatisticsController extends Controller
         $billingsSum = $this->calculateMeterBillingSumPerStation($from, $to);
         $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
 
-        $all = $this->calculateTotalSumPerStation($billingsSum, $tokenSum);
+        $all = $this->calculateTotalSumPerStation($billingsSum, $tokenSum, $monthlyServiceChargeSum);
         if ($all === null) {
             return [];
         }
@@ -199,7 +199,7 @@ class StatisticsController extends Controller
      */
     private function calculateMonthlyServiceChargeSumPerStation(?string $from, ?string $to)
     {
-        $monthlyServiceCharge = MonthlyServiceChargePayment::join('monthly_service_charge_payments', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
+        $monthlyServiceCharge = MonthlyServiceChargePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
             ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
             ->join('users', 'users.id', 'monthly_service_charges.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
@@ -255,11 +255,12 @@ class StatisticsController extends Controller
     /**
      * @param $billingsSum
      * @param $tokenSum
+     * @param $monthlyServiceCharge
      * @return mixed
      */
-    private function calculateTotalSumPerStation($billingsSum, $tokenSum)
+    private function calculateTotalSumPerStation($billingsSum, $tokenSum, $monthlyServiceCharge)
     {
-        $all = $billingsSum->concat($tokenSum)->toArray();
+        $all = $billingsSum->concat($tokenSum)->concat($monthlyServiceCharge)->toArray();
 
         return array_reduce($all, static function ($accumulator, $item) {
             $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
