@@ -208,10 +208,9 @@ class StatisticsController extends Controller
             $monthlyServiceCharge = $monthlyServiceCharge->where('mpesa_transactions.created_at', '>', $from)
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
-        $monthlyServiceCharge = $monthlyServiceCharge->groupBy('name')
+        return $monthlyServiceCharge->groupBy('name')
             ->selectRaw('sum(monthly_service_charge_payments.amount_paid) as total, meter_stations.name')
             ->get();
-        return $monthlyServiceCharge;
     }
 
     /**
@@ -229,10 +228,9 @@ class StatisticsController extends Controller
             $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
-        $billingsSum = $billingsSum->groupBy('name')
+        return $billingsSum->groupBy('name')
             ->selectRaw('sum(meter_billings.amount_paid) as total, meter_stations.name')
             ->get();
-        return $billingsSum;
     }
 
     /**
@@ -249,10 +247,9 @@ class StatisticsController extends Controller
             $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
-        $tokenSum = $tokenSum->groupBy('name')
+        return $tokenSum->groupBy('name')
             ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
             ->get();
-        return $tokenSum;
     }
 
     /**
@@ -264,11 +261,10 @@ class StatisticsController extends Controller
     {
         $all = $billingsSum->concat($tokenSum)->toArray();
 
-        $all = array_reduce($all, static function ($accumulator, $item) {
+        return array_reduce($all, static function ($accumulator, $item) {
             $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
             $accumulator[$item['name']] += $item['total'];
             return $accumulator;
         });
-        return $all;
     }
 }
