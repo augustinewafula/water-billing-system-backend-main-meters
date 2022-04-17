@@ -23,7 +23,7 @@ class CreateUsersTable extends Migration
             $table->foreignUuid('meter_id')->nullable()->constrained('meters')->cascadeOnDelete();
             $table->dateTime('first_monthly_service_fee_on')->nullable();
             $table->decimal('account_balance', 15)->default(0);
-            $table->foreignUuid('last_mpesa_transaction_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('last_mpesa_transaction_id')->nullable()->constrained('mpesa_transactions')->cascadeOnDelete();
             $table->rememberToken();
             $table->timestamps(6);
             $table->softDeletes();
