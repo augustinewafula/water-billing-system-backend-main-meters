@@ -90,18 +90,7 @@ class StatisticsController extends Controller
         $billingsSum = $this->calculateMeterBillingSumPerStation($from, $to);
         $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
 
-        $all = $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum);
-        if ($all === null) {
-            return [];
-        }
-        $stationsRevenue = [];
-        foreach ($all as $key => $value) {
-            $stationsRevenue[] = [
-                'name' => $key,
-                'value' => $value
-            ];
-        }
-        return $stationsRevenue;
+        return $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum);
     }
 
     public function calculateRevenue(?string $from, ?string $to)
@@ -268,11 +257,23 @@ class StatisticsController extends Controller
     {
         $all = $billingsSum->concat($tokenSum)->concat($monthlyServiceCharge)->toArray();
 
-        return array_reduce($all, static function ($accumulator, $item) {
+        $all = array_reduce($all, static function ($accumulator, $item) {
             $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
             $accumulator[$item['name']] += $item['total'];
             return $accumulator;
         });
+
+        if ($all === null) {
+            return [];
+        }
+        $stationsRevenue = [];
+        foreach ($all as $key => $value) {
+            $stationsRevenue[] = [
+                'name' => $key,
+                'value' => $value
+            ];
+        }
+        return $stationsRevenue;
     }
 
     /**
