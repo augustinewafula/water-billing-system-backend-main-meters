@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
 use Log;
 use Throwable;
 
@@ -102,6 +103,27 @@ class StatisticsController extends Controller
         $tokenSum = $this->calculateMeterTokensSum($from, $to);
 
         return $billingsSum + $tokenSum + $serviceChargeSum;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function  mainMeterReading(Request $request): JsonResponse
+    {
+        $main_meters = Meter::select('meter_stations.name', 'meters.id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('main_meter', true)
+            ->get();
+        $main_meter_readings = [];
+        foreach ($main_meters as $main_meter){
+            $meter = Meter::find($main_meter->id);
+            $readings = [
+                'name' => $main_meter->name,
+                'readings' => json_decode($this->meterReadings($request, $meter)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)
+            ];
+            $main_meter_readings[] = $readings;
+        }
+        return response()->json($main_meter_readings);
     }
 
     public function meterReadings(Request $request, Meter $meter): JsonResponse
