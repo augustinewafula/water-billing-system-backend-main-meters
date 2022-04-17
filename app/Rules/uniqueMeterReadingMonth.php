@@ -37,7 +37,6 @@ class uniqueMeterReadingMonth implements Rule, DataAwareRule
             ->whereYear('month', $date->year)
             ->get()
             ->count();
-        Log::info($similar_readings);
         return $similar_readings <= 0;
 
     }
