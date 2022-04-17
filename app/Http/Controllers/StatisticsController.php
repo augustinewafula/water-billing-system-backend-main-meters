@@ -81,7 +81,8 @@ class StatisticsController extends Controller
         $meterTokenMonthWiseRevenue = $this->getMeterTokenMonthWiseRevenue();
 
         $revenueSum = $this->calculateRevenueSum($monthlyServiceChargeMonthWiseRevenue, $meterBillingMonthWiseRevenue, $meterTokenMonthWiseRevenue);
-        return response()->json($revenueSum);
+        $sortedRevenueSum = $this->sortRevenueMonths($revenueSum);
+        return response()->json($sortedRevenueSum);
 
     }
 
@@ -296,6 +297,17 @@ class StatisticsController extends Controller
             ];
         }
         return $stationsRevenue;
+    }
+
+    public function sortRevenueMonths($revenue)
+    {
+        usort( $revenue , static function($a, $b){
+            $a = strtotime($a['name']);
+            $b = strtotime($b['name']);
+            return $a - $b;
+        });
+        return $revenue;
+
     }
 
     /**
