@@ -13,6 +13,8 @@ class MonthlyServiceChargeReport extends Model
 
     public $incrementing = false;
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $keyType = 'uuid';
 
     protected $fillable = ['user_id', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'year'];

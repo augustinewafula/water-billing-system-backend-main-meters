@@ -26,7 +26,7 @@ class CreateMeterReadingsTable extends Migration
             $table->tinyInteger('status')->unsigned()->default(MeterReadingStatus::NotPaid);
             $table->tinyInteger('sms_sent')->unsigned()->default(false);
             $table->dateTime('send_sms_at');
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

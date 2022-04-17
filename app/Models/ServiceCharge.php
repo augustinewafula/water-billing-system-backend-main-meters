@@ -14,6 +14,8 @@ class ServiceCharge extends Model
 
     public $incrementing = false;
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['from', 'to', 'amount', 'meter_charge_id'];
 
     /**

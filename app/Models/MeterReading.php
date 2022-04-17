@@ -19,6 +19,8 @@ class MeterReading extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'monthly_service_charge_deducted', 'status', 'sms_sent', 'send_sms_at', 'bill_due_at'];
 
     /**

@@ -18,7 +18,7 @@ class CreateMeterStationsTable extends Migration
             $table->string('name');
             $table->string('location');
             $table->integer('paybill_number');
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

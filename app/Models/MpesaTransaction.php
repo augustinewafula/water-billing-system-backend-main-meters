@@ -13,6 +13,8 @@ class MpesaTransaction extends Model
 
     public $incrementing = false;
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $keyType = 'uuid';
 
     protected $fillable = ['FirstName', 'MiddleName', 'LastName', 'TransactionType', 'TransID', 'TransTime', 'BusinessShortCode', 'BillRefNumber', 'InvoiceNumber', 'ThirdPartyTransID', 'MSISDN', 'TransAmount', 'OrgAccountBalance', 'Consumed'];

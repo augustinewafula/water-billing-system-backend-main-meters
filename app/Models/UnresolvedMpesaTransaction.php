@@ -14,5 +14,7 @@ class UnresolvedMpesaTransaction extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['mpesa_transaction_id', 'reason'];
 }

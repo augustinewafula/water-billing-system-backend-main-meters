@@ -17,6 +17,8 @@ class Sms extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['phone', 'message', 'status', 'cost', 'user_id'];
 
     /**

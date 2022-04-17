@@ -17,6 +17,8 @@ class MeterStation extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['name', 'location', 'paybill_number'];
 
     /**

@@ -24,7 +24,7 @@ class CreateUsersTable extends Migration
             $table->dateTime('first_monthly_service_fee_on')->nullable();
             $table->decimal('account_balance', 15)->default(0);
             $table->rememberToken();
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

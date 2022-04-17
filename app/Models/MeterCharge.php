@@ -14,6 +14,8 @@ class MeterCharge extends Model
 
     public $incrementing = false;
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['cost_per_unit', 'service_charge_in_percentage'];
 
     /**

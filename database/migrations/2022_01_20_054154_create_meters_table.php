@@ -30,7 +30,7 @@ public function up()
         $table->integer('signal_intensity')->nullable();
         $table->string('valve_last_switched_off_by')->default('system')->comment('user or system');
         $table->string('sim_card_number')->nullable();
-        $table->timestamps();
+        $table->timestamps(6);
     });
 }
 

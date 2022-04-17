@@ -17,7 +17,7 @@ class CreateDailyMeterReadingsTable extends Migration
             $table->uuid('id')->primary();
             $table->integer('reading');
             $table->foreignUuid('meter_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

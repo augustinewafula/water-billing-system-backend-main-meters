@@ -16,6 +16,8 @@ class MeterType extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     /**
      * Get the meters that belong to meter type.
      * @return HasMany

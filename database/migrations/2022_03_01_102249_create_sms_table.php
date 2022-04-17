@@ -19,7 +19,7 @@ class CreateSmsTable extends Migration
             $table->text('message');
             $table->string('status');
             $table->decimal('cost', 15);
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

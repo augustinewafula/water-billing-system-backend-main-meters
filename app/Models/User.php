@@ -19,6 +19,8 @@ class User extends Authenticatable
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $guard_name = 'api';
 
     /**

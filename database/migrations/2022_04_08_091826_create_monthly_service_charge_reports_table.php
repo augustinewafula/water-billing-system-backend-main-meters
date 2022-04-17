@@ -29,7 +29,7 @@ class CreateMonthlyServiceChargeReportsTable extends Migration
             $table->string('nov')->nullable();
             $table->string('dec')->nullable();
             $table->string('year');
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

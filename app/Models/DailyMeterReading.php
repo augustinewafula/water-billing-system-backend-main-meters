@@ -15,5 +15,7 @@ class DailyMeterReading extends Model
 
     protected $keyType = 'uuid';
 
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = ['meter_id', 'reading'];
 }

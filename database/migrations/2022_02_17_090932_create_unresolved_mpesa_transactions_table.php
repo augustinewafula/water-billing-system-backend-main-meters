@@ -17,7 +17,7 @@ class CreateUnresolvedMpesaTransactionsTable extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('reason')->unsigned();
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

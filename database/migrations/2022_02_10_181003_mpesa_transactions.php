@@ -30,7 +30,7 @@ class MpesaTransactions extends Migration
             $table->decimal('OrgAccountBalance', 8, 2)->nullable();
             $table->tinyInteger('Consumed')->unsigned()->default(false);
             $table->softDeletes();
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 

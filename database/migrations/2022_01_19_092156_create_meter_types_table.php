@@ -16,7 +16,7 @@ class CreateMeterTypesTable extends Migration
         Schema::create('meter_types', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->timestamps();
+            $table->timestamps(6);
         });
     }
 
