@@ -73,7 +73,7 @@ trait ProcessPrepaidMeterTransaction
             return;
         }
         $units = $this->calculateUnits($user_total_amount);
-        if ($units < 1) {
+        if ($units < 0) {
             $message = 'Your paid amount is not enough to purchase tokens. ';
             if ($monthly_service_charge_deducted > 0) {
                 $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
