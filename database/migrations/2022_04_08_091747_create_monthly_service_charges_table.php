@@ -21,6 +21,7 @@ class CreateMonthlyServiceChargesTable extends Migration
             $table->tinyInteger('status')->unsigned()->default(MonthlyServiceChargeStatus::NotPaid);
             $table->dateTime('month');
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

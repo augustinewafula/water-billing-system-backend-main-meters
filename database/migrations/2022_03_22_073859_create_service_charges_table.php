@@ -20,6 +20,7 @@ class CreateServiceChargesTable extends Migration
             $table->decimal('amount', 15);
             $table->foreignUuid('meter_charge_id')->constrained('meter_charges')->cascadeOnDelete();
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

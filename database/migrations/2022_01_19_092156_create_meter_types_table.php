@@ -17,6 +17,7 @@ class CreateMeterTypesTable extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

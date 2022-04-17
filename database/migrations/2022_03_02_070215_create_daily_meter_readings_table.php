@@ -18,6 +18,7 @@ class CreateDailyMeterReadingsTable extends Migration
             $table->integer('reading');
             $table->foreignUuid('meter_id')->constrained()->cascadeOnDelete();
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

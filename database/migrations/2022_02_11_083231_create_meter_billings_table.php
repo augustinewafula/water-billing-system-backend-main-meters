@@ -25,6 +25,7 @@ class CreateMeterBillingsTable extends Migration
             $table->decimal('monthly_service_charge_deducted', 15)->default(0);
             $table->string('date_paid')->nullable();
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

@@ -31,6 +31,7 @@ public function up()
         $table->string('valve_last_switched_off_by')->default('system')->comment('user or system');
         $table->string('sim_card_number')->nullable();
         $table->timestamps(6);
+        $table->softDeletes();
     });
 }
 

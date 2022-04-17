@@ -27,6 +27,7 @@ class CreateMeterReadingsTable extends Migration
             $table->tinyInteger('sms_sent')->unsigned()->default(false);
             $table->dateTime('send_sms_at');
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

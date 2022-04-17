@@ -19,6 +19,7 @@ class CreateMeterStationsTable extends Migration
             $table->string('location');
             $table->integer('paybill_number');
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

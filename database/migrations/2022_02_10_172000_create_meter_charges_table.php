@@ -19,6 +19,7 @@ class CreateMeterChargesTable extends Migration
             $table->tinyInteger('service_charge_in_percentage')->unsigned()->default(false);
             $table->string('for');
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 

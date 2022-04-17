@@ -31,6 +31,7 @@ class CreateMeterBillingReportsTable extends Migration
             $table->string('dec')->nullable();
             $table->string('year');
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 
