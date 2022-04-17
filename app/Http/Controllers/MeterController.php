@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\MeterMode;
 use App\Enums\ValveStatus;
+use App\Http\Requests\CreateMainMeterRequest;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
@@ -84,9 +85,22 @@ class MeterController extends Controller
      *
      * @param CreateMeterRequest $request
      * @return JsonResponse
-     * @throws JsonException
      */
     public function store(CreateMeterRequest $request): JsonResponse
+    {
+        $meter = $this->save($request);
+
+        return response()->json($meter, 201);
+    }
+
+    public function storeMainMeter(CreateMainMeterRequest $request): JsonResponse
+    {
+        $meter = $this->save($request);
+
+        return response()->json($meter, 201);
+    }
+
+    public function save($request)
     {
         if ((int)$request->mode === MeterMode::Automatic) {
             $meter = Meter::create($request->validated());
@@ -98,15 +112,15 @@ class MeterController extends Controller
             } catch (Throwable $exception) {
                 Log::error('Failed to register prepaid meter id: ' . $meter->id);
             }
-            return response()->json($meter, 201);
+            return $meter;
         }
-        $meter = Meter::create([
+        return Meter::create([
             'number' => $request->number,
             'station_id' => $request->station_id,
             'last_reading' => $request->last_reading,
             'mode' => $request->mode
         ]);
-        return response()->json($meter, 201);
+
     }
 
     /**
