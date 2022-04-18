@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Meter;
 use App\Traits\GetsMeterInformation;
+use App\Traits\NotifiesOnJobFailure;
 use App\Traits\TogglesValveStatus;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -17,7 +18,7 @@ use Throwable;
 
 class ConfirmMeterValveStatus implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus, NotifiesOnJobFailure;
 
     /**
      * Create a new job instance.
