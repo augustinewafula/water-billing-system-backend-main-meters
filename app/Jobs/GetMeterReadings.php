@@ -47,24 +47,28 @@ class GetMeterReadings implements ShouldQueue
     {
         if ($changshaMeters = $this->getChangshaNbIotMeterReadings()) {
             foreach ($changshaMeters as $meter) {
+                $last_communication_date = Carbon::createFromFormat('Y-m-d H:i:s.u', $meter->mdate, 'Asia/Shanghai')
+                    ->setTimezone('Africa/Nairobi');
                 $meter_details = (object)[
                     'meter_number' => $meter->meterno,
                     'meter_reading' => $meter->lasttotalall,
                     'meter_voltage' => $meter->battery,
                     'signal_intensity' => $meter->rssi,
-                    'last_communication_date' => $meter->mdate
+                    'last_communication_date' => $last_communication_date
                 ];
                 $this->saveMeterReading($meter_details);
             }
         }
         if ($SHMeters = $this->getShMeterReadings()) {
             foreach ($SHMeters as $meter) {
+                $last_communication_date = Carbon::createFromFormat('Y/m/d H:i:s', $meter->CommunicationTime, 'Asia/Shanghai')
+                    ->setTimezone('Africa/Nairobi');
                 $meter_details = (object)[
                     'meter_number' => $meter->MeterId,
                     'meter_reading' => $meter->PositiveCumulativeFlow,
                     'meter_voltage' => $meter->MeterVoltage,
                     'signal_intensity' => $meter->SignalIntensity,
-                    'last_communication_date' => $meter->CommunicationTime
+                    'last_communication_date' => $last_communication_date
                 ];
                 $this->saveMeterReading($meter_details);
             }
