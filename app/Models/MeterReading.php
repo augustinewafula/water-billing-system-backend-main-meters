@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MeterReading extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache;
+    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes;
 
     public $incrementing = false;
 

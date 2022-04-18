@@ -7,11 +7,12 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 
 class Sms extends Model
 {
-    use HasFactory, HasUuid, Searchable, ClearsResponseCache;
+    use HasFactory, HasUuid, Searchable, ClearsResponseCache, SoftDeletes;
 
     public $incrementing = false;
 
