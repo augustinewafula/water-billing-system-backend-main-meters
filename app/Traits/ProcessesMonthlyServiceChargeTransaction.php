@@ -47,11 +47,11 @@ trait ProcessesMonthlyServiceChargeTransaction
     /**
      * @throws Throwable
      */
-    public function storeMonthlyServiceCharge($user_id, $mpesa_transaction)
+    public function storeMonthlyServiceCharge($user_id, $mpesa_transaction, $amount)
     {
         $user = User::findOrFail($user_id);
-        $user_total_amount = $mpesa_transaction->TransAmount;
-        $amount_paid = $mpesa_transaction->TransAmount;
+        $amount_paid = $amount;
+        $user_total_amount = $amount_paid;
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getFirstMonthToBill($user);
         $total_monthly_service_charge_paid = 0;
