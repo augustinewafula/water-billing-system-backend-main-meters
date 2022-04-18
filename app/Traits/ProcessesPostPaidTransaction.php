@@ -3,59 +3,20 @@
 namespace App\Traits;
 
 use App\Enums\MeterReadingStatus;
-use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Jobs\SendSMS;
 use App\Jobs\SwitchOnPaidMeter;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
-use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use JsonException;
-use Log;
 use Throwable;
 
-trait ProcessMpesaTransaction
+trait ProcessesPostPaidTransaction
 {
-    use ProcessPrepaidMeterTransaction, CalculatesBill, StoreMeterBillings, ProcessMonthlyServiceChargeTransaction;
-
-    /**
-     * @throws JsonException
-     * @throws Throwable
-     */
-    private function processMpesaTransaction(MpesaTransaction $mpesa_transaction): void
-    {
-        $user = User::select('users.id as user_id', 'users.account_number', 'users.first_monthly_service_fee_on', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
-            ->join('meters', 'meters.id', 'users.meter_id')
-            ->leftJoin('meter_types', 'meter_types.id', 'meters.type_id')
-            ->where('account_number', $mpesa_transaction->BillRefNumber)
-            ->first();
-        if (!$user) {
-            UnresolvedMpesaTransaction::create([
-                'mpesa_transaction_id' => $mpesa_transaction->id,
-                'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
-            ]);
-            return;
-        }
-
-        $monthly_service_charge_deducted = 0;
-        if ($this->hasMonthlyServiceChargeDebt($user->user_id)) {
-            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction);
-        }
-
-        if ($user->meter_type_name === 'Prepaid') {
-            $this->processPrepaidTransaction($user->meter_id, $mpesa_transaction, $monthly_service_charge_deducted);
-            return;
-
-        }
-
-        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted);
-    }
-
-
-    /**
+    use CalculatesBill, CalculatesUserTotalAmount, StoresMeterBillings;
+        /**
      * @param $user
      * @param MpesaTransaction $mpesa_transaction
      * @param $monthly_service_charge_deducted
@@ -74,9 +35,6 @@ trait ProcessMpesaTransaction
         //TODO::make organization name dynamic
         $message = "Dear $mpesa_transaction->FirstName $mpesa_transaction->LastName, your payment of Ksh $mpesa_transaction->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
         SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
-        Log::info('meter_id: ' . $user->meter_id. PHP_EOL.
-            'amount_paid: ' . $mpesa_transaction->TransAmount. PHP_EOL.
-            'monthly_service_charge_deducted: ' . $monthly_service_charge_deducted. PHP_EOL);
         $this->store($request, $mpesa_transaction->id);
     }
 

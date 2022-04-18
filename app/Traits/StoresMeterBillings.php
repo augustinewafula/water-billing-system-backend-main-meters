@@ -14,7 +14,7 @@ use Log;
 use Str;
 use Throwable;
 
-trait StoreMeterBillings
+trait StoresMeterBillings
 {
     /**
      * @param CreateMeterBillingRequest $request
@@ -99,7 +99,8 @@ trait StoreMeterBillings
                 }
                 if ($this->userHasFullyPaid($balance)) {
                     $user->update([
-                        'account_balance' => abs($balance)
+                        'account_balance' => abs($balance),
+                        'last_mpesa_transaction_id' => $mpesa_transaction_id
                     ]);
                     if ($this->userHasOverPaid($balance)) {
                         $amount_over_paid = abs($balance);
@@ -114,7 +115,8 @@ trait StoreMeterBillings
                     $user_bill_balance = 0;
                 } else {
                     $user->update([
-                        'account_balance' => -$balance
+                        'account_balance' => -$balance,
+                        'last_mpesa_transaction_id' => $mpesa_transaction_id
                     ]);
                     $meter_reading->update([
                         'status' => MeterReadingStatus::Balance,

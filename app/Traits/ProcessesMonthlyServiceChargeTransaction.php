@@ -14,7 +14,7 @@ use Log;
 use Str;
 use Throwable;
 
-trait ProcessMonthlyServiceChargeTransaction
+trait ProcessesMonthlyServiceChargeTransaction
 {
     public function hasMonthlyServiceChargeDebt($user_id): bool
     {
@@ -115,7 +115,8 @@ trait ProcessMonthlyServiceChargeTransaction
                     $bill_month_name => $balance
                 ]);
                 $user->update([
-                    'account_balance' => $user_account_balance
+                    'account_balance' => $user_account_balance,
+                    'last_mpesa_transaction_id' => $mpesa_transaction->id
                 ]);
                 MpesaTransaction::find($mpesa_transaction->id)->update([
                     'Consumed' => true,

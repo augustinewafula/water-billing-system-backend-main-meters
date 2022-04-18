@@ -20,9 +20,9 @@ use Illuminate\Http\Response;
 use Log;
 use Throwable;
 
-trait StoreMeterReading
+trait StoresMeterReading
 {
-    use CalculatesBill, StoreMeterBillings;
+    use CalculatesBill, StoresMeterBillings;
 
     /**
      * Store a newly created resource in storage.
@@ -56,7 +56,6 @@ trait StoreMeterReading
             DB::beginTransaction();
             $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
             $service_fee = $this->calculateServiceFee($bill, 'post-pay');
-            $previous_meter_reading = MeterReading::where('meter_id', $meter->id)->latest()->first();
             $meter_reading = MeterReading::create([
                 'meter_id' => $request->meter_id,
                 'previous_reading' => $meter->last_reading,
@@ -71,7 +70,7 @@ trait StoreMeterReading
                 'last_reading' => $request->current_reading,
                 'last_reading_date' => Carbon::now()->toDateTimeString(),
             ]);
-            $this->processAvailableCredits($meter, $meter_reading, $previous_meter_reading);
+            $this->processAvailableCredits($meter, $meter_reading);
             DB::commit();
         } catch (Throwable $th) {
             DB::rollBack();
@@ -86,7 +85,7 @@ trait StoreMeterReading
     /**
      * @throws Throwable
      */
-    public function processAvailableCredits($meter, $meter_reading, $previous_meter_reading): void
+    public function processAvailableCredits($meter, $meter_reading): void
     {
         $user = User::where('meter_id', $meter->id)->first();
         throw_if($user === null, 'RuntimeException', 'Meter user not found');
@@ -99,42 +98,13 @@ trait StoreMeterReading
                 'monthly_service_charge_deducted' => 0,
             ]);
 
-            $this->processMeterBillings($request, [$meter_reading], $user, $this->getPreviousMpesaTransactionId($user->id, $previous_meter_reading));
+            $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id);
         }
     }
 
     public function userHasAccountBalance($user): bool
     {
         return $user->account_balance > 0;
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function getPreviousMpesaTransactionId($user_id, $previous_meter_reading)
-    {
-        if ($previous_meter_reading !== null){
-            $last_meter_billing = MeterBilling::where('meter_reading_id', $previous_meter_reading->id)->latest()->first();
-            if ($last_meter_billing){
-                return $last_meter_billing->mpesa_transaction_id;
-            }
-
-        }
-
-        $monthly_service_charge = MonthlyServiceCharge::where('user_id', $user_id)
-            ->latest()
-            ->limit(1)
-            ->first();
-        throw_if($monthly_service_charge === null, 'RuntimeException', 'Last monthly service charge record not found');
-
-        $monthly_service_charge_payment = MonthlyServiceChargePayment::where('monthly_service_charge_id', $monthly_service_charge->id)
-            ->latest()
-            ->limit(1)
-            ->first();
-        throw_if($monthly_service_charge_payment === null, 'RuntimeException', 'Last monthly service charge transaction not found');
-
-        return $monthly_service_charge_payment->mpesa_transaction_id;
-
     }
 
 }

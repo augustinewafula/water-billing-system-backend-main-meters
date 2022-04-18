@@ -9,7 +9,7 @@ use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use App\Models\MeterType;
-use App\Traits\ProcessPrepaidMeterTransaction;
+use App\Traits\ProcessesPrepaidMeterTransaction;
 use App\Traits\TogglesValveStatus;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Contracts\Foundation\Application;
@@ -25,7 +25,7 @@ use Throwable;
 
 class MeterController extends Controller
 {
-    use ProcessPrepaidMeterTransaction, TogglesValveStatus;
+    use ProcessesPrepaidMeterTransaction, TogglesValveStatus;
 
     public function __construct()
     {

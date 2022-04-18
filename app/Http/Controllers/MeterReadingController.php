@@ -6,7 +6,7 @@ use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Traits\SendsMeterReading;
-use App\Traits\StoreMeterReading;
+use App\Traits\StoresMeterReading;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -19,7 +19,7 @@ use Throwable;
 
 class MeterReadingController extends Controller
 {
-    use StoreMeterReading, SendsMeterReading;
+    use StoresMeterReading, SendsMeterReading;
 
     public function __construct()
     {

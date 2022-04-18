@@ -7,7 +7,7 @@ use App\Http\Requests\AssignUnresolvedTransactionRequest;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
-use App\Traits\ProcessMpesaTransaction;
+use App\Traits\ProcessesMpesaTransaction;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ use Throwable;
 
 class UnresolvedTransactionController extends Controller
 {
-    use ProcessMpesaTransaction;
+    use ProcessesMpesaTransaction;
 
     public function index(): JsonResponse
     {

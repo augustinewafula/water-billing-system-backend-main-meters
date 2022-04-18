@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MpesaTransaction;
 use App\Models\User;
-use App\Traits\ProcessMpesaTransaction;
+use App\Traits\ProcessesMpesaTransaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -14,7 +14,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use ProcessMpesaTransaction;
+    use ProcessesMpesaTransaction;
 
     public function __construct()
     {

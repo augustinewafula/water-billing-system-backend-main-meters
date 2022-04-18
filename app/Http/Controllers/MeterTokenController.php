@@ -6,7 +6,7 @@ use App\Http\Requests\CreateMeterTokenRequest;
 use App\Jobs\SendSMS;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
-use App\Traits\ProcessPrepaidMeterTransaction;
+use App\Traits\ProcessesPrepaidMeterTransaction;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +17,7 @@ use Throwable;
 
 class MeterTokenController extends Controller
 {
-    use ProcessPrepaidMeterTransaction;
+    use ProcessesPrepaidMeterTransaction;
 
     public function __construct()
     {

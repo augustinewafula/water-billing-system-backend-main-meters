@@ -14,7 +14,7 @@ use Log;
 use RuntimeException;
 use Throwable;
 
-trait ProcessPrepaidMeterTransaction
+trait ProcessesPrepaidMeterTransaction
 {
     use CalculatesBill, CalculatesUserTotalAmount;
 
@@ -81,7 +81,8 @@ trait ProcessPrepaidMeterTransaction
             try {
                 DB::beginTransaction();
                 $user->update([
-                    'account_balance' => $user_total_amount
+                    'account_balance' => $user_total_amount,
+                    'last_mpesa_transaction_id' => $mpesa_transaction->id
                 ]);
                 MpesaTransaction::find($mpesa_transaction->id)->update([
                     'Consumed' => true,
@@ -98,7 +99,7 @@ trait ProcessPrepaidMeterTransaction
         try {
             DB::beginTransaction();
             $token = $this->generateMeterToken($user->meter_number, $user_total_amount);
-            throw_if($token === null, RuntimeException::class, 'Failed to generate token');
+            throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
             $token = strtok($token, ',');
             MeterToken::create([
                 'mpesa_transaction_id' => $mpesa_transaction->id,
@@ -116,7 +117,7 @@ trait ProcessPrepaidMeterTransaction
             ]);
             $date = Carbon::now()->toDateTimeString();
             $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $mpesa_transaction->TransAmount\nDate: $date\nRef: $mpesa_transaction->TransID";
-            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
+            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
             DB::commit();
 
         } catch (Throwable $throwable) {
