@@ -20,7 +20,6 @@ class CriticalNotification extends Mailable
      */
     public function __construct($body)
     {
-        \Log::info($body);
         $this->message = $body;
     }
 
