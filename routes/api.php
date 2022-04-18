@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertContactController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\MeterBillingController;
@@ -56,6 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
         Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
+        Route::apiResource('alert-contacts', AlertContactController::class)->except(['show']);
         Route::apiResource('monthly-service-charges', MonthlyServiceChargeController::class)->only([
             'index', 'show'
         ]);
