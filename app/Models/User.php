@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,7 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, ClearsResponseCache, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, ClearsResponseCache, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 
@@ -79,5 +81,15 @@ class User extends Authenticatable
     public function meter(): belongsTo
     {
         return $this->belongsTo(Meter::class);
+    }
+
+    /**
+     * Get the prunable model query.
+     *
+     * @return Builder
+     */
+    public function prunable(): Builder
+    {
+        return static::where('created_at', '<=', now()->subMonth());
     }
 }
