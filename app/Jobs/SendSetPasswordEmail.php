@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Traits\NotifiesOnJobFailure;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -11,7 +12,7 @@ use Mail;
 
 class SendSetPasswordEmail implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, NotifiesOnJobFailure;
 
     protected $email, $action_url;
 

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Setting;
 use App\Models\User;
 use App\Traits\GeneratesMonthlyServiceCharge;
+use App\Traits\NotifiesOnJobFailure;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 
 class GenerateMonthlyServiceCharge implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesMonthlyServiceCharge;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesMonthlyServiceCharge, NotifiesOnJobFailure;
 
     /**
      * Create a new job instance.

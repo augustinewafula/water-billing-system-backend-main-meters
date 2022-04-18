@@ -6,6 +6,7 @@ use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
 use App\Traits\GetsMeterInformation;
+use App\Traits\NotifiesOnJobFailure;
 use App\Traits\StoresMeterReading;
 use App\Traits\StoresDailyMeterReading;
 use Carbon\Carbon;
@@ -21,7 +22,7 @@ use Throwable;
 
 class GetMeterReadings implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoresMeterReading, StoresDailyMeterReading, GetsMeterInformation;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, StoresMeterReading, StoresDailyMeterReading, GetsMeterInformation, NotifiesOnJobFailure;
 
     protected $type;
 
