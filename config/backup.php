@@ -166,9 +166,6 @@ return [
             BackupHasFailed::class => ['mail'],
             UnhealthyBackupWasFound::class => ['mail'],
             CleanupHasFailed::class => ['mail'],
-            BackupWasSuccessful::class => ['mail'],
-            HealthyBackupWasFound::class => ['mail'],
-            CleanupWasSuccessful::class => ['mail'],
         ],
 
         /*
