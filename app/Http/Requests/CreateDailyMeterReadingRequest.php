@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\notPrepaidMeter;
+use App\Rules\uniqueMeterReadingDay;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateDailyMeterReadingRequest extends FormRequest
@@ -25,7 +26,7 @@ class CreateDailyMeterReadingRequest extends FormRequest
     public function rules()
     {
         return [
-            'meter_id' => ['required', 'string', 'exists:meters,id', new notPrepaidMeter()],
+            'meter_id' => ['bail', 'required', 'string', 'exists:meters,id', new notPrepaidMeter(), new uniqueMeterReadingDay()],
             'reading' => ['required', 'numeric'],
         ];
     }
