@@ -141,7 +141,7 @@ class MeterReadingController extends Controller
                     'last_reading' => $last_meter_reading->previous_reading
                 ]);
             }
-            $meterReading->delete();
+            $meterReading->forceDelete();
             DB::commit();
             return response()->json('deleted');
         } catch (Throwable $throwable) {

@@ -94,7 +94,7 @@ class SettingController extends Controller
     public function updateServiceCharge($meter_charge_id, $service_charges): void
     {
         ServiceCharge::where('meter_charge_id', $meter_charge_id)
-            ->delete();
+            ->forceDelete();
         foreach ($service_charges as $service_charge) {
             ServiceCharge::create([
                 'from' => $service_charge->from,

@@ -220,7 +220,7 @@ class UserController extends Controller
     public function destroy(User $user): JsonResponse
     {
         try {
-            $user->delete();
+            $user->forceDelete();
             return response()->json('deleted');
         } catch (Throwable $throwable) {
             Log::error($throwable);

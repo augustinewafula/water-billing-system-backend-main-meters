@@ -43,7 +43,7 @@ class UnresolvedTransactionController extends Controller
                 'BillRefNumber' => $user->account_number
             ]);
             $this->processMpesaTransaction($mpesa_transaction);
-            $unresolved_mpesa_transaction->delete();
+            $unresolved_mpesa_transaction->forceDelete();
             DB::commit();
         } catch (Throwable $throwable){
             DB::rollBack();

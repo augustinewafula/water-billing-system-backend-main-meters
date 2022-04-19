@@ -74,7 +74,7 @@ class MeterStationController extends Controller
 
     public function destroy(MeterStation $meter_station): JsonResponse
     {
-        $meter_station->delete();
+        $meter_station->forceDelete();
         return response()->json('deleted');
     }
 }

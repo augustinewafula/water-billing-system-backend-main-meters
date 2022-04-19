@@ -48,7 +48,7 @@ class AlertContactController extends Controller
      * @param AlertContact $alertContact
      * @return JsonResponse
      */
-    public function update(Request $request, AlertContact $alertContact)
+    public function update(Request $request, AlertContact $alertContact): JsonResponse
     {
         $alertContact->create([
             'type' => $request->type,
@@ -63,9 +63,9 @@ class AlertContactController extends Controller
      * @param AlertContact $alertContact
      * @return JsonResponse
      */
-    public function destroy(AlertContact $alertContact)
+    public function destroy(AlertContact $alertContact): JsonResponse
     {
-        $alertContact->delete();
+        $alertContact->forceDelete();
         return response()->json('deleted');
     }
 }

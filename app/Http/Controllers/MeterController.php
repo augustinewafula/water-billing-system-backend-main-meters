@@ -199,7 +199,7 @@ class MeterController extends Controller
      */
     public function destroy(Meter $meter): JsonResponse
     {
-        $meter->delete();
+        $meter->forceDelete();
         return response()->json('deleted');
     }
 
