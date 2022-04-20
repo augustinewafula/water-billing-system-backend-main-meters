@@ -72,9 +72,11 @@ trait StoresMeterReading
             ]);
             $user = User::where('meter_id', $meter->id)->first();
             if ($user){
-                $user->update([
-                    'account_balance' => ($user->account_balance - ($bill + $service_fee))
-                ]);
+                if ($user->account_balance <= 0){
+                    $user->update([
+                        'account_balance' => ($user->account_balance - ($bill + $service_fee))
+                    ]);
+                }
                 $this->processAvailableCredits($user, $meter_reading);
             }
             DB::commit();

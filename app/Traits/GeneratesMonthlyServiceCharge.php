@@ -24,9 +24,11 @@ trait GeneratesMonthlyServiceCharge
                 'month' => $monthToGenerate,
                 'service_charge' => $monthly_service_charge
             ]);
-            $user->update([
-                'account_balance' => ($user->account_balance - $monthly_service_charge)
-            ]);
+            if ($user->account_balance <= 0){
+                $user->update([
+                    'account_balance' => ($user->account_balance - $monthly_service_charge)
+                ]);
+            }
             $monthToGenerate->add(1, 'month');
         }
         if ($user->account_balance > 0 && $this->hasMonthlyServiceChargeDebt($user->id)) {
