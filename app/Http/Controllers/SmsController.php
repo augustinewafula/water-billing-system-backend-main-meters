@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SendSmsRequest;
 use App\Models\Sms;
 use App\Models\User;
 use App\Traits\SendsSms;
@@ -56,7 +57,7 @@ class SmsController extends Controller
     /**
      * @throws Exception
      */
-    public function send(Request $request): JsonResponse
+    public function send(SendSmsRequest $request): JsonResponse
     {
         $users = User::role('user')
             ->with('meter');
