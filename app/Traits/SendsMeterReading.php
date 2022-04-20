@@ -3,9 +3,12 @@
 namespace App\Traits;
 
 use App\Jobs\SendSMS;
+use App\Mail\CriticalNotification;
+use App\Mail\MeterReadings;
 use App\Models\Meter;
 use App\Models\User;
 use Carbon\Carbon;
+use Mail;
 
 trait SendsMeterReading
 {
@@ -20,7 +23,7 @@ trait SendsMeterReading
             ->find($meter_reading->meter_id);
         $user_name = $user->name;
         $due_date = Carbon::parse($meter_reading->bill_due_at)->format('d/m/Y');
-        $bill_month = Carbon::parse($meter_reading->created_at)->isoFormat('MMMM YYYY');
+        $bill_month = Carbon::parse($meter_reading->month)->isoFormat('MMMM YYYY');
         $units_consumed = $meter_reading->current_reading - $meter_reading->previous_reading;
         $bill = round($meter_reading->bill - $meter_reading->service_fee);
         $carry_forward_balance = 0;
@@ -40,7 +43,14 @@ trait SendsMeterReading
         }
 
         $message = "Dear $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit applied: Ksh $over_paid_amount\nStanding charge: Ksh $service_fee\nTotal outstanding: Ksh $total_outstanding\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
+
         SendSMS::dispatch($user->phone, $message, $user->id);
+
+        if ($user->email){
+            $message = str_replace("\n", '<br/>', $message);
+            Mail::to($user->email)
+                ->send(new MeterReadings($bill_month, $message));
+        }
         $meter_reading->update([
             'sms_sent' => true,
         ]);
