@@ -67,9 +67,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('meter-tokens', MeterTokenController::class)->except([
             'update', 'destroy'
         ]);
-        Route::apiResource('settings', SettingController::class)->only([
-            'index', 'update'
-        ]);
+        Route::get('settings', [SettingController::class, 'index'])->middleware('doNotCacheResponse:User');
+        Route::post('settings', [SettingController::class, 'update']);
         Route::get('system-users', [UserController::class, 'systemUsersIndex'])->middleware('cacheResponse:User');
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
         Route::group(['middleware' => ['doNotCacheResponse']], static function () {
