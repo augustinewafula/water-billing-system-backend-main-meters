@@ -70,7 +70,13 @@ trait StoresMeterReading
                 'last_reading' => $request->current_reading,
                 'last_reading_date' => Carbon::now()->toDateTimeString(),
             ]);
-            $this->processAvailableCredits($meter, $meter_reading);
+            $user = User::where('meter_id', $meter->id)->first();
+            if ($user){
+                $user->update([
+                    'account_balance' => ($user->account_balance - ($bill + $service_fee))
+                ]);
+                $this->processAvailableCredits($user, $meter_reading);
+            }
             DB::commit();
         } catch (Throwable $th) {
             DB::rollBack();
@@ -85,15 +91,14 @@ trait StoresMeterReading
     /**
      * @throws Throwable
      */
-    public function processAvailableCredits($meter, $meter_reading): void
+    public function processAvailableCredits($user, $meter_reading): void
     {
-        $user = User::where('meter_id', $meter->id)->first();
         throw_if($user === null, 'RuntimeException', 'Meter user not found');
         if ($this->userHasAccountBalance($user)) {
             $request = new CreateMeterBillingRequest();
             $request->setMethod('POST');
             $request->request->add([
-                'meter_id' => $meter->id,
+                'meter_id' => $user->meter_id,
                 'amount_paid' => 0,
                 'monthly_service_charge_deducted' => 0,
             ]);
