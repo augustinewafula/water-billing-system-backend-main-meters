@@ -3,7 +3,7 @@
 
 <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-    <title>Set Password - Water Billing System</title>
+    <title>Set Password - {{ env('APP_NAME') }}</title>
     <meta name="description" content="Reset Password - Water Billing System.">
     <style type="text/css">
         a:hover {
