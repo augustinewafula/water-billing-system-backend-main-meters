@@ -25,10 +25,10 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string'],
-            'email' => ['nullable', 'email', 'unique:users', 'max:50'],
-            'phone' => ['required', 'numeric'],
-            'account_number' => ['required', 'string', 'max:50'],
-            'meter_id' => ['required', 'exists:meters,id']
+            'email' => ['nullable', 'email', "unique:users,email,$this->id", 'max:50'],
+            'phone' => ['required', 'numeric', 'digits:10'],
+            'account_number' => ['required', 'string', "unique:users,email,$this->id", 'max:50'],
+            'meter_id' => ['required', 'exists:meters,id', "unique:users,meter_id,$this->id"]
         ];
     }
 }

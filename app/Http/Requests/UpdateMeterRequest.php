@@ -26,6 +26,7 @@ class UpdateMeterRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'number' => ['required', 'numeric', "unique:meters,number,$this->id"],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
             'mode' => ['required', new EnumValue(MeterMode::class, false)],

@@ -24,7 +24,7 @@ class UpdateMeterStationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', "unique:meter_stations,name,$this->id", 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'paybill_number' => ['required', 'numeric', 'digits:6'],
         ];
