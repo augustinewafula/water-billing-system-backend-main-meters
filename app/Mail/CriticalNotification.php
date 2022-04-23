@@ -20,7 +20,7 @@ class CriticalNotification extends Mailable
      */
     public function __construct($body)
     {
-        $this->message = $body;
+        $this->body = $body;
     }
 
     /**
