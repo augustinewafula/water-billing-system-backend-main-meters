@@ -76,6 +76,7 @@ Route::prefix('v1')->group(function () {
             Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
             Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
             Route::get('statistics/main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
+            Route::get('statistics/per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
             Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
             Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
             Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
