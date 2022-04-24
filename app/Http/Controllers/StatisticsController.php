@@ -127,6 +127,47 @@ class StatisticsController extends Controller
         return response()->json($main_meter_readings);
     }
 
+    /**
+     * @throws JsonException
+     */
+    public function perStationAverageMeterReading(Request $request): JsonResponse
+    {
+        $meter_stations = MeterStation::all();
+        $meter_station_readings = [];
+        foreach ($meter_stations as $meter_station){
+            $per_station_meter_readings = [];
+            $meter_station_meters = Meter::select('id')
+                ->where('station_id', $meter_station->id)
+                ->where('main_meter', false)
+                ->get();
+
+            foreach ($meter_station_meters as $meter_station_meter){
+                $meter_reading = DailyMeterReading::where('meter_id', $meter_station_meter->id);
+                if ($request->has('filter')) {
+                    if ($request->query('filter') === 'last-7-days') {
+                        $meter_reading = $meter_reading->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
+                            ->whereYear('created_at', date('Y'));
+                    }
+                    if ($request->query('filter') === 'monthly') {
+                        $meter_reading = $meter_reading->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
+                            ->whereYear('created_at', date('Y'));
+                    }
+                }
+                $meter_reading = $meter_reading->groupBy('name', 'reading')
+                    ->select('reading', DB::raw('DAYNAME(created_at) as name'))
+                    ->get();
+                $per_station_meter_readings[] = $meter_reading;
+
+
+            }
+            $meter_station_readings[] = [
+                'station' => $meter_station->name,
+                'readings' => $this->calculateMeterReadingsSum( $per_station_meter_readings)];
+
+        }
+        return response()->json($meter_station_readings);
+    }
+
     public function meterReadings(Request $request, Meter $meter): JsonResponse
     {
         if ($request->has('filter')) {
@@ -296,6 +337,31 @@ class StatisticsController extends Controller
                 'value' => $value
             ];
         }
+        return $stationsRevenue;
+    }
+
+    private function calculateMeterReadingsSum($meterReadings): array
+    {
+
+        $meterReadings = array_reduce($meterReadings, static function ($accumulator, $item) {
+            foreach ($item as $meterReading){
+                $accumulator[$meterReading['name']] = $accumulator[$meterReading['name']] ?? 0;
+                $accumulator[$meterReading['name']] += $meterReading['reading'];
+            }
+            return $accumulator;
+        });
+
+        if ($meterReadings === null) {
+            return [];
+        }
+        $stationsRevenue = [];
+        foreach ($meterReadings as $key => $value) {
+            $stationsRevenue[] = [
+                'name' => $key,
+                'value' => $value
+            ];
+        }
+        Log::info('end');
         return $stationsRevenue;
     }
 
