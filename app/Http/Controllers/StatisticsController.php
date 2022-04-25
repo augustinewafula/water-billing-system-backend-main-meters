@@ -161,7 +161,7 @@ class StatisticsController extends Controller
 
             }
             $meter_station_readings[] = [
-                'station' => $meter_station->name,
+                'name' => $meter_station->name,
                 'readings' => $this->calculateMeterReadingsSum( $per_station_meter_readings)];
 
         }
@@ -357,8 +357,8 @@ class StatisticsController extends Controller
         $stationsRevenue = [];
         foreach ($meterReadings as $key => $value) {
             $stationsRevenue[] = [
-                'name' => $key,
-                'value' => $value
+                'label' => $key,
+                'reading' => $value
             ];
         }
         Log::info('end');
