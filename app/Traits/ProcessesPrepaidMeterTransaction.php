@@ -16,7 +16,7 @@ use Throwable;
 
 trait ProcessesPrepaidMeterTransaction
 {
-    use CalculatesBill, CalculatesUserTotalAmount;
+    use AuthenticatesMeter, CalculatesBill, CalculatesUserTotalAmount;
 
     protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
@@ -30,27 +30,9 @@ trait ProcessesPrepaidMeterTransaction
                 'METER_ID' => $meter_id,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'METER_TYPE' => 1,
-                'ApiToken' => $this->login(),
+                'ApiToken' => $this->loginPrepaidMeter(),
             ]);
         Log::info('register response:' . $response->body());
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public function login(): ?string
-    {
-        $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'login', [
-                'Companyname' => env('PREPAID_METER_COMPANY'),
-                'Username' => env('PREPAID_METER_USERNAME'),
-                'Password' => env('PREPAID_METER_PASSWORD'),
-            ]);
-        if ($response->successful()) {
-            Log::info('response:' . $response->body());
-            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
-        }
-        return null;
     }
 
     /**
@@ -131,6 +113,11 @@ trait ProcessesPrepaidMeterTransaction
      */
     public function generateMeterToken($meter_id, $amount): ?string
     {
+        $api_token = env('PREPAID_METER_API_TOKEN');
+        if ($api_token === null){
+            $api_token = $this->loginPrepaidMeter();
+        }
+
         $response = Http::retry(3, 100)
             ->post($this->baseUrl . 'vending', [
                 'CustomerId' => $meter_id,
@@ -141,7 +128,7 @@ trait ProcessesPrepaidMeterTransaction
                 'AmountTmp' => 'KES',
                 'Company' => env('PREPAID_METER_COMPANY'),
                 'Employee' => '0000',
-                'ApiToken' => $this->login(),
+                'ApiToken' => $api_token,
             ]);
         if ($response->successful()) {
             Log::info('vending response:' . $response->body());
