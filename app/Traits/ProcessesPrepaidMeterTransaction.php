@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Jobs\SendSMS;
+use App\Models\Meter;
+use App\Models\MeterCharge;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
 use App\Models\User;
@@ -80,7 +82,8 @@ trait ProcessesPrepaidMeterTransaction
 
         try {
             DB::beginTransaction();
-            $token = $this->generateMeterToken($user->meter_number, $user_total_amount);
+            $meter_number = Meter::find($meter_id)->number;
+            $token = $this->generateMeterToken($meter_number, $user_total_amount);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
             $token = strtok($token, ',');
             MeterToken::create([
@@ -111,20 +114,21 @@ trait ProcessesPrepaidMeterTransaction
     /**
      * @throws JsonException
      */
-    public function generateMeterToken($meter_id, $amount): ?string
+    public function generateMeterToken($meter_number, $amount): ?string
     {
         $api_token = env('PREPAID_METER_API_TOKEN');
-        if ($api_token === null){
+        if (empty($api_token)){
             $api_token = $this->loginPrepaidMeter();
         }
+        $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
+            ->first();
 
-        $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'vending', [
-                'CustomerId' => $meter_id,
-                'MeterId' => $meter_id,
-                'Price' => 200,
+        $response = Http::post($this->baseUrl . 'vending', [
+                'CustomerId' => $meter_number,
+                'MeterId' => $meter_number,
+                'Price' => (int)$prepaid_meter_charges->cost_per_unit,
                 'Rate' => 1,
-                'Amount' => $amount,
+                'Amount' => (int)$amount,
                 'AmountTmp' => 'KES',
                 'Company' => env('PREPAID_METER_COMPANY'),
                 'Employee' => '0000',
