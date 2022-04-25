@@ -10,7 +10,7 @@ trait SetsEnvironmentalValue
 
         $oldValue = env($envKey);
 
-        $str = str_replace("{$envKey}={$oldValue}", "{$envKey}={$envValue}\n", $str);
+        $str = str_replace("$envKey=$oldValue", "$envKey=$envValue", $str);
 
         $fp = fopen($envFile, 'wb');
         fwrite($fp, $str);
