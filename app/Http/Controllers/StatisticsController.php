@@ -124,7 +124,9 @@ class StatisticsController extends Controller
             ];
             $main_meter_readings[] = $readings;
         }
-        return response()->json($main_meter_readings);
+        return response()->json([
+            'main_meter_readings' => $main_meter_readings,
+            'per_station_average_readings' => json_decode($this->perStationAverageMeterReading($request)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)]);
     }
 
     /**
