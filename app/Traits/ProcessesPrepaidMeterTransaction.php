@@ -18,7 +18,7 @@ use Throwable;
 
 trait ProcessesPrepaidMeterTransaction
 {
-    use AuthenticatesMeter, CalculatesBill, CalculatesUserTotalAmount;
+    use AuthenticatesMeter, CalculatesBill, CalculatesUserTotalAmount, SetsEnvironmentalValue;
 
     protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
@@ -136,6 +136,9 @@ trait ProcessesPrepaidMeterTransaction
             ]);
         if ($response->successful()) {
             Log::info('vending response:' . $response->body());
+            if ($response->body() === ''){
+                $this->setEnvironmentValue('PREPAID_METER_API_TOKEN', null);
+            }
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
         }
         return null;
