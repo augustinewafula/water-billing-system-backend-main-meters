@@ -46,16 +46,15 @@ class MeterTokenController extends Controller
      */
     public function store(CreateMeterTokenRequest $request): JsonResponse
     {
-        try {
-            $mpesa_transaction = MpesaTransaction::where('TransID', $request->mpesa_transaction_reference)->first();
-            $this->processPrepaidTransaction($request->meter_id, $mpesa_transaction, 0);
-        } catch (Throwable $throwable) {
-            DB::rollBack();
-            Log::error($throwable);
-            $response = ['message' => 'Failed to generate token.'];
-            return response()->json($response, 422);
+        $mpesa_transaction = MpesaTransaction::where('TransID', $request->mpesa_transaction_reference)->first();
+        $this->processPrepaidTransaction($request->meter_id, $mpesa_transaction, 0);
+        $mpesa_transaction->refresh();
+
+        if ($mpesa_transaction->Consumed){
+            return response()->json('generated');
         }
-        return response()->json('generated');
+        $response = ['message' => 'Failed to generate token'];
+        return response()->json($response, 422);
     }
 
     /**
