@@ -43,10 +43,12 @@ class SwitchOnPaidMeter implements ShouldQueue
     public function handle(): void
     {
         $month_ago = Carbon::now()->subtract(1, 'month')->format('Y-m');
-        $meter = MeterReading::where('meter_id', $this->meter->id)
+        $meter = MeterReading::with(['meter' => function ($query) {
+                $query->whereValveStatus(ValveStatus::Closed)
+                    ->orWhere('valve_last_switched_off_by', 'system');
+            }])->where('meter_id', $this->meter->id)
             ->where('month', '>=', $month_ago)
             ->whereStatus(MeterReadingStatus::Paid)
-            ->whereValveLastSwitchedOffBy('system')
             ->latest()
             ->limit(1)
             ->first();
