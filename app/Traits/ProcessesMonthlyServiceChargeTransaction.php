@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\MonthlyServiceChargeStatus;
+use App\Jobs\SendSMS;
 use App\Models\MonthlyServiceCharge;
 use App\Models\MonthlyServiceChargePayment;
 use App\Models\MonthlyServiceChargeReport;
@@ -135,6 +136,10 @@ trait ProcessesMonthlyServiceChargeTransaction
             }
 
         }
+
+        $organization_name = env('APP_NAME');
+        $message = "Your monthly service fee of Ksh $total_monthly_service_charge_paid has been received by $organization_name";
+        SendSMS::dispatch($user->phone, $message, $user->id);
 
         return $total_monthly_service_charge_paid;
     }

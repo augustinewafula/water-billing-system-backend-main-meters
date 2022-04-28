@@ -33,8 +33,9 @@ trait ProcessesPostPaidTransaction
             'monthly_service_charge_deducted' => $monthly_service_charge_deducted
         ]);
         //TODO::make organization name dynamic
-        $message = "Dear $mpesa_transaction->FirstName $mpesa_transaction->LastName, your payment of Ksh $mpesa_transaction->TransAmount to Progressive Utility has been received. Thank you for being our esteemed customer.";
-        SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->user_id);
+        $organization_name = env('APP_NAME');
+        $message = "Dear $mpesa_transaction->FirstName, your payment of Ksh $mpesa_transaction->TransAmount to $organization_name has been received. Thank you for being our esteemed customer.";
+        SendSMS::dispatch($user->phone, $message, $user->user_id);
         $this->store($request, $mpesa_transaction->id);
     }
 
