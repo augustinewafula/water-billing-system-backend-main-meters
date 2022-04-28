@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
 use Log;
+use RuntimeException;
 use Str;
 use Throwable;
 
@@ -88,38 +89,38 @@ class MeterController extends Controller
      */
     public function store(CreateMeterRequest $request): JsonResponse
     {
-        $meter = $this->save($request);
+        $response = $this->save($request);
 
-        return response()->json($meter, 201);
+        return response()->json($response['message'], $response['status_code']);
     }
 
     public function storeMainMeter(CreateMainMeterRequest $request): JsonResponse
     {
-        $meter = $this->save($request);
+        $response = $this->save($request);
 
-        return response()->json($meter, 201);
+        return response()->json($response['message'], $response['status_code']);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function save($request)
     {
         if ((int)$request->mode === MeterMode::Automatic) {
-            $meter = Meter::create($request->validated());
-
-            try {
-                if (MeterType::find($request->type_id)->name === 'Prepaid') {
-                    $this->registerPrepaidMeter($meter->number);
-                }
-            } catch (Throwable $exception) {
-                Log::error('Failed to register prepaid meter id: ' . $meter->id);
+            if (MeterType::find($request->type_id)->name === 'Prepaid') {
+                $this->registerPrepaidMeter($request->number);
             }
-            return $meter;
+
+            $meter = Meter::create($request->validated());
+            return ['message' => $meter, 'status_code' => 201];
         }
-        return Meter::create([
+        $meter = Meter::create([
             'number' => $request->number,
             'station_id' => $request->station_id,
             'last_reading' => $request->last_reading,
             'mode' => $request->mode
         ]);
+        return ['message' => $meter, 'status_code' => 201];
 
     }
 
