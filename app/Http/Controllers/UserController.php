@@ -299,7 +299,7 @@ class UserController extends Controller
             'created_at' => Carbon::now()
         ]);
 
-        $url = env('APP_FRONTEND_URL') . "/reset-password/$token?email=$email&action=set";
+        $url = env('APP_FRONTEND_URL') . "reset-password/$token?email=$email&action=set";
         SendSetPasswordEmail::dispatch($email, $url);
     }
 }
