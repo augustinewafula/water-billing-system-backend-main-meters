@@ -2,22 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ClearMeterTokenRequest;
 use App\Http\Requests\CreateMeterTokenRequest;
 use App\Jobs\SendSMS;
+use App\Models\Meter;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
+use App\Traits\ClearsMeterToken;
 use App\Traits\ProcessesPrepaidMeterTransaction;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
 use Log;
+use RuntimeException;
 use Str;
 use Throwable;
 
 class MeterTokenController extends Controller
 {
-    use ProcessesPrepaidMeterTransaction;
+    use ProcessesPrepaidMeterTransaction, ClearsMeterToken;
 
     public function __construct()
     {
@@ -55,6 +60,25 @@ class MeterTokenController extends Controller
         }
         $response = ['message' => 'Failed to generate token'];
         return response()->json($response, 422);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function clear(ClearMeterTokenRequest $request): JsonResponse
+    {
+        $meter_number = Meter::find($request->meter_id)->number;
+        try {
+            $token = $this->clearMeterToken($meter_number);
+            throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
+            $token = strtok($token, ',');
+
+        } catch (Throwable $throwable){
+            $response = ['message' => 'Failed to reset token'];
+            return response()->json($response, 422);
+        }
+        return response()->json($token);
+
     }
 
     /**
