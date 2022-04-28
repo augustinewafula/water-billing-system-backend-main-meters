@@ -101,7 +101,7 @@ trait ProcessesPrepaidMeterTransaction
                 'Consumed' => true,
             ]);
             $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $user->meter_number\nToken: $token\nUnits: $units\nAmount: $mpesa_transaction->TransAmount\nDate: $date\nRef: $mpesa_transaction->TransID";
+            $message = "Meter: $meter_number\nToken: $token\nUnits: $units\nAmount: $mpesa_transaction->TransAmount\nDate: $date\nRef: $mpesa_transaction->TransID";
             SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
             DB::commit();
 
