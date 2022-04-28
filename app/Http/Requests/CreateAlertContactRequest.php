@@ -27,7 +27,14 @@ class CreateAlertContactRequest extends FormRequest
     {
         return [
             'type' => ['required', new EnumValue(AlertContactTypes::class, false)],
-            'value' => ['required', 'string']
+            'value' => ['required', 'string', 'unique:alert_contacts']
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'unique' => 'The alert contact already exists.'
         ];
     }
 }
