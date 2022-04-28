@@ -25,16 +25,18 @@ trait ProcessesPrepaidMeterTransaction
     /**
      * @throws JsonException
      */
-    public function registerPrepaidMeter($meter_id): void
+    public function registerPrepaidMeter($meter_number): string
     {
         $response = Http::retry(3, 100)
             ->post($this->baseUrl . 'Meter', [
-                'METER_ID' => $meter_id,
+                'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'METER_TYPE' => 1,
+                'REMARK' => 'production',
                 'ApiToken' => $this->loginPrepaidMeter(),
             ]);
-        Log::info('register response:' . $response->body());
+        Log::info('prepaid meter register response:' . $response->body());
+        return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
