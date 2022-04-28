@@ -118,7 +118,7 @@ class ForgotPasswordController extends Controller
         DB::table('password_resets')->where(['email' => $request->email])->delete();
 
         if ($request->isJson()) {
-            return response()->json(['message' => 'Password reset successfully']);
+            return response()->json(['message' => 'You can now login with your new password']);
         }
 
         return redirect($this->redirectTo);
