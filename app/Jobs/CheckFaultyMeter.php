@@ -47,7 +47,8 @@ class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
 
     private function checkMetersWithDelayedCommunication(): void
     {
-        $meters_with_delayed_communication = Meter::where('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
+        $meters_with_delayed_communication = Meter::with('station')
+            ->where('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
             ->get();
 
         $this->saveAndNotify($meters_with_delayed_communication, FaultyMeterFaultType::LostCommunication);
@@ -55,7 +56,8 @@ class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
 
     private function checkMetersWithLowBattery(): void
     {
-        $meter_with_low_battery = Meter::where('battery_voltage', '<', $this->minimum_battery_voltage)
+        $meter_with_low_battery = Meter::with('station')
+            ->where('battery_voltage', '<', $this->minimum_battery_voltage)
             ->get();
 
         $this->saveAndNotify($meter_with_low_battery, FaultyMeterFaultType::LowBattery);
@@ -83,6 +85,16 @@ class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
                 'meter_id' => $meter_id,
                 'fault_type' => $fault_type
             ]);
+            $station_name = $meter->station->name;
+            $message = "Meter number $meter->number belonging to $station_name has ";
+            if ($fault_type === FaultyMeterFaultType::LowBattery){
+                $message .= "battery voltage of below $this->minimum_battery_voltage volts.";
+            }
+            $difference_in_hours = $this->maximum_meter_communication_delay_time->diffInHours(now());
+            if ($fault_type === FaultyMeterFaultType::LostCommunication){
+                $message .= "not communicated with the server for more than $difference_in_hours hours";
+            }
+            SendAlert::dispatch($message);
         }
     }
 

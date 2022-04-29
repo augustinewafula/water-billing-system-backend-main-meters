@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Traits\ProcessesMpesaTransaction;
-use Illuminate\Http\JsonResponse;
+use Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
-use Log;
 use Throwable;
 
 class MeterBillingController extends Controller
@@ -70,12 +70,15 @@ class MeterBillingController extends Controller
     public function mpesaConfirmation(Request $request)
     {
         $client_ip = $request->ip();
-        if (!$this->safaricomIpAddress($client_ip)) {
-            Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-            Log::notice($request);
-            $response = ['message' => 'Nothing interesting around here.'];
-            return response()->json($response, 418);
-        }
+//        if (!$this->isValidSafaricomIpAddress($client_ip)) {
+//            if (!$this->isValidPaybillNumber($request->BusinessShortCode)){
+//                Log::notice("Ip $client_ip has been stopped from accessing transaction url");
+//                Log::notice($request);
+//                $response = ['message' => 'Nothing interesting around here.'];
+//                return response()->json($response, 418);
+//            }
+//            $this->queryMpesaTransactionStatus($request);
+//        }
 
         $request->validate([
             'TransID' => 'unique:mpesa_transactions'
@@ -114,7 +117,7 @@ class MeterBillingController extends Controller
         ]);
     }
 
-    private function safaricomIpAddress($clientIpAddress): bool
+    private function isValidSafaricomIpAddress($clientIpAddress): bool
     {
         $whitelist = [
             '196.201.214.200',
@@ -133,6 +136,36 @@ class MeterBillingController extends Controller
             '196.201.212.69'];
 
         return in_array($clientIpAddress, $whitelist, true);
+    }
+
+    public function queryMpesaTransactionStatus($request): void
+    {
+        $data = [
+            'Initiator' => '',
+            'SecurityCredential' => '',
+            'CommandID' => '',
+            'TransactionID' => '',
+            'PartyA' => '',
+            'IdentifierType' => '',
+            'ResultURL' => '',
+            'QueueTimeOutURL' => '',
+            'Remarks' => '',
+            'Occasion' => ''
+        ];
+        $response = Http::retry(2, 100)
+            ->post('https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query', $data);
+
+    }
+
+    public function isValidPaybillNumber($paybill_number): bool
+    {
+        return in_array($paybill_number, $this->validPaybillNumbers(), true);
+    }
+
+    public function validPaybillNumbers(): array
+    {
+        return MeterStation::pluck('paybill_number')
+            ->all();
     }
 
 }
