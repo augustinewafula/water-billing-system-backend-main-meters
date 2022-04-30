@@ -8,7 +8,7 @@ use BenSampo\Enum\Enum;
  * @method static static Closed()
  * @method static static Open()
  */
-final class MeterReadingStatus extends Enum
+final class PaymentStatus extends Enum
 {
     public const NotPaid = 0;
     public const Paid = 1;

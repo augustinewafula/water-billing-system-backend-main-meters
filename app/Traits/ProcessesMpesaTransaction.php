@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Enums\MeterReadingStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Jobs\SendSMS;

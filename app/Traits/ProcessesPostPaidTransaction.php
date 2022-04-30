@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Enums\MeterReadingStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Jobs\SendSMS;
 use App\Jobs\SwitchOnPaidMeter;
@@ -59,8 +59,8 @@ trait ProcessesPostPaidTransaction
         }
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
             ->where(function ($query) {
-                $query->where('status', MeterReadingStatus::NotPaid);
-                $query->orWhere('status', MeterReadingStatus::Balance);
+                $query->where('status', PaymentStatus::NotPaid);
+                $query->orWhere('status', PaymentStatus::Balance);
             })
             ->orderBy('created_at', 'ASC')->get();
 

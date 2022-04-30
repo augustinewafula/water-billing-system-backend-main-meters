@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\MeterMode;
-use App\Enums\MeterReadingStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\ValveStatus;
 use App\Models\Meter;
 use App\Models\MeterReading;
@@ -48,8 +48,8 @@ class SwitchOffUnpaidMeters implements ShouldQueue, ShouldBeUnique
         }])
             ->whereDate('bill_due_at', '<=', now())
             ->where(function ($query) {
-                $query->whereStatus(MeterReadingStatus::NotPaid)
-                    ->orWhere('status', MeterReadingStatus::Balance);
+                $query->whereStatus(PaymentStatus::NotPaid)
+                    ->orWhere('status', PaymentStatus::Balance);
             })
             ->get();
         $processed_meters = [];
@@ -96,7 +96,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue, ShouldBeUnique
         $unpaid_bills = DB::table('meter_readings')
             ->where('meter_id', $meter_id)
             ->whereDate('bill_due_at', '<=', now())
-            ->whereStatus(MeterReadingStatus::NotPaid)
+            ->whereStatus(PaymentStatus::NotPaid)
             ->sum('bill');
         $meter_reading = MeterReading::where('meter_id', $meter_id)->first();
         $balance_bills = DB::table('meter_billings')

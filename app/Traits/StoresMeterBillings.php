@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Enums\MeterReadingStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Models\Meter;
 use App\Models\MeterBilling;
@@ -40,7 +40,7 @@ trait StoresMeterBillings
             }
 
             $bill_to_pay = $pending_meter_reading->bill;
-            if ($pending_meter_reading->status === MeterReadingStatus::Balance) {
+            if ($pending_meter_reading->status === PaymentStatus::Balance) {
                 $bill_to_pay = MeterBilling::where('meter_reading_id', $pending_meter_reading->id)
                     ->latest()
                     ->first()
@@ -105,11 +105,11 @@ trait StoresMeterBillings
                     if ($this->userHasOverPaid($balance)) {
                         $amount_over_paid = abs($balance);
                         $meter_reading->update([
-                            'status' => MeterReadingStatus::OverPaid,
+                            'status' => PaymentStatus::OverPaid,
                         ]);
                     } else {
                         $meter_reading->update([
-                            'status' => MeterReadingStatus::Paid,
+                            'status' => PaymentStatus::Paid,
                         ]);
                     }
                     $user_bill_balance = 0;
@@ -119,7 +119,7 @@ trait StoresMeterBillings
                         'last_mpesa_transaction_id' => $mpesa_transaction_id
                     ]);
                     $meter_reading->update([
-                        'status' => MeterReadingStatus::Balance,
+                        'status' => PaymentStatus::Balance,
                     ]);
                 }
                 MeterBilling::updateOrCreate([

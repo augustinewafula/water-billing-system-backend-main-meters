@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\MeterMode;
-use App\Enums\MeterReadingStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\ValveStatus;
 use App\Models\MeterReading;
 use App\Traits\NotifiesOnJobFailure;
@@ -48,7 +48,7 @@ class SwitchOnPaidMeter implements ShouldQueue
                     ->orWhere('valve_last_switched_off_by', 'system');
             }])->where('meter_id', $this->meter->id)
             ->where('month', '>=', $month_ago)
-            ->whereStatus(MeterReadingStatus::Paid)
+            ->whereStatus(PaymentStatus::Paid)
             ->latest()
             ->limit(1)
             ->first();
