@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('model:prune')->daily();
         $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth();
         $schedule->command('monthly-service-charge:generate')->monthly();
+        $schedule->command('monthly-connection-fee:generate')->monthly();
         $schedule->command('backup:clean --only-db')->twiceDaily(0, 12);
         $schedule->command('backup:run --only-db')->twiceDaily();
     }

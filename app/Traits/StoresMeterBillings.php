@@ -27,9 +27,10 @@ trait StoresMeterBillings
     public function processMeterBillings(CreateMeterBillingRequest $request, $pending_meter_readings, $user, $mpesa_transaction_id): void
     {
         $monthly_service_charge_deducted = $request->monthly_service_charge_deducted;
+        $connection_fee_deducted = $request->connection_fee_deducted;
         $amount_paid = $request->amount_paid;
         $user_total_amount = $amount_paid;
-        if ($monthly_service_charge_deducted > 0) {
+        if ($monthly_service_charge_deducted > 0 || $connection_fee_deducted > 0) {
             $user_total_amount = 0;
         }
 
@@ -57,11 +58,13 @@ trait StoresMeterBillings
                 $balance,
                 $user,
                 $monthly_service_charge_deducted,
+                $connection_fee_deducted,
                 $pending_meter_reading,
                 $mpesa_transaction_id)) {
-                $user_total_amount = 0;
-                $amount_paid = 0;
-                $monthly_service_charge_deducted = 0;
+                    $user_total_amount = 0;
+                    $amount_paid = 0;
+                    $monthly_service_charge_deducted = 0;
+                    $connection_fee_deducted = 0;
             }
 
         }
@@ -72,6 +75,7 @@ trait StoresMeterBillings
      * @param $balance
      * @param $user
      * @param $monthly_service_charge_deducted
+     * @param $connection_fee_deducted
      * @param $meter_reading
      * @param $mpesa_transaction_id
      * @return bool
@@ -82,6 +86,7 @@ trait StoresMeterBillings
         $balance,
         $user,
         $monthly_service_charge_deducted,
+        $connection_fee_deducted,
         $meter_reading,
         $mpesa_transaction_id): bool
     {
@@ -128,6 +133,7 @@ trait StoresMeterBillings
                     'amount_over_paid' => $amount_over_paid,
                     'balance' => $user_bill_balance,
                     'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
+                    'connection_fee_deducted' => $connection_fee_deducted,
                     'credit' => $credit,
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id

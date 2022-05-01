@@ -27,6 +27,7 @@ class CreateMeterBillingRequest extends FormRequest
             'meter_id' => ['required', 'string', 'exists:meters,id'],
             'amount_paid' => ['required', 'numeric'],
             'monthly_service_charge_deducted' => ['required', 'numeric'],
+            'connection_fee_deducted' => ['required', 'numeric'],
         ];
     }
 }

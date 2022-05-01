@@ -85,6 +85,7 @@ class MeterBillingController extends Controller
         ]);
         $mpesa_transaction = $this->storeMpesaTransaction($request);
         $this->processMpesaTransaction($mpesa_transaction);
+//        $this->queryMpesaTransactionStatus($request);
 
 
         $response = new Response();
@@ -141,19 +142,22 @@ class MeterBillingController extends Controller
     public function queryMpesaTransactionStatus($request): void
     {
         $data = [
-            'Initiator' => '',
-            'SecurityCredential' => '',
-            'CommandID' => '',
-            'TransactionID' => '',
-            'PartyA' => '',
-            'IdentifierType' => '',
+            'Initiator' => 'gkymaina',
+            'SecurityCredential' => 'O7ZEQ5sbvUXcOCfmor6bqV9HgrtgFZI2F9V1oAO7sps0phO7jawWqmDNZlNK+tf/wjpS9NJdnN3D1h/NGTr160YdkLAaK1N0GnQujm0iCLDvO4fJpkNP0A/AugntB3KbNO3552dd6PfmMaQQUA5Z8QvmaxZlOELxrLtQKIncx3Yep8SNEEzFmY6vQx2n6WfbCnikQ13h7zDQAU9+m8ZHza2tFd9d/pKbUAP7WVXELZoLDggxitnjouh/g790dvEsgZb+mx87xC2hJwkk/NRM/CsL2IAbo1CR5l++Jbq++JUBEP5iA0DIUAn+BYtQCv6XSw9QjV5db27Q5P5u0oM7WA==',
+            'CommandID' => 'TransactionStatusQuery',
+            'TransactionID' => 'QDQ7Z9J7YN',
+            'PartyA' => '994470',
+            'IdentifierType' => '1',
             'ResultURL' => '',
             'QueueTimeOutURL' => '',
-            'Remarks' => '',
-            'Occasion' => ''
+            'Remarks' => 'Confirming',
+            'Occasion' => 'Ip mismatch'
         ];
         $response = Http::retry(2, 100)
-            ->post('https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query', $data);
+            ->post('https://api.safaricom.co.ke/mpesa/transactionstatus/v1/query', $data);
+        if ($response->successful()) {
+            \Log::info($response->body());
+        }
 
     }
 

@@ -20,6 +20,7 @@ class CreateMeterTokensTable extends Migration
             $table->string('units');
             $table->decimal('service_fee', 15);
             $table->decimal('monthly_service_charge_deducted', 15)->default(0);
+            $table->decimal('connection_fee_deducted', 15)->default(0);
             $table->foreignUuid('meter_id')->constrained('meters')->cascadeOnDelete();
             $table->timestamps(6);
             $table->softDeletes();

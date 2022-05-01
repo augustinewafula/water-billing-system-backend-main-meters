@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMeterBillingsTable extends Migration
+class CreateConnectionFeePaymentsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,16 @@ class CreateMeterBillingsTable extends Migration
      */
     public function up()
     {
-        Schema::create('meter_billings', function (Blueprint $table) {
+        Schema::create('connection_fee_payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('meter_reading_id');
-            $table->foreign('meter_reading_id')->references('id')->on('meter_readings')->cascadeOnDelete();
+            $table->uuid('connection_fee_id');
+            $table->foreign('connection_fee_id', 'connection_fee_id')->references('id')->on('connection_fees')->cascadeOnDelete();
             $table->decimal('amount_paid', 15);
-            $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
             $table->decimal('balance', 15)->default(0);
             $table->decimal('credit', 15)->default(0);
             $table->decimal('amount_over_paid', 15)->default(0);
             $table->decimal('monthly_service_charge_deducted', 15)->default(0);
-            $table->decimal('connection_fee_deducted', 15)->default(0);
-            $table->string('date_paid')->nullable();
+            $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
             $table->timestamps(6);
             $table->softDeletes();
         });
@@ -37,6 +35,6 @@ class CreateMeterBillingsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('meter_billings');
+        Schema::dropIfExists('connection_fee_payments');
     }
 }

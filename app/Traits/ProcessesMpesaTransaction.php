@@ -10,6 +10,7 @@ use App\Jobs\SwitchOnPaidMeter;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
+use App\Models\Setting;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +20,7 @@ use Throwable;
 
 trait ProcessesMpesaTransaction
 {
-    use ProcessesPrepaidMeterTransaction, ProcessesPostPaidTransaction, ProcessesMonthlyServiceChargeTransaction;
+    use ProcessesPrepaidMeterTransaction, ProcessesPostPaidTransaction, ProcessesMonthlyServiceChargeTransaction, ProcessConnectionFeeTransaction;
 
     /**
      * @throws JsonException
@@ -45,12 +46,21 @@ trait ProcessesMpesaTransaction
             $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction, $mpesa_transaction->TransAmount);
         }
 
+        $connection_fee_deducted = 0;
+        if ($monthly_service_charge_deducted < $mpesa_transaction->TransAmount){
+            $connection_fee = Setting::where('key', 'connection_fee')
+                ->value('value');
+            if ($user->total_connection_fee_paid < $connection_fee && $this->hasMonthlyConnectionFeeDebt($user->user_id)){
+                $connection_fee_deducted = $this->storeConnectionFee($user->user_id, $mpesa_transaction, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted);
+            }
+        }
+
         if ($user->meter_type_name === 'Prepaid') {
-            $this->processPrepaidTransaction($user->meter_id, $mpesa_transaction, $monthly_service_charge_deducted);
+            $this->processPrepaidTransaction($user->meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted);
             return;
 
         }
 
-        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted);
+        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted);
     }
 }

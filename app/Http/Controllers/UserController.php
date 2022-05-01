@@ -10,6 +10,7 @@ use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\Setting;
 use App\Models\User;
+use App\Traits\GeneratesMonthlyConnectionFee;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use Carbon\Carbon;
@@ -29,7 +30,7 @@ use Throwable;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee;
 
     public function __construct()
     {
@@ -130,6 +131,14 @@ class UserController extends Controller
                 ->first()
                 ->value;
             $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
+
+            $connection_fee = Setting::where('key', 'connection_fee')
+                ->value('value');
+            if ($user->total_connection_fee_paid < $connection_fee){
+                $monthly_connection_fee = Setting::where('key', 'connection_fee_per_month')
+                    ->value('value');
+                $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
+            }
             DB::commit();
         } catch (Throwable $th) {
             DB::rollBack();

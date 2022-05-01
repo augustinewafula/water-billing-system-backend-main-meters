@@ -43,27 +43,25 @@ trait ProcessesPrepaidMeterTransaction
      * @param $meter_id
      * @param $mpesa_transaction
      * @param $monthly_service_charge_deducted
+     * @param $connection_fee_deducted
      * @return void
      * @throws Throwable
      */
-    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted): void
+    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted): void
     {
         $user = User::where('meter_id', $meter_id)->first();
         throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
 
-        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted);
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted, $connection_fee_deducted);
 
         if ($user_total_amount <= 0) {
-            $message = "Your paid amount is not enough to purchase tokens, Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
+            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted);
             SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
             return;
         }
         $units = $this->calculateUnits($user_total_amount);
         if ($units < 0) {
-            $message = 'Your paid amount is not enough to purchase tokens. ';
-            if ($monthly_service_charge_deducted > 0) {
-                $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance.";
-            }
+            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted);
             try {
                 DB::beginTransaction();
                 $user->update([
@@ -94,6 +92,7 @@ trait ProcessesPrepaidMeterTransaction
                 'units' => $units,
                 'service_fee' => $this->calculateServiceFee($user_total_amount, 'prepay'),
                 'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
+                'connection_fee_deducted' => $connection_fee_deducted,
                 'meter_id' => $user->meter_id,
             ]);
             $user->update([
@@ -111,6 +110,26 @@ trait ProcessesPrepaidMeterTransaction
             DB::rollBack();
             Log::error($throwable);
         }
+    }
+
+    /**
+     * @param $monthly_service_charge_deducted
+     * @param $connection_fee_deducted
+     * @return string
+     */
+    private function constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted): string
+    {
+        $message = 'The amount you paid is insufficient to acquire tokens, ';
+        if ($monthly_service_charge_deducted > 0) {
+            $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance. ";
+        }
+        if ($monthly_service_charge_deducted > 0 && $connection_fee_deducted > 0) {
+            $message .= 'And ';
+        }
+        if ($connection_fee_deducted > 0) {
+            $message .= "Ksh $connection_fee_deducted was deducted for connection fee balance.";
+        }
+        return $message;
     }
 
 }

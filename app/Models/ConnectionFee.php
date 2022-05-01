@@ -4,15 +4,16 @@ namespace App\Models;
 
 use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MeterToken extends Model
+class ConnectionFee extends Model
 {
     use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
 
@@ -22,33 +23,34 @@ class MeterToken extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['mpesa_transaction_id', 'token', 'service_fee', 'meter_id', 'units', 'monthly_service_charge_deducted', 'connection_fee_deducted'];
+    protected $fillable = ['user_id', 'amount', 'status', 'month'];
+
+    public function setMonthAttribute(string $value): void
+    {
+        $this->attributes['month'] = Carbon::parse($value)->format('Y-m-d');
+    }
+
+    public function getMonthAttribute(string $value): string
+    {
+        return Carbon::parse($value)->format('Y-m');
+    }
 
     /**
-     * Get meter that owns the meter reading
+     * Get user that owns the user reading
      * @return BelongsTo
      */
-    public function meter(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Meter::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
-     * Get meter that owns the meter token
-     * @return hasOne
+     * Get the connection fee payments for the connection fee.
+     * @return HasMany
      */
-    public function user(): HasOne
+    public function connection_fee_payments(): HasMany
     {
-        return $this->hasOne(User::class, 'meter_id', 'meter_id');
-    }
-
-    /**
-     * Get mpesa transaction that owns the meter token
-     * @return belongsTo
-     */
-    public function mpesa_transaction(): BelongsTo
-    {
-        return $this->belongsTo(MpesaTransaction::class);
+        return $this->hasMany(ConnectionFeePayment::class)->latest();
     }
 
     /**

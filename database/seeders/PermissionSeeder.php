@@ -32,6 +32,8 @@ class PermissionSeeder extends Seeder
             'monthly-service-charge',
             'monthly-service-charge-payment',
             'monthly-service-charge-report',
+            'connection-fee',
+            'connection-fee-payment',
             'service-charge',
             'setting',
             'sms',

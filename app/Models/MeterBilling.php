@@ -21,7 +21,7 @@ class MeterBilling extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'mpesa_transaction_id', 'date_paid', 'amount_over_paid', 'credit', 'monthly_service_charge_deducted'];
+    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'mpesa_transaction_id', 'date_paid', 'amount_over_paid', 'credit', 'monthly_service_charge_deducted', 'connection_fee_deducted'];
 
     /**
      * Get meter reading that owns the meter billing

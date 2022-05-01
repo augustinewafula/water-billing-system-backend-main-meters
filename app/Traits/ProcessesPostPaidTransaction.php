@@ -23,14 +23,15 @@ trait ProcessesPostPaidTransaction
      * @return void
      * @throws Throwable
      */
-    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $monthly_service_charge_deducted): void
+    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted): void
     {
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
         $request->request->add([
             'meter_id' => $user->meter_id,
             'amount_paid' => $mpesa_transaction->TransAmount,
-            'monthly_service_charge_deducted' => $monthly_service_charge_deducted
+            'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
+            'connection_fee_deducted' => $connection_fee_deducted
         ]);
         //TODO::make organization name dynamic
         $organization_name = env('APP_NAME');
@@ -53,7 +54,7 @@ trait ProcessesPostPaidTransaction
         if (!$user){
             return response()->json('User not found', 422);
         }
-        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted);
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted, $request->connection_fee_deducted);
         if ($user_total_amount < 0){
             return response()->json('Amount exhausted', 422);
         }
