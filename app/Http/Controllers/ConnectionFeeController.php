@@ -11,7 +11,7 @@ class ConnectionFeeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:connection-fee', ['only' => ['index', 'show']]);
+        $this->middleware('permission:connection-fee-list', ['only' => ['index', 'show']]);
     }
 
     /**
