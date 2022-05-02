@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\MonthlyServiceCharge;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Str;
 
 class MonthlyServiceChargeController extends Controller
 {
@@ -48,6 +50,8 @@ class MonthlyServiceChargeController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
         $userId = $request->query('user_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
 
         if ($request->has('station_id')) {
             $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
@@ -61,6 +65,12 @@ class MonthlyServiceChargeController extends Controller
             $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
                 ->join('users', 'users.id', 'monthly_service_charges.user_id')
                 ->where('users.id', $userId);
+        }
+
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $monthly_service_charge = $monthly_service_charge->whereBetween('monthly_service_charges.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
 //        if ($request->has('sortBy')) {
