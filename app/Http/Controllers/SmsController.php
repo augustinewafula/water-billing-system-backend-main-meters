@@ -6,6 +6,7 @@ use App\Http\Requests\SendSmsRequest;
 use App\Models\Sms;
 use App\Models\User;
 use App\Traits\SendsSms;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,8 @@ class SmsController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
 
         if ($request->has('search') && Str::length($search) > 0) {
             $sms = $sms->where(function ($sms) use ($search) {
@@ -38,6 +41,12 @@ class SmsController extends Controller
                     ->orWhere('sms.cost', 'like', '%' . $search . '%')
                     ->orWhere('sms.message', 'like', '%' . $search . '%');
             });
+        }
+
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $sms = $sms->whereBetween('sms.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
         if ($request->has('sortBy')) {
