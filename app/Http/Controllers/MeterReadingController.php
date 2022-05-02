@@ -7,6 +7,7 @@ use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Traits\SendsMeterReading;
 use App\Traits\StoresMeterReading;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -163,6 +164,8 @@ class MeterReadingController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
 
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $meter_readings = $meter_readings->where(function ($meter_readings) use ($search) {
@@ -172,6 +175,11 @@ class MeterReadingController extends Controller
                     ->orWhere('meter_readings.bill', 'like', '%' . $search . '%')
                     ->orWhere('meter_readings.previous_reading', 'like', '%' . $search . '%');
             });
+        }
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $meter_readings = $meter_readings->whereBetween('meter_readings.created_at', [$formattedFromDate, $formattedToDate]);
         }
         if ($request->has('station_id')) {
             $meter_readings = $meter_readings->join('meter_stations', 'meter_stations.id', 'meters.station_id')
