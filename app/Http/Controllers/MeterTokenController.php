@@ -92,6 +92,8 @@ class MeterTokenController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
 
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $meter_tokens = $meter_tokens->where(function ($meter_tokens) use ($search) {
@@ -102,6 +104,11 @@ class MeterTokenController extends Controller
                     ->orWhere('users.name', 'like', '%' . $search . '%')
                     ->orWhere('meter_tokens.units', 'like', '%' . $search . '%');
             });
+        }
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $meter_tokens = $meter_tokens->whereBetween('mpesa_transactions.created_at', [$formattedFromDate, $formattedToDate]);
         }
         if ($request->has('station_id')) {
             $meter_tokens = $meter_tokens->join('meter_stations', 'meter_stations.id', 'meters.station_id')
