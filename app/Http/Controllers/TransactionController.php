@@ -9,6 +9,7 @@ use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -109,11 +110,19 @@ class TransactionController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $query = $query->where(function ($query) use ($search) {
                 $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%');
                 $query->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%');
             });
+        }
+
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $query = $query->whereBetween('mpesa_transactions.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
         if ($request->has('station_id')) {
