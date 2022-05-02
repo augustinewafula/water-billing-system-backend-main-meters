@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ConnectionFee;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Str;
 
 class ConnectionFeeController extends Controller
 {
@@ -49,6 +51,8 @@ class ConnectionFeeController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
         $userId = $request->query('user_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
 
         if ($request->has('station_id')) {
             $connection_fee = $connection_fee->select('connection_fees.*')
@@ -62,6 +66,12 @@ class ConnectionFeeController extends Controller
             $connection_fee = $connection_fee->select('connection_fees.*')
                 ->join('users', 'users.id', 'connection_fees.user_id')
                 ->where('users.id', $userId);
+        }
+
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $connection_fee = $connection_fee->whereBetween('connection_fees.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
 //        if ($request->has('sortBy')) {
