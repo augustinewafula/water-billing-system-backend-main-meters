@@ -6,6 +6,7 @@ use App\Models\MonthlyServiceCharge;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
 use Str;
 
 class MonthlyServiceChargeController extends Controller
@@ -20,6 +21,7 @@ class MonthlyServiceChargeController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws JsonException
      */
     public function index(Request $request): JsonResponse
     {
@@ -43,6 +45,9 @@ class MonthlyServiceChargeController extends Controller
         return response()->json($monthly_service_charge);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function filterQuery(Request $request, $monthly_service_charge)
     {
         $search = $request->query('search');
@@ -52,6 +57,7 @@ class MonthlyServiceChargeController extends Controller
         $userId = $request->query('user_id');
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
+        $status = $request->query('status');
 
         if ($request->has('station_id')) {
             $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
@@ -73,10 +79,25 @@ class MonthlyServiceChargeController extends Controller
             $monthly_service_charge = $monthly_service_charge->whereBetween('monthly_service_charges.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
-//        if ($request->has('sortBy')) {
+        if ($request->has('status')) {
+            $decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
+            if (!empty($decoded_status)){
+                $monthly_service_charge = $monthly_service_charge->whereIn('status', $decoded_status);
+            }
+
+        }
+
+        //        if ($request->has('sortBy')) {
 //            $monthly_service_charge = $monthly_service_charge->orderBy($sortBy, $sortOrder);
 //        }
 
         return $monthly_service_charge;
     }
+
+    /**
+     * @param Request $request
+     * @param $monthly_service_charge
+     * @return mixed
+     */
+
 }
