@@ -166,6 +166,7 @@ class MeterReadingController extends Controller
         $stationId = $request->query('station_id');
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
+        $status = $request->query('status');
 
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $meter_readings = $meter_readings->where(function ($meter_readings) use ($search) {
@@ -193,6 +194,13 @@ class MeterReadingController extends Controller
         }
         if ($request->has('sortBy')) {
             $meter_readings = $meter_readings->orderBy($sortBy, $sortOrder);
+        }
+        if ($request->has('status')) {
+            $decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
+            if (!empty($decoded_status)){
+                $meter_readings = $meter_readings->whereIn('status', $decoded_status);
+            }
+
         }
         return $meter_readings;
     }
