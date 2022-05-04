@@ -53,6 +53,7 @@ class ConnectionFeeController extends Controller
         $userId = $request->query('user_id');
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
+        $status = $request->query('status');
 
         if ($request->has('station_id')) {
             $connection_fee = $connection_fee->select('connection_fees.*')
@@ -72,6 +73,14 @@ class ConnectionFeeController extends Controller
             $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
             $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
             $connection_fee = $connection_fee->whereBetween('connection_fees.created_at', [$formattedFromDate, $formattedToDate]);
+        }
+
+        if ($request->has('status')) {
+            $decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
+            if (!empty($decoded_status)){
+                $connection_fee = $connection_fee->whereIn('status', $decoded_status);
+            }
+
         }
 
 //        if ($request->has('sortBy')) {
