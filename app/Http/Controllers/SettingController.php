@@ -45,6 +45,10 @@ class SettingController extends Controller
             ->first();
         $meter_reading_sms_delay_days_setting = Setting::where('key', 'meter_reading_sms_delay_days')
             ->first();
+        $connection_fee = Setting::where('key', 'connection_fee')
+        ->first();
+        $connection_fee_per_month = Setting::where('key', 'connection_fee_per_month')
+            ->first();
 
         try {
             DB::beginTransaction();
@@ -80,6 +84,12 @@ class SettingController extends Controller
             ]);
             $delay_meter_reading_sms_setting->update([
                 'value' => $request->delay_meter_reading_sms
+            ]);
+            $connection_fee->update([
+                'value' => $request->connection_fee
+            ]);
+            $connection_fee_per_month->update([
+                'value' => $request->connection_fee_per_month
             ]);
             DB::commit();
             return response()->json('updated');
