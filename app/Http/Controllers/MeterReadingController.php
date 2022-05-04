@@ -165,6 +165,7 @@ class MeterReadingController extends Controller
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
         $fromDate = $request->query('fromDate');
+        $month = $request->query('month');
         $toDate = $request->query('toDate');
         $status = $request->query('status');
 
@@ -181,6 +182,13 @@ class MeterReadingController extends Controller
             $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
             $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
             $meter_readings = $meter_readings->whereBetween('meter_readings.created_at', [$formattedFromDate, $formattedToDate]);
+        }
+        if ($request->has('month')) {
+            Log::info($month);
+            $formattedFromDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->startOfDay();
+            Log::info($formattedFromDate);
+            $meter_readings = $meter_readings->where('month', $formattedFromDate);
+
         }
         if ($request->has('station_id')) {
             $meter_readings = $meter_readings->join('meter_stations', 'meter_stations.id', 'meters.station_id')
