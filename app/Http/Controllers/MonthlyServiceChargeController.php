@@ -58,6 +58,7 @@ class MonthlyServiceChargeController extends Controller
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
         $status = $request->query('status');
+        $month = $request->query('month');
 
         if ($request->has('station_id')) {
             $monthly_service_charge = $monthly_service_charge->select('monthly_service_charges.*')
@@ -77,6 +78,12 @@ class MonthlyServiceChargeController extends Controller
             $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
             $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
             $monthly_service_charge = $monthly_service_charge->whereBetween('monthly_service_charges.created_at', [$formattedFromDate, $formattedToDate]);
+        }
+
+        if ($request->has('month')) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->startOfDay();
+            $monthly_service_charge = $monthly_service_charge->where('month', $formattedFromDate);
+
         }
 
         if ($request->has('status')) {

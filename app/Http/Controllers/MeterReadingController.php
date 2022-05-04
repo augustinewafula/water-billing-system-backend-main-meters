@@ -184,9 +184,7 @@ class MeterReadingController extends Controller
             $meter_readings = $meter_readings->whereBetween('meter_readings.created_at', [$formattedFromDate, $formattedToDate]);
         }
         if ($request->has('month')) {
-            Log::info($month);
             $formattedFromDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->startOfDay();
-            Log::info($formattedFromDate);
             $meter_readings = $meter_readings->where('month', $formattedFromDate);
 
         }
