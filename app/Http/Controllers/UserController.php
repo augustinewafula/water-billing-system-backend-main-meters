@@ -289,7 +289,7 @@ class UserController extends Controller
                 $query->where('station_id', $stationId);
             });
         }
-        if ($request->has('sortBy')) {
+        if ($sortBy !== 'undefined' && $request->has('sortBy')) {
             $users = $users->orderBy($sortBy, $sortOrder);
         }
         return $users;
