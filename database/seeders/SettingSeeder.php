@@ -30,13 +30,5 @@ class SettingSeeder extends Seeder
             'key' => 'monthly_service_charge',
             'value' => 200
         ]);
-        Setting::create([
-            'key' => 'connection_fee',
-            'value' => 25000
-        ]);
-        Setting::create([
-            'key' => 'connection_fee_per_month',
-            'value' => 2000
-        ]);
     }
 }
