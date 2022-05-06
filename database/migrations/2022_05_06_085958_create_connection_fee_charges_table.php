@@ -20,6 +20,7 @@ class CreateConnectionFeeChargesTable extends Migration
             $table->uuid('station_id');
             $table->foreign('station_id')->references('id')->on('meter_stations')->cascadeOnDelete();
             $table->timestamps(6);
+            $table->softDeletes();
         });
     }
 
