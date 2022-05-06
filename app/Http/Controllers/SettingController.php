@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSettingRequest;
+use App\Models\ConnectionFeeCharge;
 use App\Models\MeterCharge;
 use App\Models\ServiceCharge;
 use App\Models\Setting;
@@ -24,9 +25,12 @@ class SettingController extends Controller
         $settings = Setting::all();
         $meter_settings = MeterCharge::with('service_charges')
             ->get();
+        $connection_fee_charges = ConnectionFeeCharge::with('station')
+            ->get();
         return response()->json([
             'settings' => $settings,
             'meter_settings' => $meter_settings,
+            'connection_fee_charges' => $connection_fee_charges,
         ]);
     }
 
