@@ -40,12 +40,16 @@ trait SendsSms
             Log::info('response:' . $response->body());
             $response = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->SMSMessageData;
             foreach ($response->Recipients as $recipient) {
+                $status = $recipient->status;
+                if ($status === 'Success'){
+                    $status = 'Sent';
+                }
                 try {
                     $cost = explode(' ', trim($recipient->cost))[1];
                 } catch (Throwable $throwable) {
                     $cost = $recipient->cost;
                 }
-                $this->storeSms($recipient->number, $message, $recipient->messageId, $recipient->status, $cost, $user_id);
+                $this->storeSms($recipient->number, $message, $recipient->messageId, $status, $cost, $user_id);
             }
             return $response;
         }
