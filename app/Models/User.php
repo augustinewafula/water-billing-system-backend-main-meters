@@ -50,6 +50,7 @@ class User extends Authenticatable
         'password',
         'first_monthly_service_fee_on',
         'last_mpesa_transaction_id',
+        'should_pay_connection_fee',
         'account_balance',
         'account_number'
     ];
