@@ -22,7 +22,7 @@ class Sms extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['phone', 'message', 'status', 'cost', 'user_id'];
+    protected $fillable = ['phone', 'message', 'status', 'cost', 'user_id', 'message_id', 'network_code', 'failure_reason'];
 
     /**
      * Get the user that owns the sms.
