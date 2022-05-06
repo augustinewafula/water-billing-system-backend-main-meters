@@ -6,6 +6,8 @@ use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Jobs\SendSetPasswordEmail;
+use App\Models\ConnectionFeeCharge;
+use App\Models\Meter;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\Setting;
@@ -119,6 +121,7 @@ class UserController extends Controller
                 'meter_id' => $request->meter_id,
                 'account_number' => $request->account_number,
                 'first_monthly_service_fee_on' => $request->first_monthly_service_fee_on,
+                'should_pay_connection_fee' => $request->should_pay_connection_fee,
                 'password' => Hash::make($password),
             ]);
             $user->assignRole(Role::findByName('user'));
@@ -132,12 +135,18 @@ class UserController extends Controller
                 ->value;
             $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
-            $connection_fee = Setting::where('key', 'connection_fee')
-                ->value('value');
-            if ($user->total_connection_fee_paid < $connection_fee){
-                $monthly_connection_fee = Setting::where('key', 'connection_fee_per_month')
-                    ->value('value');
-                $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
+            if ($user->should_pay_connection_fee){
+                $user = User::where('id', $user->id)
+                    ->with('meter')
+                    ->firstOrFail();
+                $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
+                    ->first();
+                $connection_fee = $connection_fee_charges->connection_fee;
+                if ($user->total_connection_fee_paid < $connection_fee){
+                    $monthly_connection_fee = $connection_fee_charges->connection_fee_monthly_installment;
+                    $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
+                }
+
             }
             DB::commit();
         } catch (Throwable $th) {

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\ConnectionFeeCharge;
 use App\Models\Setting;
 use App\Models\User;
 use App\Traits\GeneratesMonthlyConnectionFee;
@@ -37,13 +38,15 @@ class GenerateMonthlyConnectionFee implements ShouldQueue
     public function handle(): void
     {
         $users = User::role('user')
+            ->with('meter')
+            ->whereShouldPayConnectionFee(true)
             ->get();
-        $connection_fee = Setting::where('key', 'connection_fee')
-            ->value('value');
-        $monthly_connection_fee = Setting::where('key', 'connection_fee_per_month')
-            ->value('value');
         foreach ($users as $user) {
-            if ($user->total_connection_fee_paid === $connection_fee){
+            $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
+                ->first();
+            $connection_fee = $connection_fee_charges->connection_fee;
+            $monthly_connection_fee = $connection_fee_charges->connection_fee_monthly_installment;
+            if ($user->total_connection_fee_paid >= $connection_fee){
                 continue;
             }
             $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);

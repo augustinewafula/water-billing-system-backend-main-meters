@@ -5,9 +5,9 @@ namespace App\Traits;
 use App\Enums\PaymentStatus;
 use App\Jobs\SendSMS;
 use App\Models\ConnectionFee;
+use App\Models\ConnectionFeeCharge;
 use App\Models\ConnectionFeePayment;
 use App\Models\MpesaTransaction;
-use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
@@ -36,9 +36,12 @@ trait ProcessConnectionFeeTransaction
 
     public function hasCompletedConnectionFeePayment($user_id): bool
     {
-        $user = User::find($user_id);
-        $connection_fee_per_month = Setting::where('key', 'connection_fee_per_month')
-        ->value('value');
+        $user = User::where('id', $user_id)
+            ->with('meter')
+            ->firstOrFail();
+        $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
+            ->first();
+        $connection_fee_per_month = $connection_fee_charges->connection_fee_monthly_installment;
         return $user->total_connection_fee_paid === $connection_fee_per_month;
     }
 
