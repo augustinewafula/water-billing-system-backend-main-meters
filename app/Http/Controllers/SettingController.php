@@ -51,10 +51,6 @@ class SettingController extends Controller
             ->first();
         $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
             ->first();
-        $connection_fee = Setting::where('key', 'connection_fee')
-        ->first();
-        $connection_fee_per_month = Setting::where('key', 'connection_fee_per_month')
-            ->first();
 
         try {
             DB::beginTransaction();
@@ -82,6 +78,9 @@ class SettingController extends Controller
             }
             $this->updateServiceCharge($prepaid_meter_charges->id, $prepaid_meter_service_charges);
 
+            $connection_fee_charges = json_decode($request->connection_fee_charge, false, 512, JSON_THROW_ON_ERROR);
+            $this->updateConnectionFeeCharge($connection_fee_charges);
+
             $bill_due_days_setting->update([
                 'value' => $request->bill_due_days
             ]);
@@ -93,12 +92,6 @@ class SettingController extends Controller
             ]);
             $monthly_service_charge->update([
                 'value' => $request->monthly_service_charge
-            ]);
-            $connection_fee->update([
-                'value' => $request->connection_fee
-            ]);
-            $connection_fee_per_month->update([
-                'value' => $request->connection_fee_per_month
             ]);
             DB::commit();
             return response()->json('updated');
@@ -120,6 +113,17 @@ class SettingController extends Controller
                 'to' => $service_charge->to,
                 'amount' => $service_charge->amount,
                 'meter_charge_id' => $meter_charge_id
+            ]);
+        }
+    }
+
+    public function updateConnectionFeeCharge($connection_fee_charges): void
+    {
+        foreach ($connection_fee_charges as $connection_fee_charge){
+            $connection_fee_charge_record = ConnectionFeeCharge::find($connection_fee_charge->id);
+            $connection_fee_charge_record->update([
+                'connection_fee' => $connection_fee_charge->connection_fee,
+                'connection_fee_monthly_installment' => $connection_fee_charge->connection_fee_monthly_installment
             ]);
         }
     }
