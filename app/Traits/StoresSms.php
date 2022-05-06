@@ -11,11 +11,12 @@ trait StoresSms
     /**
      * @throws Exception
      */
-    public function storeSms($phone, $message, $status, $cost, $user_id): void
+    public function storeSms($phone, $message, $message_id, $status, $cost, $user_id): void
     {
         Sms::create([
             'phone' => $phone,
             'message' => $message,
+            'message_id' => $message_id,
             'status' => $status,
             'cost' => $cost,
             'user_id' => $user_id,
