@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SendSmsRequest;
+use App\Http\Requests\SmsCallbackRequest;
 use App\Models\Sms;
 use App\Models\User;
 use App\Traits\SendsSms;
@@ -115,6 +116,17 @@ class SmsController extends Controller
             return response()->json($response, 422);
         }
         return response()->json('sent');
+    }
+
+    public function callback(SmsCallbackRequest $request): JsonResponse
+    {
+        $sms = Sms::where('message_id', $request->id)->first();
+        $sms->update([
+            'status' => $request->status,
+            'network_code' => $request->networkCode,
+            'failure_reason' => $request->failureReason,
+        ]);
+        return response()->json('received');
     }
 
     private function personalizeMessage(array $replace_with, $message): string

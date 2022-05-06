@@ -94,6 +94,7 @@ Route::prefix('v1')->group(function () {
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);
+        Route::post('sms-callback', [SmsController::class, 'callback']);
         Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::post('meter-tokens-clear', [MeterTokenController::class, 'clear']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
