@@ -25,10 +25,10 @@ class SmsCallbackRequest extends FormRequest
     {
         return [
             'id' => ['required', 'string', 'exists:sms,message_id'],
-            'status ' => ['required', 'string'],
+            'status' => ['required', 'string'],
             'phoneNumber' => ['required', 'string'],
-            'networkCode  ' => ['required', 'string'],
-            'failureReason ' => ['nullable', 'string'],
+            'networkCode' => ['required', 'string'],
+            'failureReason' => ['nullable', 'string'],
         ];
     }
 }
