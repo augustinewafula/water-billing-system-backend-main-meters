@@ -28,38 +28,7 @@ class SmsController extends Controller
     public function index(Request $request): JsonResponse
     {
         $sms = Sms::select('sms.*');
-        $search = $request->query('search');
-        $sortBy = $request->query('sortBy');
-        $sortOrder = $request->query('sortOrder');
-        $stationId = $request->query('station_id');
-        $fromDate = $request->query('fromDate');
-        $toDate = $request->query('toDate');
-
-        if ($request->has('search') && Str::length($search) > 0) {
-            $sms = $sms->where(function ($sms) use ($search) {
-                $sms->where('sms.phone', 'like', '%' . $search . '%')
-                    ->orWhere('sms.status', 'like', '%' . $search . '%')
-                    ->orWhere('sms.cost', 'like', '%' . $search . '%')
-                    ->orWhere('sms.message', 'like', '%' . $search . '%');
-            });
-        }
-
-        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
-            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
-            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
-            $sms = $sms->whereBetween('sms.created_at', [$formattedFromDate, $formattedToDate]);
-        }
-
-        if ($request->has('sortBy')) {
-            $sms = $sms->orderBy($sortBy, $sortOrder);
-        }
-
-        if ($request->has('station_id')) {
-            $sms = $sms->join('users', 'users.id', 'user_id')
-                ->join('meters', 'meters.id', 'users.meter_id')
-                ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-                ->where('meter_stations.id', $stationId);
-        }
+        $sms = $this->filterQuery($request, $sms);
 
         return response()->json($sms->paginate(10));
     }
@@ -137,5 +106,56 @@ class SmsController extends Controller
     {
         $search_words = ['{first-name}', '{full-name}', '{account-number}', '{meter-number}'];
         return str_replace($search_words, $replace_with, $message);
+    }
+
+    /**
+     * @param Request $request
+     * @param $sms
+     * @return mixed
+     */
+    private function filterQuery(Request $request, $sms)
+    {
+        $search = $request->query('search');
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $stationId = $request->query('station_id');
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
+        $status = $request->query('status');
+
+        if ($request->has('search') && Str::length($search) > 0) {
+            $sms = $sms->where(function ($sms) use ($search) {
+                $sms->where('sms.phone', 'like', '%' . $search . '%')
+                    ->orWhere('sms.status', 'like', '%' . $search . '%')
+                    ->orWhere('sms.cost', 'like', '%' . $search . '%')
+                    ->orWhere('sms.message', 'like', '%' . $search . '%');
+            });
+        }
+
+        if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {
+            $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+            $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+            $sms = $sms->whereBetween('sms.created_at', [$formattedFromDate, $formattedToDate]);
+        }
+
+        if ($request->has('status')) {
+            $decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
+            if (!empty($decoded_status)){
+                $sms = $sms->whereIn('status', $decoded_status);
+            }
+
+        }
+
+        if ($request->has('sortBy')) {
+            $sms = $sms->orderBy($sortBy, $sortOrder);
+        }
+
+        if ($request->has('station_id')) {
+            $sms = $sms->join('users', 'users.id', 'user_id')
+                ->join('meters', 'meters.id', 'users.meter_id')
+                ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+                ->where('meter_stations.id', $stationId);
+        }
+        return $sms;
     }
 }
