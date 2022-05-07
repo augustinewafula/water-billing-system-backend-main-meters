@@ -121,8 +121,12 @@ class SmsController extends Controller
     public function callback(SmsCallbackRequest $request): JsonResponse
     {
         $sms = Sms::where('message_id', $request->id)->first();
+        $status = $request->status;
+        if ($status === 'Success'){
+            $status = 'Delivered';
+        }
         $sms->update([
-            'status' => $request->status,
+            'status' => $status,
             'network_code' => $request->networkCode,
             'failure_reason' => $request->failureReason,
         ]);
