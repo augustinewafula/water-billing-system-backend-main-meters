@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessTransaction;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
 use App\Models\User;
@@ -14,7 +15,6 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use ProcessesMpesaTransaction;
 
     public function __construct()
     {
@@ -84,7 +84,7 @@ class MeterBillingController extends Controller
             'TransID' => 'unique:mpesa_transactions'
         ]);
         $mpesa_transaction = $this->storeMpesaTransaction($request);
-        $this->processMpesaTransaction($mpesa_transaction);
+        ProcessTransaction::dispatch($mpesa_transaction);
 //        $this->queryMpesaTransactionStatus($request);
 
 
