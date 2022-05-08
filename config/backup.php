@@ -163,11 +163,11 @@ return [
     'notifications' => [
 
         'notifications' => [
-            BackupWasSuccessful::class => ['mail'],
+            BackupWasSuccessful::class => [],
             BackupHasFailed::class => ['mail'],
             UnhealthyBackupWasFound::class => ['mail'],
             CleanupHasFailed::class => ['mail'],
-            CleanupWasSuccessful::class => ['mail'],
+            CleanupWasSuccessful::class => [],
         ],
 
         /*
