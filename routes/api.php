@@ -73,6 +73,7 @@ Route::prefix('v1')->group(function () {
         ]);
         Route::get('settings', [SettingController::class, 'index'])->middleware('doNotCacheResponse:User');
         Route::post('settings', [SettingController::class, 'update']);
+        Route::get('permission-models', [UserController::class, 'permissionModelsIndex']);
         Route::get('system-users', [UserController::class, 'systemUsersIndex'])->middleware('cacheResponse:User');
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
         Route::group(['middleware' => ['doNotCacheResponse']], static function () {
@@ -91,13 +92,14 @@ Route::prefix('v1')->group(function () {
         Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index'])->middleware('doNotCacheResponse');
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
+        Route::get('roles', [UserController::class, 'rolesIndex'])->middleware('cacheResponse:Role');
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);
         Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::post('meter-tokens-clear', [MeterTokenController::class, 'clear']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
-        Route::get('roles', [UserController::class, 'rolesIndex'])->middleware('cacheResponse:Role');
+        Route::post('roles', [UserController::class, 'saveRole']);
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);

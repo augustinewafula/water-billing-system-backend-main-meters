@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Traits\setsModelPermissions;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
+    use setsModelPermissions;
     /**
      * Run the database seeds.
      *
@@ -51,19 +53,5 @@ class PermissionSeeder extends Seeder
         }
     }
 
-    public function setModelPermissions($model): array
-    {
-        $permission_name = [];
-        $permissions = [
-            'list',
-            'create',
-            'edit',
-            'delete',
-        ];
 
-        foreach ($permissions as $permission) {
-            $permission_name[] = "$model-$permission";
-        }
-        return $permission_name;
-    }
 }

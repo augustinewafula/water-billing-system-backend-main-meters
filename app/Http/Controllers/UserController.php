@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateRoleRequest;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -15,6 +16,7 @@ use App\Models\User;
 use App\Traits\GeneratesMonthlyConnectionFee;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
+use App\Traits\setsModelPermissions;
 use Carbon\Carbon;
 use DB;
 use Exception;
@@ -29,10 +31,11 @@ use Log;
 use Spatie\Permission\Models\Role;
 use Str;
 use Throwable;
+use Spatie\Permission\Models\Permission;use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee, setsModelPermissions;
 
     public function __construct()
     {
@@ -67,6 +70,27 @@ class UserController extends Controller
         return response()->json($users->paginate(10));
     }
 
+    public function getIgnoredModels(): array
+    {
+        return ['connection fee payment', 'meter billing', 'meter billing report', 'meter type', 'monthly service charge', 'monthly service charge payment', 'monthly service charge report', 'unresolved mpesa transaction', 'mpesa transaction', 'setting', 'meter charge', 'sms'];
+    }
+
+    public function permissionModelsIndex(): JsonResponse
+    {
+        $permissions = Permission::pluck('name')
+            ->all();
+        $permission_models = [];
+        foreach ($permissions as $permission){
+            $model_name = substr($permission, 0, strrpos($permission, '-'));
+            $formatted_model_name = str_replace('-', ' ', $model_name);
+            $permission_models[] = $formatted_model_name;
+        }
+        $unique_permission_models = array_unique($permission_models);
+        $unique_permission_models = $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
+        return response()->json($unique_permission_models);
+
+    }
+
     public function rolesIndex(): JsonResponse
     {
         return response()
@@ -76,6 +100,45 @@ class UserController extends Controller
                     ->pluck('name')
                     ->all()
             );
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function saveRole(CreateRoleRequest $request)
+    {
+        $permissions = json_decode($request->permissions, false, 512, JSON_THROW_ON_ERROR);
+        $permission_names = [];
+        foreach ($permissions as $permission){
+            if ($permission->create){
+                $permission_names[] = str_replace(' ', '-', "$permission->name create");
+            }
+            if ($permission->list){
+                $permission_names[] = str_replace(' ', '-', "$permission->name list");
+            }
+            if ($permission->edit){
+                $permission_names[] = str_replace(' ', '-', "$permission->name edit");
+            }
+            if ($permission->delete){
+                $permission_names[] = str_replace(' ', '-', "$permission->name delete");
+            }
+        }
+
+        foreach ($this->getIgnoredModels() as $model){
+            $permission_names[] = $this->setModelPermissions(str_replace(' ', '-', $model));
+        }
+
+        foreach ($permission_names as $permission_name) {
+            Permission::updateOrCreate(
+                ['name' => $permission_name],
+                ['guard' => 'api']
+            );
+        }
+
+        $role = Role::create(['name' => $request->name]);
+        $role->givePermissionTo($permission_names);
+        return response()->json('created', 210);
+
     }
 
     public function download(Request $request): JsonResponse
@@ -320,5 +383,19 @@ class UserController extends Controller
 
         $url = env('APP_FRONTEND_URL') . "reset-password/$token?email=$email&action=set";
         SendSetPasswordEmail::dispatch($email, $url);
+    }
+
+    /**
+     * @param array $unique_permission_models
+     * @return array
+     */
+    private function filterSpecificNames(array $unique_permission_models, array $names): array
+    {
+        foreach ($names as $name){
+            if (($key = array_search($name, $unique_permission_models, true)) !== false) {
+                unset($unique_permission_models[$key]);
+            }
+        }
+        return Arr::flatten($unique_permission_models);
     }
 }
