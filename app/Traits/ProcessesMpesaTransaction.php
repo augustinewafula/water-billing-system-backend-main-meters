@@ -7,6 +7,7 @@ use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Jobs\SendSMS;
 use App\Jobs\SwitchOnPaidMeter;
+use App\Models\ConnectionFeeCharge;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
@@ -48,10 +49,14 @@ trait ProcessesMpesaTransaction
 
         $connection_fee_deducted = 0;
         if ($user->should_pay_connection_fee && ($monthly_service_charge_deducted < $mpesa_transaction->TransAmount)){
-            $connection_fee = Setting::where('key', 'connection_fee')
-                ->value('value');
-            if ($user->total_connection_fee_paid < $connection_fee && $this->hasMonthlyConnectionFeeDebt($user->user_id)){
-                $connection_fee_deducted = $this->storeConnectionFee($user->user_id, $mpesa_transaction, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted);
+            $user = User::where('id', $user->user_id)
+                ->with('meter')
+                ->firstOrFail();
+            $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
+                ->first();
+            $connection_fee = $connection_fee_charges->connection_fee;
+            if ($user->total_connection_fee_paid < $connection_fee && $this->hasMonthlyConnectionFeeDebt($user->id)){
+                $connection_fee_deducted = $this->storeConnectionFee($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted);
             }
         }
 
