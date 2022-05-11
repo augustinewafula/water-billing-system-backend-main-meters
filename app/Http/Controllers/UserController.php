@@ -91,6 +91,19 @@ class UserController extends Controller
 
     }
 
+    public function showRolePermissions($role): JsonResponse
+    {
+        $permissions = Role::findByName($role)->permissions->pluck('name')->all();
+        $model_and_actions = [];
+        foreach ($permissions as $permission){
+            $model_name = substr($permission, 0, strrpos($permission, '-'));
+            $formatted_model_name = str_replace('-', ' ', $model_name);
+            $formatted_action_name = substr($permission, strrpos($permission, '-') + 1);
+            $model_and_actions[] = ['name' => $formatted_model_name, 'action' => $formatted_action_name];
+        }
+        return response()->json($model_and_actions);
+    }
+
     public function rolesIndex(): JsonResponse
     {
         return response()

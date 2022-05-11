@@ -93,6 +93,7 @@ Route::prefix('v1')->group(function () {
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
         Route::get('roles', [UserController::class, 'rolesIndex'])->middleware('cacheResponse:Role');
+        Route::get('roles/{role}', [UserController::class, 'showRolePermissions'])->middleware('cacheResponse:Role');
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);
