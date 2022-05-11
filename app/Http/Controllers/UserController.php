@@ -206,10 +206,10 @@ class UserController extends Controller
                 'year' => now()->year,
             ]);
 
-            $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
-                ->first()
-                ->value;
-            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
+//            $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
+//                ->first()
+//                ->value;
+//            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
             if ($user->should_pay_connection_fee){
                 $user = User::where('id', $user->id)

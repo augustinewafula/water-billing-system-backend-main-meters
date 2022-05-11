@@ -42,9 +42,9 @@ trait ProcessesMpesaTransaction
         }
 
         $monthly_service_charge_deducted = 0;
-        if ($this->hasMonthlyServiceChargeDebt($user->user_id)) {
-            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction, $mpesa_transaction->TransAmount);
-        }
+//        if ($this->hasMonthlyServiceChargeDebt($user->user_id)) {
+//            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction, $mpesa_transaction->TransAmount);
+//        }
 
         $connection_fee_deducted = 0;
         if ($user->should_pay_connection_fee && ($monthly_service_charge_deducted < $mpesa_transaction->TransAmount)){
