@@ -32,29 +32,22 @@ class TransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
 
-        $postpaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+        $postpaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
             ->join('meter_billings', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
+            ->join('users', 'users.meter_id', 'meters.id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $postpaid_transactions = $this->filterQuery($postpaid_transactions, $request);
 
-        $prepaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+        $prepaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
             ->join('meter_tokens', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
+            ->join('users', 'users.meter_id', 'meters.id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $prepaid_transactions = $this->filterQuery($prepaid_transactions, $request);
 
-        $monthly_service_charge_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
-            ->join('monthly_service_charge_payments', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
-            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
-            ->join('users', 'users.id', 'monthly_service_charges.user_id')
-            ->join('meters', 'meters.id', 'users.meter_id')
-            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
-        $monthly_service_charge_transactions = $this->filterQuery($monthly_service_charge_transactions, $request);
-
         $prepaid_transactions->union($postpaid_transactions);
-        $prepaid_transactions->union($monthly_service_charge_transactions);
 
         return response()->json($prepaid_transactions->paginate(10));
 
