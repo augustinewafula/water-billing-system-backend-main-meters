@@ -101,7 +101,25 @@ class UserController extends Controller
             $formatted_action_name = substr($permission, strrpos($permission, '-') + 1);
             $model_and_actions[] = ['name' => $formatted_model_name, 'action' => $formatted_action_name];
         }
-        return response()->json($model_and_actions);
+        $model_and_actions = $this->_group_by($model_and_actions, 'name');
+        $formatted_model_and_actions = [];
+        foreach ($model_and_actions as $key => $model_action){
+            $actions = [];
+            foreach ($model_action as $action){
+                $actions[] = [$action => true];
+            }
+            $formatted_model_and_actions[] = ['name' => $key, 'actions' => $model_action];
+        }
+        return response()->json($formatted_model_and_actions);
+    }
+
+    public function _group_by($array, $key): array
+    {
+        $return = [];
+        foreach($array as $val) {
+            $return[$val[$key]][] = $val['action'];
+        }
+        return $return;
     }
 
     public function rolesIndex(): JsonResponse
