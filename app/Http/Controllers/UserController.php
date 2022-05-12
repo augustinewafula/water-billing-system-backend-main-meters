@@ -104,10 +104,6 @@ class UserController extends Controller
         $model_and_actions = $this->_group_by($model_and_actions, 'name');
         $formatted_model_and_actions = [];
         foreach ($model_and_actions as $key => $model_action){
-            $actions = [];
-            foreach ($model_action as $action){
-                $actions[] = [$action => true];
-            }
             $formatted_model_and_actions[] = ['name' => $key, 'actions' => $model_action];
         }
         return response()->json($formatted_model_and_actions);
