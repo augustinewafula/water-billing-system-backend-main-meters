@@ -10,6 +10,7 @@ use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
 use App\Http\Controllers\MeterTokenController;
 use App\Http\Controllers\MonthlyServiceChargeController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\StatisticsController;
@@ -59,6 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
         Route::apiResource('alert-contacts', AlertContactController::class)->except(['show']);
+        Route::apiResource('roles', RoleController::class)->except(['update']);
         Route::apiResource('monthly-service-charges', MonthlyServiceChargeController::class)->only([
             'index', 'show'
         ]);
@@ -73,7 +75,7 @@ Route::prefix('v1')->group(function () {
         ]);
         Route::get('settings', [SettingController::class, 'index'])->middleware('doNotCacheResponse:User');
         Route::post('settings', [SettingController::class, 'update']);
-        Route::get('permission-models', [UserController::class, 'permissionModelsIndex']);
+        Route::get('permission-models', [RoleController::class, 'permissionModelsIndex']);
         Route::get('system-users', [UserController::class, 'systemUsersIndex'])->middleware('cacheResponse:User');
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
         Route::group(['middleware' => ['doNotCacheResponse']], static function () {
@@ -92,15 +94,13 @@ Route::prefix('v1')->group(function () {
         Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index'])->middleware('doNotCacheResponse');
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
-        Route::get('roles', [UserController::class, 'rolesIndex'])->middleware('cacheResponse:Role');
-        Route::get('roles/{role}', [UserController::class, 'showRolePermissions'])->middleware('cacheResponse:Role');
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);
         Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::post('meter-tokens-clear', [MeterTokenController::class, 'clear']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
-        Route::post('roles', [UserController::class, 'saveRole']);
+        Route::post('roles-update/{role}', [RoleController::class, 'update']);
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
