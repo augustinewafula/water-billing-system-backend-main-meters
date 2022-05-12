@@ -67,7 +67,9 @@ class UserController extends Controller
     {
         $users = User::with('roles');
         $users = $this->filterQuery($request, $users);
-        $users = $users->role(['admin', 'supervisor']);
+        $users = $users->whereHas('roles', function ($query) {
+            return $query->whereNotIn('name', ['user', 'super-admin']);
+        });
         return response()->json($users->paginate(10));
     }
 
