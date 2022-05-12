@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\User;
 use App\Traits\setsModelPermissions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
@@ -73,6 +74,15 @@ class RoleController extends Controller
 
         $role = Role::findByName($role_name);
         $role->syncPermissions($permission_names);
+
+        $users = User::with('tokens')
+            ->role($role_name)
+            ->get();
+        foreach ($users as $user){
+            foreach($user->tokens as $token) {
+                $token->revoke();
+            }
+        }
         return response()->json('updated');
 
     }
