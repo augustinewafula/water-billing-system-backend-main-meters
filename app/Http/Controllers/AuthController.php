@@ -8,6 +8,7 @@ use Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Permission;
 
 class AuthController extends Controller
 {
@@ -16,7 +17,7 @@ class AuthController extends Controller
      */
     public function initiateAdminLogin(Request $request): JsonResponse
     {
-        return $this->login($request, ['super-admin', 'admin', 'supervisor']);
+        return $this->login($request);
     }
 
     /**
@@ -24,13 +25,13 @@ class AuthController extends Controller
      */
     public function initiateUserLogin(Request $request): JsonResponse
     {
-        return $this->login($request, 'user');
+        return $this->login($request);
     }
 
     /**
      * @throws ValidationException
      */
-    public function login(Request $request, $user_type): JsonResponse
+    public function login(Request $request): JsonResponse
     {
         $rules = [
             'email' => 'required|email|exists:users',
@@ -44,13 +45,17 @@ class AuthController extends Controller
         $this->validate($request, $rules, $customMessages);
         $user = User::where('email', $request->email)->first();
 
-        if (!Hash::check($request->password, $user->password) || !$user->hasRole($user_type, 'api')) {
+        if (!Hash::check($request->password, $user->password)) {
             $response = ['message' => 'The given data was invalid.', 'errors' => ['password' => ['Incorrect email or password']]];
             return response()->json($response, 422);
         }
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
         $permissions = $user->getAllPermissions()->pluck('name');
+        if ($user->hasRole('super-admin')){
+            $permissions = Permission::pluck('name')
+                ->all();
+        }
         $response = [
             'token' => $token,
             'name' => $user->name,
