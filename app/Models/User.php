@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
@@ -35,6 +36,17 @@ class User extends Authenticatable
     public function setNameAttribute(string $value): void
     {
         $this->attributes['name'] = ucwords($value);
+    }
+
+    public function setFirstConnectionFeeOnAttribute(string $value): void
+    {
+        $this->attributes['first_connection_fee_on'] = Carbon::parse($value)->format('Y-m-d');
+    }
+
+
+    public function getFirstConnectionFeeOnAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format('Y-m') : null;
     }
 
     /**
@@ -74,7 +86,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'first_monthly_service_fee_on' => 'datetime',
-        'first_connection_fee_on' => 'datetime',
     ];
 
     /**
