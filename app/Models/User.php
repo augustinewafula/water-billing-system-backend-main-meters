@@ -49,6 +49,7 @@ class User extends Authenticatable
         'meter_id',
         'password',
         'first_monthly_service_fee_on',
+        'first_connection_fee_on',
         'last_mpesa_transaction_id',
         'should_pay_connection_fee',
         'account_balance',
