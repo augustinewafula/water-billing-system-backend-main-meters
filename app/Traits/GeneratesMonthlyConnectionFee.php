@@ -49,7 +49,7 @@ trait GeneratesMonthlyConnectionFee
 
         }
 
-        return Carbon::createFromFormat('Y-m-d H:i:s', $user->first_monthly_service_fee_on);
+        return Carbon::createFromFormat('Y-m-d H:i:s', $user->first_connection_fee_on);
     }
 
 }
