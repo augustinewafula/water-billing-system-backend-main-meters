@@ -18,6 +18,7 @@ trait GeneratesMonthlyConnectionFee
 
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $monthToGenerate = $this->getFirstMonthToGenerate($user);
+        \Log::info($monthToGenerate);
         while ($monthToGenerate->lessThanOrEqualTo($firstDayOfCurrentMonth)) {
             ConnectionFee::create([
                 'user_id' => $user->id,
@@ -49,7 +50,7 @@ trait GeneratesMonthlyConnectionFee
 
         }
 
-        return Carbon::createFromFormat('Y-m-d H:i:s', $user->first_connection_fee_on);
+        return Carbon::createFromFormat('Y-m', $user->first_connection_fee_on)->startOfMonth()->startOfDay();
     }
 
 }
