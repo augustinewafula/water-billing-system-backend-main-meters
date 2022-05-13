@@ -29,8 +29,8 @@ class CreateUserRequest extends FormRequest
             'phone' => ['required', 'numeric', 'digits:10'],
             'account_number' => ['required', 'string', 'unique:users', 'max:50'],
             'meter_id' => ['required', 'string', 'exists:meters,id', 'unique:users,meter_id', 'max:50'],
-            'first_monthly_service_fee_on' => ['required', 'date_format:Y-m'],
-            'should_pay_connection_fee' => ['required', 'boolean']
+            'should_pay_connection_fee' => ['required', 'boolean'],
+            'first_connection_fee_on' => ['required_if:should_pay_connection_fee,true', 'date_format:Y-m'],
         ];
     }
 }

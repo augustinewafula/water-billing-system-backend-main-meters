@@ -109,16 +109,17 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
             $password = $this->generatePassword(10);
-            $user = User::create([
+            $data = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'meter_id' => $request->meter_id,
                 'account_number' => $request->account_number,
-                'first_monthly_service_fee_on' => $request->first_monthly_service_fee_on,
+                'first_connection_fee_on' => $request->first_connection_fee_on,
                 'should_pay_connection_fee' => $request->should_pay_connection_fee,
                 'password' => Hash::make($password),
-            ]);
+            ];
+            $user = User::create($data);
             $user->assignRole(Role::findByName('user'));
             MonthlyServiceChargeReport::create([
                 'user_id' => $user->id,

@@ -74,6 +74,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'first_monthly_service_fee_on' => 'datetime',
+        'first_connection_fee_on' => 'datetime',
     ];
 
     /**
