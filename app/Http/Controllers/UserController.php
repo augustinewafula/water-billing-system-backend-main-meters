@@ -25,6 +25,7 @@ use Hash;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -132,17 +133,7 @@ class UserController extends Controller
 //            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
             if ($user->should_pay_connection_fee){
-                $user = User::where('id', $user->id)
-                    ->with('meter')
-                    ->firstOrFail();
-                $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
-                    ->first();
-                $connection_fee = $connection_fee_charges->connection_fee;
-                if ($user->total_connection_fee_paid < $connection_fee){
-                    $monthly_connection_fee = $connection_fee_charges->connection_fee_monthly_installment;
-                    $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
-                }
-
+                $this->generateConnectionFee($user);
             }
             DB::commit();
         } catch (Throwable $th) {
@@ -218,10 +209,14 @@ class UserController extends Controller
      * @param UpdateUserRequest $request
      * @param User $user
      * @return JsonResponse
+     * @throws Throwable
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
         $user->update($request->validated());
+        if ($user->should_pay_connection_fee){
+            $this->generateConnectionFee($user);
+        }
         return response()->json($user);
     }
 
@@ -316,6 +311,24 @@ class UserController extends Controller
 
         $url = env('APP_FRONTEND_URL') . "reset-password/$token?email=$email&action=set";
         SendSetPasswordEmail::dispatch($email, $url);
+    }
+
+    /**
+     * @param $user
+     * @throws Throwable
+     */
+    private function generateConnectionFee($user): void
+    {
+        $user = User::where('id', $user->id)
+            ->with('meter')
+            ->firstOrFail();
+        $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
+            ->first();
+        $connection_fee = $connection_fee_charges->connection_fee;
+        if ($user->total_connection_fee_paid < $connection_fee) {
+            $monthly_connection_fee = $connection_fee_charges->connection_fee_monthly_installment;
+            $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
+        }
     }
 
 }

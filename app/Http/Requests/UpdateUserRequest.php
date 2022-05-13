@@ -28,7 +28,9 @@ class UpdateUserRequest extends FormRequest
             'email' => ['nullable', 'email', "unique:users,email,$this->id", 'max:50'],
             'phone' => ['required', 'numeric', 'digits:10'],
             'account_number' => ['required', 'string', "unique:users,email,$this->id", 'max:50'],
-            'meter_id' => ['required', 'exists:meters,id', "unique:users,meter_id,$this->id"]
+            'meter_id' => ['required', 'exists:meters,id', "unique:users,meter_id,$this->id"],
+            'should_pay_connection_fee' => ['nullable', 'boolean'],
+            'first_connection_fee_on' => ['required_if:should_pay_connection_fee,true', 'date_format:Y-m'],
         ];
     }
 }
