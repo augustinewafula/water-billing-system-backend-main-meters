@@ -17,13 +17,18 @@ trait CalculatesBill
         return round($bill);
     }
 
-    private function calculateUnits($amount_paid): float
+    private function calculateUnits($amount_paid, $user): float
     {
-        $meter_charges = MeterCharge::where('for', 'prepay')
-            ->first();
+        if ($user->use_custom_charges_for_cost_per_unit && $user->cost_per_unit > 0){
+            $cost_per_unit = $user->cost_per_unit;
+        }else {
+            $meter_charges = MeterCharge::where('for', 'prepay')
+                ->first();
+            $cost_per_unit = $meter_charges->cost_per_unit;
+        }
         $final_amount = $amount_paid - $this->calculateServiceFee($amount_paid, 'prepay');
 
-        return round($final_amount / $meter_charges->cost_per_unit, 1);
+        return round($final_amount / $cost_per_unit, 1);
     }
 
     private function calculateServiceFee($amount_paid, $for): float

@@ -59,7 +59,7 @@ trait ProcessesPrepaidMeterTransaction
             SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
             return;
         }
-        $units = $this->calculateUnits($user_total_amount);
+        $units = $this->calculateUnits($user_total_amount, $user);
         if ($units < 0) {
             $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted);
             try {
