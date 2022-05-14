@@ -118,6 +118,8 @@ class UserController extends Controller
                 'account_number' => $request->account_number,
                 'first_connection_fee_on' => $request->first_connection_fee_on,
                 'should_pay_connection_fee' => $request->should_pay_connection_fee,
+                'use_custom_charges_for_cost_per_unit' => $request->use_custom_charges_for_cost_per_unit,
+                'cost_per_unit' => $request->cost_per_unit,
                 'password' => Hash::make($password),
             ];
             $user = User::create($data);
