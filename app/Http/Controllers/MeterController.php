@@ -81,11 +81,20 @@ class MeterController extends Controller
         return response()->json($meter_types);
     }
 
+    public function showMeterTypeByNameIndex($meter_type_name): JsonResponse
+    {
+        $meter_type = MeterType::select('id', 'name')
+            ->where('name', $meter_type_name)
+            ->firstOrFail();
+        return response()->json($meter_type);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
      * @param CreateMeterRequest $request
      * @return JsonResponse
+     * @throws JsonException
      */
     public function store(CreateMeterRequest $request): JsonResponse
     {
