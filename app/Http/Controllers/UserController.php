@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CommunicationChannels;
 use App\Http\Requests\CreateRoleRequest;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
@@ -109,19 +110,7 @@ class UserController extends Controller
     {
         try {
             DB::beginTransaction();
-            $password = $this->generatePassword(10);
-            $data = [
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'meter_id' => $request->meter_id,
-                'account_number' => $request->account_number,
-                'first_connection_fee_on' => $request->first_connection_fee_on,
-                'should_pay_connection_fee' => $request->should_pay_connection_fee,
-                'use_custom_charges_for_cost_per_unit' => $request->use_custom_charges_for_cost_per_unit,
-                'cost_per_unit' => $request->cost_per_unit,
-                'password' => Hash::make($password),
-            ];
+            $data = $this->getRequestData($request, 'save');
             $user = User::create($data);
             $user->assignRole(Role::findByName('user'));
             MonthlyServiceChargeReport::create([
@@ -215,7 +204,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        $user->update($request->validated());
+        $data = $this->getRequestData($request, 'update');
+        $user->update($data);
         if ($user->should_pay_connection_fee){
             $this->generateConnectionFee($user);
         }
@@ -331,6 +321,35 @@ class UserController extends Controller
             $monthly_connection_fee = $connection_fee_charges->connection_fee_monthly_installment;
             $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
         }
+    }
+
+    /**
+     * @param $request
+     * @param $action
+     * @return array
+     * @throws JsonException
+     * @throws Exception
+     */
+    private function getRequestData($request, $action): array
+    {
+        $communication_channels = json_decode($request->communication_channels, false, 512, JSON_THROW_ON_ERROR);
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'meter_id' => $request->meter_id,
+            'account_number' => $request->account_number,
+            'first_connection_fee_on' => $request->first_connection_fee_on,
+            'should_pay_connection_fee' => $request->should_pay_connection_fee,
+            'use_custom_charges_for_cost_per_unit' => $request->use_custom_charges_for_cost_per_unit,
+            'cost_per_unit' => $request->cost_per_unit,
+            'communication_channels' => $communication_channels
+        ];
+        if ($action === 'save'){
+            $password = $this->generatePassword(10);
+            $data = Arr::add($data, 'password', $password);
+        }
+        return $data;
     }
 
 }

@@ -68,6 +68,7 @@ class User extends Authenticatable
         'account_number',
         'use_custom_charges_for_cost_per_unit',
         'cost_per_unit',
+        'communication_channels'
     ];
 
     /**
@@ -88,6 +89,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'first_monthly_service_fee_on' => 'datetime',
+        'communication_channels' => 'array',
     ];
 
     /**
