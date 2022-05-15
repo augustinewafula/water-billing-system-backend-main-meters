@@ -12,6 +12,8 @@ use Mail;
 
 trait SendsMeterReading
 {
+    use NotifiesUser;
+
     public function sendMeterReading($meter_reading): void
     {
         $user = User::where('meter_id', $meter_reading->meter_id)
@@ -42,15 +44,9 @@ trait SendsMeterReading
             $total_outstanding = 0;
         }
 
-        $message = "Dear $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit applied: Ksh $over_paid_amount\nStanding charge: Ksh $service_fee\nTotal outstanding: Ksh $total_outstanding\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
+        $message = "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit applied: Ksh $over_paid_amount\nStanding charge: Ksh $service_fee\nTotal outstanding: Ksh $total_outstanding\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
 
-        SendSMS::dispatch($user->phone, $message, $user->id);
-
-        if ($user->email){
-            $message = str_replace("\n", '<br/>', $message);
-            Mail::to($user->email)
-                ->send(new MeterReadings($bill_month, $message));
-        }
+        $this->notifyUser((object)['message' => $message, 'bill_month' =>$bill_month], $user, 'meter readings');
         $meter_reading->update([
             'sms_sent' => true,
         ]);

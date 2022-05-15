@@ -18,7 +18,7 @@ use Throwable;
 
 trait ProcessesPrepaidMeterTransaction
 {
-    use AuthenticatesMeter, CalculatesBill, CalculatesUserTotalAmount, GeneratesMeterToken;
+    use AuthenticatesMeter, CalculatesBill, CalculatesUserTotalAmount, GeneratesMeterToken, NotifiesUser;
 
     protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
@@ -76,7 +76,7 @@ trait ProcessesPrepaidMeterTransaction
                 DB::rollBack();
                 Log::error($throwable);
             }
-            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
+            $this->notifyUser((object)['message' => $message], $user, 'meter tokens');
             return;
         }
 
@@ -103,7 +103,8 @@ trait ProcessesPrepaidMeterTransaction
             ]);
             $date = Carbon::now()->toDateTimeString();
             $message = "Meter: $meter_number\nToken: $token\nUnits: $units\nAmount: $user_total_amount\nDate: $date\nRef: $mpesa_transaction->TransID";
-            SendSMS::dispatch($user->phone, $message, $user->id);
+
+            $this->notifyUser((object)['message' => $message], $user, 'meter tokens');
             DB::commit();
 
         } catch (Throwable $throwable) {
