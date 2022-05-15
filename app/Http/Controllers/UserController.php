@@ -2,23 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CommunicationChannels;
-use App\Http\Requests\CreateRoleRequest;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
-use App\Http\Requests\UpdateRoleRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Jobs\SendSetPasswordEmail;
 use App\Models\ConnectionFeeCharge;
-use App\Models\Meter;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
-use App\Models\Setting;
 use App\Models\User;
 use App\Traits\GeneratesMonthlyConnectionFee;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
-use App\Traits\setsModelPermissions;
 use Carbon\Carbon;
 use DB;
 use Exception;
@@ -26,7 +20,6 @@ use Hash;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -35,7 +28,7 @@ use Log;
 use Spatie\Permission\Models\Role;
 use Str;
 use Throwable;
-use Spatie\Permission\Models\Permission;use Illuminate\Support\Arr;
+use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
