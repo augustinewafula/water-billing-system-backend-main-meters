@@ -43,7 +43,7 @@ class SettingController extends Controller
             ->first();
         $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
             ->first();
-        $bill_due_days_setting = Setting::where('key', 'bill_due_days')
+        $bill_due_on_setting = Setting::where('key', 'bill_due_on')
             ->first();
         $delay_meter_reading_sms_setting = Setting::where('key', 'delay_meter_reading_sms')
             ->first();
@@ -81,8 +81,8 @@ class SettingController extends Controller
             $connection_fee_charges = json_decode($request->connection_fee_charge, false, 512, JSON_THROW_ON_ERROR);
             $this->updateConnectionFeeCharge($connection_fee_charges);
 
-            $bill_due_days_setting->update([
-                'value' => $request->bill_due_days
+            $bill_due_on_setting->update([
+                'value' => $request->bill_due_on
             ]);
             $meter_reading_sms_delay_days_setting->update([
                 'value' => $request->meter_reading_sms_delay_days
