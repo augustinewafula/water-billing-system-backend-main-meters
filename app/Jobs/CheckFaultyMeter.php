@@ -28,8 +28,8 @@ class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
      */
     public function __construct()
     {
-        $yesterday = Carbon::now()->subDay();
-        $this->maximum_meter_communication_delay_time = $yesterday;
+        $thirty_hours_ago = Carbon::now()->subDay()->subHours(6);
+        $this->maximum_meter_communication_delay_time = $thirty_hours_ago;
         $this->minimum_battery_voltage = 0.5;
     }
 
