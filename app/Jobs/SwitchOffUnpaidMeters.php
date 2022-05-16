@@ -46,7 +46,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue, ShouldBeUnique
             $query->whereValveStatus(ValveStatus::Open)
                 ->orWhere('valve_status', null);
         }])
-            ->whereDate('bill_due_at', '<=', now())
+            ->whereDate('actual_meter_disconnection_on', '<=', now())
             ->where(function ($query) {
                 $query->whereStatus(PaymentStatus::NotPaid)
                     ->orWhere('status', PaymentStatus::Balance);
