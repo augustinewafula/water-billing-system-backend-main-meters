@@ -2,18 +2,15 @@
 
 namespace App\Jobs;
 
-use App\Enums\MeterMode;
 use App\Enums\PaymentStatus;
 use App\Enums\ValveStatus;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Traits\CalculatesUserAmount;
-use App\Traits\GeneratesPassword;
 use Carbon\Carbon;
 use DB;
 use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -21,9 +18,9 @@ use Illuminate\Queue\SerializesModels;
 use Log;
 use Throwable;
 
-class SendMeterDisconnectionRemainder implements ShouldQueue, ShouldBeUnique
+class SendMeterDisconnectionRemainder implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CalculatesUserAmount, GeneratesPassword;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CalculatesUserAmount;
 
     public $tries = 3;
 
@@ -35,24 +32,6 @@ class SendMeterDisconnectionRemainder implements ShouldQueue, ShouldBeUnique
     public function __construct()
     {
         //
-    }
-
-    /**
-     * The number of seconds after which the job's unique lock will be released.
-     *
-     * @var int
-     */
-    public $uniqueFor = 600;
-
-    /**
-     * The unique ID of the job.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function uniqueId(): string
-    {
-        return $this->generatePassword(5);
     }
 
     /**

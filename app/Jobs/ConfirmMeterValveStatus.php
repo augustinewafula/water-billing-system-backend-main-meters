@@ -3,13 +3,10 @@
 namespace App\Jobs;
 
 use App\Models\Meter;
-use App\Traits\GeneratesPassword;
 use App\Traits\GetsMeterInformation;
 use App\Traits\NotifiesOnJobFailure;
 use App\Traits\TogglesValveStatus;
-use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -18,9 +15,9 @@ use JsonException;
 use Log;
 use Throwable;
 
-class ConfirmMeterValveStatus implements ShouldQueue, ShouldBeUnique
+class ConfirmMeterValveStatus implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus, NotifiesOnJobFailure, GeneratesPassword;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus, NotifiesOnJobFailure;
 
     public $tries = 2;
 
@@ -32,24 +29,6 @@ class ConfirmMeterValveStatus implements ShouldQueue, ShouldBeUnique
     public function __construct()
     {
         //
-    }
-
-    /**
-     * The number of seconds after which the job's unique lock will be released.
-     *
-     * @var int
-     */
-    public $uniqueFor = 600;
-
-    /**
-     * The unique ID of the job.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function uniqueId(): string
-    {
-        return $this->generatePassword(5);
     }
 
     /**

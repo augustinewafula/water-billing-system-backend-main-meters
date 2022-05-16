@@ -5,11 +5,8 @@ namespace App\Jobs;
 use App\Enums\FaultyMeterFaultType;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
-use App\Traits\GeneratesPassword;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -17,9 +14,9 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Validation\Rule;
 use Validator;
 
-class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
+class CheckFaultyMeter implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesPassword;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $maximum_meter_communication_delay_time;
     protected $minimum_battery_voltage;
 
@@ -35,24 +32,6 @@ class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
         $thirty_hours_ago = Carbon::now()->subDay()->subHours(6);
         $this->maximum_meter_communication_delay_time = $thirty_hours_ago;
         $this->minimum_battery_voltage = 0.5;
-    }
-
-    /**
-     * The number of seconds after which the job's unique lock will be released.
-     *
-     * @var int
-     */
-    public $uniqueFor = 600;
-
-    /**
-     * The unique ID of the job.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function uniqueId(): string
-    {
-        return $this->generatePassword(5);
     }
 
     /**

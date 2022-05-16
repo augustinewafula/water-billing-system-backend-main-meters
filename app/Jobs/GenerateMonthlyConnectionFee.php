@@ -3,13 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\ConnectionFeeCharge;
-use App\Models\Setting;
 use App\Models\User;
 use App\Traits\GeneratesMonthlyConnectionFee;
-use App\Traits\GeneratesMonthlyServiceCharge;
-use App\Traits\GeneratesPassword;
 use App\Traits\NotifiesOnJobFailure;
-use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,7 +15,7 @@ use Throwable;
 
 class GenerateMonthlyConnectionFee implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesMonthlyConnectionFee, NotifiesOnJobFailure, GeneratesPassword;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesMonthlyConnectionFee, NotifiesOnJobFailure;
 
     public $tries = 1;
 
@@ -31,24 +27,6 @@ class GenerateMonthlyConnectionFee implements ShouldQueue
     public function __construct()
     {
         //
-    }
-
-    /**
-     * The number of seconds after which the job's unique lock will be released.
-     *
-     * @var int
-     */
-    public $uniqueFor = 600;
-
-    /**
-     * The unique ID of the job.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function uniqueId(): string
-    {
-        return $this->generatePassword(5);
     }
 
     /**
