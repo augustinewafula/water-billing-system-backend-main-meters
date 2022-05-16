@@ -19,6 +19,14 @@ class SettingSeeder extends Seeder
             'value' => 5
         ]);
         Setting::create([
+            'key' => 'tell_user_meter_disconnection_on',
+            'value' => 8
+        ]);
+        Setting::create([
+        'key' => 'actual_meter_disconnection_on',
+        'value' => 10
+        ]);
+        Setting::create([
             'key' => 'delay_meter_reading_sms',
             'value' => true,
         ]);
