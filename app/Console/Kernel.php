@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('meter-readings:send')->everyMinute()->withoutOverlapping();
         $schedule->command('meter-readings:get --type=daily')->daily();
         $schedule->command('model:prune')->daily();
-        $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth();
+        $schedule->command('meter-readings:get --type=monthly')->monthlyOn(25);
 //        $schedule->command('monthly-service-charge:generate')->monthly();
         $schedule->command('monthly-connection-fee:generate')->monthly();
         $schedule->command('backup:clean')->twiceDaily(0, 12);
