@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('meters:switch-off-unpaid')->everyMinute()->withoutOverlapping();
         $schedule->command('meters:confirm-valve-status')->everyMinute()->withoutOverlapping();
         $schedule->command('meters:check-faulty')->everyThreeMinutes()->withoutOverlapping();
+        $schedule->command('meters:send-disconnection-remainder')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('meter-readings:send')->everyMinute()->withoutOverlapping();
         $schedule->command('meter-readings:get --type=daily')->daily();
         $schedule->command('model:prune')->daily();
