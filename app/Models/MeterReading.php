@@ -24,7 +24,7 @@ class MeterReading extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'monthly_service_charge_deducted', 'status', 'sms_sent', 'send_sms_at', 'bill_due_at'];
+    protected $fillable = ['meter_id', 'previous_reading', 'current_reading', 'month', 'bill', 'service_fee', 'monthly_service_charge_deducted', 'status', 'sms_sent', 'send_sms_at', 'bill_due_at', 'tell_user_meter_disconnection_on', 'actual_meter_disconnection_on'];
 
     /**
      * The attributes that should be cast.
@@ -34,6 +34,8 @@ class MeterReading extends Model
     protected $casts = [
         'send_sms_at' => 'datetime',
         'bill_due_at' => 'datetime:Y-m-d',
+        'tell_user_meter_disconnection_on' => 'datetime:Y-m-d',
+        'actual_meter_disconnection_on' => 'datetime:Y-m-d',
     ];
 
     public function setMonthAttribute(string $value): void

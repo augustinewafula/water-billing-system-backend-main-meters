@@ -39,6 +39,12 @@ trait StoresMeterReading
         $bill_due_on = Setting::where('key', 'bill_due_on')
             ->first()
             ->value;
+        $tell_user_meter_disconnection_on = Setting::where('key', 'tell_user_meter_disconnection_on')
+            ->first()
+            ->value;
+        $actual_meter_disconnection_on = Setting::where('key', 'actual_meter_disconnection_on')
+            ->first()
+            ->value;
         $delay_meter_reading_sms = Setting::where('key', 'delay_meter_reading_sms')
             ->first()
             ->value;
@@ -50,7 +56,9 @@ trait StoresMeterReading
             $send_sms_at = Carbon::now()->add($meter_reading_sms_delay_days, 'day')->toDateTimeString();
         }
 
-        $due_date = Carbon::parse($bill_due_on . 'th ' . $next_month)->toDateTimeString();
+        $bill_due_on = Carbon::parse($bill_due_on . 'th ' . $next_month)->startOfDay()->addHours(7)->toDateTimeString();
+        $tell_user_meter_disconnection_on = Carbon::parse($tell_user_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->addHours(7)->toDateTimeString();
+        $actual_meter_disconnection_on = Carbon::parse($actual_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->addHours(7)->toDateTimeString();
 
         try {
             DB::beginTransaction();
@@ -64,7 +72,9 @@ trait StoresMeterReading
                 'bill' => $bill + $service_fee,
                 'service_fee' => $service_fee,
                 'send_sms_at' => $send_sms_at,
-                'bill_due_at' => $due_date,
+                'bill_due_at' => $bill_due_on,
+                'tell_user_meter_disconnection_on' => $tell_user_meter_disconnection_on,
+                'actual_meter_disconnection_on' => $actual_meter_disconnection_on,
             ]);
             $meter->update([
                 'last_reading' => $request->current_reading,
