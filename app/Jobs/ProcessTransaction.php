@@ -15,6 +15,8 @@ class ProcessTransaction implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, ProcessesMpesaTransaction;
     protected $mpesa_transaction;
 
+    public $tries = 2;
+
     /**
      * Create a new job instance.
      *

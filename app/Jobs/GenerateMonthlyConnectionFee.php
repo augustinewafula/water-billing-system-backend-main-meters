@@ -19,6 +19,8 @@ class GenerateMonthlyConnectionFee implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesMonthlyConnectionFee, NotifiesOnJobFailure;
 
+    public $tries = 1;
+
     /**
      * Create a new job instance.
      *

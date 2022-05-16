@@ -20,6 +20,8 @@ class ConfirmMeterValveStatus implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus, NotifiesOnJobFailure;
 
+    public $tries = 2;
+
     /**
      * Create a new job instance.
      *

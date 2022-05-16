@@ -25,6 +25,8 @@ class SwitchOffUnpaidMeters implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus, NotifiesOnJobFailure, CalculatesUserAmount;
 
+    public $tries = 2;
+
     /**
      * Create a new job instance.
      *

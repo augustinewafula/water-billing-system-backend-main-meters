@@ -17,6 +17,8 @@ class SendSMS implements ShouldQueue
 
     protected $to, $message, $user_id;
 
+    public $tries = 3;
+
     /**
      * Create a new job instance.
      *

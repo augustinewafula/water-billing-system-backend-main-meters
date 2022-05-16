@@ -26,6 +26,8 @@ class GetMeterReadings implements ShouldQueue
 
     protected $type;
 
+    public $tries = 2;
+
     /**
      * Create a new job instance.
      *

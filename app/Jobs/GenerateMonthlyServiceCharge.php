@@ -16,6 +16,8 @@ class GenerateMonthlyServiceCharge implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GeneratesMonthlyServiceCharge, NotifiesOnJobFailure;
 
+    public $tries = 1;
+
     /**
      * Create a new job instance.
      *

@@ -21,6 +21,8 @@ class CheckFaultyMeter implements ShouldQueue, ShouldBeUnique
     protected $maximum_meter_communication_delay_time;
     protected $minimum_battery_voltage;
 
+    public $tries = 1;
+
     /**
      * Create a new job instance.
      *

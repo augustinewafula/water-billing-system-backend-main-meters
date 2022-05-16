@@ -17,6 +17,8 @@ class SendAlert implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 2;
+
     protected $message;
     /**
      * Create a new job instance.

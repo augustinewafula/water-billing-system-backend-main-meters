@@ -22,6 +22,8 @@ class SwitchOnPaidMeter implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus, NotifiesOnJobFailure;
 
+    public $tries = 2;
+
     protected $meter;
 
     /**
