@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
+use App\Jobs\SendMeterReadingsToUser;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterReading;
@@ -90,6 +91,10 @@ trait StoresMeterReading
                 $this->processAvailableCredits($user, $meter_reading);
             }
             DB::commit();
+            $send_sms_at = Carbon::createFromFormat('Y-m-d H:i:s', $send_sms_at);
+            if ($send_sms_at->diffInMinutes(now()) === 0){
+                SendMeterReadingsToUser::dispatch();
+            }
         } catch (Throwable $th) {
             DB::rollBack();
             Log::error($th);
