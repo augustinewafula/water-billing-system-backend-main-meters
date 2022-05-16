@@ -118,6 +118,7 @@ trait StoresMeterReading
                 'meter_id' => $user->meter_id,
                 'amount_paid' => 0,
                 'monthly_service_charge_deducted' => 0,
+                'connection_fee_deducted' => 0,
             ]);
 
             $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id);
