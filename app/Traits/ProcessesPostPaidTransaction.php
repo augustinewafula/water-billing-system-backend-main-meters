@@ -15,7 +15,7 @@ use Throwable;
 
 trait ProcessesPostPaidTransaction
 {
-    use CalculatesBill, CalculatesUserTotalAmount, StoresMeterBillings;
+    use CalculatesBill, CalculatesUserAmount, StoresMeterBillings;
         /**
      * @param $user
      * @param MpesaTransaction $mpesa_transaction

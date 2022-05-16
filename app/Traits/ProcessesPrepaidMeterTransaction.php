@@ -18,7 +18,7 @@ use Throwable;
 
 trait ProcessesPrepaidMeterTransaction
 {
-    use AuthenticatesMeter, CalculatesBill, CalculatesUserTotalAmount, GeneratesMeterToken, NotifiesUser;
+    use AuthenticatesMeter, CalculatesBill, CalculatesUserAmount, GeneratesMeterToken, NotifiesUser;
 
     protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
