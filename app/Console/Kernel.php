@@ -16,11 +16,11 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('queue:work --max-time=3000')->everyThreeMinutes()->withoutOverlapping();
+        $schedule->command('queue:work --max-time=600')->everyThreeMinutes()->withoutOverlapping();
         $schedule->command('meters:switch-off-unpaid')->everyMinute()->withoutOverlapping();
         $schedule->command('meters:confirm-valve-status')->everyMinute()->withoutOverlapping();
         $schedule->command('meters:check-faulty')->everyThreeMinutes()->withoutOverlapping();
-        $schedule->command('meter-readings:send')->everyMinute();
+        $schedule->command('meter-readings:send')->everyMinute()->withoutOverlapping();
         $schedule->command('meter-readings:get --type=daily')->daily();
         $schedule->command('model:prune')->daily();
         $schedule->command('meter-readings:get --type=monthly')->lastDayOfMonth();
