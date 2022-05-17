@@ -22,7 +22,8 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CalculatesUserAmount;
 
-    public $tries = 3;
+    public $tries = 2;
+    public $failOnTimeout = true;
 
     /**
      * Create a new job instance.

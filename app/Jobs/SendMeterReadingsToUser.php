@@ -16,7 +16,8 @@ class SendMeterReadingsToUser implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SendsMeterReading, NotifiesOnJobFailure;
 
-    public $tries = 3;
+    public $tries = 2;
+    public $failOnTimeout = true;
 
     /**
      * Create a new job instance.

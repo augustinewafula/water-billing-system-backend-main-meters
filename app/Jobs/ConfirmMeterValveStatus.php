@@ -19,7 +19,8 @@ class ConfirmMeterValveStatus implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus, NotifiesOnJobFailure;
 
-    public $tries = 2;
+    public $tries = 1;
+    public $failOnTimeout = true;
 
     /**
      * Create a new job instance.

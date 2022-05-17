@@ -16,7 +16,8 @@ class SendSetPasswordEmail implements ShouldQueue
 
     protected $email, $action_url;
 
-    public $tries = 3;
+    public $tries = 2;
+    public $failOnTimeout = true;
 
     /**
      * Create a new job instance.
