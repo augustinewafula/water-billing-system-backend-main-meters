@@ -38,9 +38,13 @@ class User extends Authenticatable
         $this->attributes['name'] = ucwords($value);
     }
 
-    public function setFirstConnectionFeeOnAttribute(string $value): void
+    public function setFirstConnectionFeeOnAttribute($value): void
     {
-        $this->attributes['first_connection_fee_on'] = Carbon::parse($value)->format('Y-m-d');
+        $this->attributes['first_connection_fee_on'] = null;
+        if ($value){
+            $this->attributes['first_connection_fee_on'] = Carbon::parse($value)->format('Y-m-d');
+        }
+
     }
 
 
