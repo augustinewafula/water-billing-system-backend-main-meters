@@ -46,7 +46,18 @@ class RoleController extends Controller
         foreach ($model_and_actions as $key => $model_action){
             $formatted_model_and_actions[] = ['name' => $key, 'actions' => $model_action];
         }
+        $all_models = $this->getPermissionModels();
+        foreach ($all_models as $model){
+            if (!$this->itemInArray($formatted_model_and_actions, $model)){
+                $formatted_model_and_actions[] = ['name' => $model, 'actions' => []];
+            }
+        }
         return response()->json($formatted_model_and_actions);
+    }
+
+    public function itemInArray($array, $item)
+    {
+        return array_column($array, 'actions', 'name')[$item];
     }
 
     /**
@@ -116,16 +127,7 @@ class RoleController extends Controller
 
     public function permissionModelsIndex(): JsonResponse
     {
-        $permissions = Permission::pluck('name')
-            ->all();
-        $permission_models = [];
-        foreach ($permissions as $permission){
-            $model_name = substr($permission, 0, strrpos($permission, '-'));
-            $formatted_model_name = str_replace('-', ' ', $model_name);
-            $permission_models[] = $formatted_model_name;
-        }
-        $unique_permission_models = array_unique($permission_models);
-        $unique_permission_models = $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
+        $unique_permission_models = $this->getPermissionModels();
         return response()->json($unique_permission_models);
 
     }
@@ -180,5 +182,23 @@ class RoleController extends Controller
             );
         }
         return $permission_names;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPermissionModels(): array
+    {
+        $permissions = Permission::pluck('name')
+            ->all();
+        $permission_models = [];
+        foreach ($permissions as $permission) {
+            $model_name = substr($permission, 0, strrpos($permission, '-'));
+            $formatted_model_name = str_replace('-', ' ', $model_name);
+            $permission_models[] = $formatted_model_name;
+        }
+        $unique_permission_models = array_unique($permission_models);
+        $unique_permission_models = $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
+        return $unique_permission_models;
     }
 }
