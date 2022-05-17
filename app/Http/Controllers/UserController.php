@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Traits\GeneratesMonthlyConnectionFee;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
+use App\Traits\GetsUserConnectionFeeBalance;
 use Carbon\Carbon;
 use DB;
 use Exception;
@@ -32,7 +33,7 @@ use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee, GetsUserConnectionFeeBalance;
 
     public function __construct()
     {
@@ -158,11 +159,9 @@ class UserController extends Controller
         $user = User::with('meter.type')
             ->where('id', $id)
             ->firstOrFail();
-        $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
-            ->first();
-        $connection_fee = $connection_fee_charges->connection_fee;
-        $user_connection_fee_balance = $connection_fee - $user->total_connection_fee_paid;
-        $user->connection_fee_balance = $user_connection_fee_balance;
+        if ($user->should_pay_connection_fee){
+            $user->connection_fee_balance = $this->getUserConnectionFeeBalance($user->meter->station_id, $user->total_connection_fee_paid);
+        }
         return response()->json($user);
     }
 

@@ -9,6 +9,7 @@ use App\Models\Meter;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
 use App\Traits\ClearsMeterToken;
+use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\ProcessesPrepaidMeterTransaction;
 use Carbon\Carbon;
 use DB;
@@ -22,7 +23,7 @@ use Throwable;
 
 class MeterTokenController extends Controller
 {
-    use ProcessesPrepaidMeterTransaction, ClearsMeterToken;
+    use ProcessesPrepaidMeterTransaction, ClearsMeterToken, GetsUserConnectionFeeBalance;
 
     public function __construct()
     {
@@ -134,10 +135,13 @@ class MeterTokenController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $meter_reading = MeterToken::with('meter.type', 'user', 'mpesa_transaction')
+        $meter_token = MeterToken::with('meter.type', 'user', 'mpesa_transaction')
             ->where('id', $id)
-            ->first();
-        return response()->json($meter_reading);
+            ->firstOrFail();
+        if ($meter_token->user->should_pay_connection_fee){
+            $meter_token->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_token->meter->station_id, $meter_token->user->total_connection_fee_paid);
+        }
+        return response()->json($meter_token);
     }
 
     public function resend($meterTokenId)

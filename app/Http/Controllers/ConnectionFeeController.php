@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConnectionFee;
 use App\Http\Controllers\Controller;
+use App\Traits\GetsUserConnectionFeeBalance;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Str;
 
 class ConnectionFeeController extends Controller
 {
+    use GetsUserConnectionFeeBalance;
+
     public function __construct()
     {
         $this->middleware('permission:connection-fee-list', ['only' => ['index', 'show']]);
@@ -21,6 +24,7 @@ class ConnectionFeeController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws \JsonException
      */
     public function index(Request $request): JsonResponse
     {
@@ -38,9 +42,12 @@ class ConnectionFeeController extends Controller
      */
     public function show($ConnectionFee): JsonResponse
     {
-        $connection_fee = ConnectionFee::with('user', 'connection_fee_payments')
+        $connection_fee = ConnectionFee::with('user.meter', 'connection_fee_payments')
             ->where('id', $ConnectionFee)
-            ->first();
+            ->firstOrFail();
+        if ($connection_fee->user->should_pay_connection_fee){
+            $connection_fee->user->connection_fee_balance = $this->getUserConnectionFeeBalance($connection_fee->user->meter->station_id, $connection_fee->user->total_connection_fee_paid);
+        }
         return response()->json($connection_fee);
     }
 

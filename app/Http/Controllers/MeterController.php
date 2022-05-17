@@ -9,6 +9,7 @@ use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Models\Meter;
 use App\Models\MeterType;
+use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\ProcessesPrepaidMeterTransaction;
 use App\Traits\TogglesValveStatus;
 use BenSampo\Enum\Rules\EnumValue;
@@ -26,7 +27,7 @@ use Throwable;
 
 class MeterController extends Controller
 {
-    use ProcessesPrepaidMeterTransaction, TogglesValveStatus;
+    use ProcessesPrepaidMeterTransaction, TogglesValveStatus, GetsUserConnectionFeeBalance;
 
     public function __construct()
     {
@@ -143,7 +144,10 @@ class MeterController extends Controller
     {
         $meter = Meter::with('user', 'station', 'type')
             ->where('id', $id)
-            ->first();
+            ->firstOrFail();
+        if ($meter->user->should_pay_connection_fee){
+            $meter->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter->station_id, $meter->user->total_connection_fee_paid);
+        }
         return response()->json($meter);
     }
 

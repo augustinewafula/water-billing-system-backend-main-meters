@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
 use App\Models\MeterReading;
+use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\SendsMeterReading;
 use App\Traits\StoresMeterReading;
 use Carbon\Carbon;
@@ -20,7 +21,7 @@ use Throwable;
 
 class MeterReadingController extends Controller
 {
-    use StoresMeterReading, SendsMeterReading;
+    use StoresMeterReading, SendsMeterReading, GetsUserConnectionFeeBalance;
 
     public function __construct()
     {
@@ -35,6 +36,7 @@ class MeterReadingController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws \JsonException
      */
     public function index(Request $request): JsonResponse
     {
@@ -63,7 +65,10 @@ class MeterReadingController extends Controller
     {
         $meter_reading = MeterReading::with('meter.type', 'user', 'meter_billings')
             ->where('id', $id)
-            ->first();
+            ->firstOrFail();
+        if ($meter_reading->user->should_pay_connection_fee){
+            $meter_reading->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_reading->meter->station_id, $meter_reading->user->total_connection_fee_paid);
+        }
         return response()->json($meter_reading);
     }
 
