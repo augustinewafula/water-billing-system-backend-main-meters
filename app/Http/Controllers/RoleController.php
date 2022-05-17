@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use JsonException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Throwable;
 
 class RoleController extends Controller
 {
@@ -57,7 +58,11 @@ class RoleController extends Controller
 
     public function itemInArray($array, $item)
     {
-        return array_column($array, 'actions', 'name')[$item];
+        try {
+            return array_column($array, 'actions', 'name')[$item];
+        }catch (Throwable $throwable){
+            return false;
+        }
     }
 
     /**
