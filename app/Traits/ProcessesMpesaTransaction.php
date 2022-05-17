@@ -29,7 +29,7 @@ trait ProcessesMpesaTransaction
      */
     private function processMpesaTransaction(MpesaTransaction $mpesa_transaction): void
     {
-        $user = User::select('users.id as user_id', 'users.account_number', 'users.phone', 'users.first_monthly_service_fee_on', 'users.should_pay_connection_fee', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
+        $user = User::select('users.id as id', 'users.account_number', 'users.phone', 'users.first_monthly_service_fee_on', 'users.should_pay_connection_fee', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->leftJoin('meter_types', 'meter_types.id', 'meters.type_id')
             ->where('account_number', $mpesa_transaction->BillRefNumber)
@@ -43,13 +43,13 @@ trait ProcessesMpesaTransaction
         }
 
         $monthly_service_charge_deducted = 0;
-//        if ($this->hasMonthlyServiceChargeDebt($user->user_id)) {
-//            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->user_id, $mpesa_transaction, $mpesa_transaction->TransAmount);
+//        if ($this->hasMonthlyServiceChargeDebt($user->id)) {
+//            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount);
 //        }
 
         $connection_fee_deducted = 0;
         if ($user->should_pay_connection_fee && ($monthly_service_charge_deducted < $mpesa_transaction->TransAmount)){
-            $user = User::where('id', $user->user_id)
+            $user = User::where('id', $user->id)
                 ->with('meter')
                 ->firstOrFail();
             $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)

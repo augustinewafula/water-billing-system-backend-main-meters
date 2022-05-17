@@ -160,7 +160,7 @@ class MeterTokenController extends Controller
 
         $date = Carbon::now()->toDateTimeString();
         $message = "Meter: $user->meter_number\nToken: $user->token\nUnits: $user->units\nAmount: $user->amount\nDate: $date\nRef: $user->transaction_id";
-        SendSMS::dispatch($user->phone, $message, $user->user_id);
+        SendSMS::dispatch($user->phone, $message, $user->id);
         return response()->json('sent');
     }
 
