@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Traits\setsModelPermissions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use JsonException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -179,6 +180,7 @@ class RoleController extends Controller
         foreach ($this->getIgnoredModels() as $model) {
             $permission_names[] = $this->setModelPermissions(str_replace(' ', '-', $model));
         }
+        $permission_names = Arr::collapse($permission_names);
 
         foreach ($permission_names as $permission_name) {
             Permission::updateOrCreate(
