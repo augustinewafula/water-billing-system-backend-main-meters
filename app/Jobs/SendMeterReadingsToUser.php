@@ -27,7 +27,7 @@ class SendMeterReadingsToUser implements ShouldQueue, ShouldBeUnique
      */
     public function __construct($meter_reading)
     {
-        //
+        $this->meter_reading = $meter_reading;
     }
 
     /**
