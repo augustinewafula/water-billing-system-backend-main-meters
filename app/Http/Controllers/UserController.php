@@ -157,7 +157,12 @@ class UserController extends Controller
     {
         $user = User::with('meter.type')
             ->where('id', $id)
+            ->firstOrFail();
+        $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
             ->first();
+        $connection_fee = $connection_fee_charges->connection_fee;
+        $user_connection_fee_balance = $connection_fee - $user->total_connection_fee_paid;
+        $user->connection_fee_balance = $user_connection_fee_balance;
         return response()->json($user);
     }
 
