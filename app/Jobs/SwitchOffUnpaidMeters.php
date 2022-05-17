@@ -56,12 +56,8 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                     ->orWhere('status', PaymentStatus::Balance);
             })
             ->get();
-        $processed_meters = [];
         foreach ($unpaid_meters as $unpaid_meter) {
             try {
-                if (in_array($unpaid_meter->meter->id, $processed_meters, true)) {
-                    continue;
-                }
                 if (!$unpaid_meter->meter) {
                     continue;
                 }
@@ -87,7 +83,6 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                     $message = "Hello $first_name, you have not paid your debt of Ksh $total_debt. Your water meter is going to be disconnected effective immediately.\nPay via paybill number $paybill_number, account number $account_number";
                 }
                 SendSMS::dispatch($meter->user->phone, $message, $meter->user->id);
-                $processed_meters[] = $unpaid_meter->meter->id;
             } catch (Throwable $th) {
                 DB::rollBack();
                 Log::error($th);
