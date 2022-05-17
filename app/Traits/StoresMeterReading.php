@@ -93,7 +93,7 @@ trait StoresMeterReading
             DB::commit();
             $send_sms_at = Carbon::createFromFormat('Y-m-d H:i:s', $send_sms_at);
             if ($send_sms_at->diffInMinutes(now()) === 0){
-                SendMeterReadingsToUser::dispatch();
+                SendMeterReadingsToUser::dispatch($meter_reading);
             }
         } catch (Throwable $th) {
             DB::rollBack();

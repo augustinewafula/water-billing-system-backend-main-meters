@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Jobs\SendMeterReadingsToUser;
+use App\Models\MeterReading;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SendMeterReadingsCommand extends Command
@@ -38,7 +40,13 @@ class SendMeterReadingsCommand extends Command
      */
     public function handle(): int
     {
-        SendMeterReadingsToUser::dispatch();
+        $meter_readings = MeterReading::where('sms_sent', false)
+            ->where('send_sms_at', '<=', Carbon::now())
+            ->get();
+
+        foreach ($meter_readings as $meter_reading) {
+            SendMeterReadingsToUser::dispatch($meter_reading);
+        }
         return 0;
     }
 }

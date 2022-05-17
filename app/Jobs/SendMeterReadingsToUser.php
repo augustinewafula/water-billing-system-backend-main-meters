@@ -7,12 +7,13 @@ use App\Traits\NotifiesOnJobFailure;
 use App\Traits\SendsMeterReading;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class SendMeterReadingsToUser implements ShouldQueue
+class SendMeterReadingsToUser implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SendsMeterReading, NotifiesOnJobFailure;
 
@@ -24,9 +25,33 @@ class SendMeterReadingsToUser implements ShouldQueue
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($meter_reading)
     {
         //
+    }
+
+    /**
+     * The meter_reading instance.
+     *
+     * @var MeterReading
+     */
+    public $meter_reading;
+
+    /**
+     * The number of seconds after which the job's unique lock will be released.
+     *
+     * @var int
+     */
+    public $uniqueFor = 1200;
+
+    /**
+     * The unique ID of the job.
+     *
+     * @return string
+     */
+    public function uniqueId(): string
+    {
+        return $this->meter_reading->id;
     }
 
     /**
@@ -36,12 +61,7 @@ class SendMeterReadingsToUser implements ShouldQueue
      */
     public function handle(): void
     {
-        $meter_readings = MeterReading::where('sms_sent', false)
-            ->where('send_sms_at', '<=', Carbon::now())
-            ->get();
 
-        foreach ($meter_readings as $meter_reading) {
-            $this->sendMeterReading($meter_reading);
-        }
+        $this->sendMeterReading($this->meter_reading);
     }
 }
