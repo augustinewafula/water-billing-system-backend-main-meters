@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\Meter;
 use App\Traits\GetsMeterInformation;
-use App\Traits\NotifiesOnJobFailure;
 use App\Traits\TogglesValveStatus;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +16,7 @@ use Throwable;
 
 class ConfirmMeterValveStatus implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus, NotifiesOnJobFailure;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetsMeterInformation, TogglesValveStatus;
 
     public $tries = 1;
     public $failOnTimeout = true;
