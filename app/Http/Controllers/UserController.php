@@ -344,7 +344,7 @@ class UserController extends Controller
         ];
         if ($action === 'save'){
             $password = $this->generatePassword(10);
-            $data = Arr::add($data, 'password', $password);
+            $data = Arr::add($data, 'password', Hash::make($password));
         }
         return $data;
     }
