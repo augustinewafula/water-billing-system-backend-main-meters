@@ -28,7 +28,7 @@ class Sms extends Model
      * Get the user that owns the sms.
      * @return belongsTo
      */
-    public function meter(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
