@@ -93,8 +93,9 @@ Route::prefix('v1')->group(function () {
         Route::get('meter-types', [MeterController::class, 'typeIndex'])->middleware('cacheResponse:MeterType');
         Route::get('meter-types/{name}', [MeterController::class, 'showMeterTypeByNameIndex'])->middleware('cacheResponse:MeterType');
         Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index'])->middleware('doNotCacheResponse');
-        Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
+        Route::get('sms-credit-balance', [SmsController::class, 'getCreditBalance'])->middleware('cacheResponse:Sms');
+        Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);

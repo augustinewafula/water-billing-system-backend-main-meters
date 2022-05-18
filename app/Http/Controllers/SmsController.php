@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Traits\SendsSms;
 use Carbon\Carbon;
 use Exception;
+use Http;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JsonException;
@@ -89,6 +90,35 @@ class SmsController extends Controller
             return response()->json($response, 422);
         }
         return response()->json('sent');
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function getCreditBalance(): JsonResponse
+    {
+        $africas_talking_username = env('AFRICASTKNG_USERNAME');
+        $africas_talking_username === 'sandbox' ?
+            $url = "https://payments.sandbox.africastalking.com/query/wallet/balance?username=$africas_talking_username" :
+            $url = "https://payments.africastalking.com/query/wallet/balance?username=$africas_talking_username";
+
+        $response = Http::withHeaders([
+            'apiKey' => env('AFRICASTKNG_APIKEY'),
+            'Accept' => 'application/json'
+        ])
+            ->retry(2, 100)
+            ->get($url);
+
+        if ($response->successful()) {
+            Log::info('response:' . $response->body());
+            $response = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+            if ($response->status === 'Success'){
+                return response()->json(['balance' => $response->balance]);
+            }
+        }
+
+        $response = ['message' => 'Failed to get credit balance.'];
+        return response()->json($response, 422);
     }
 
     public function callback(SmsCallbackRequest $request): JsonResponse
