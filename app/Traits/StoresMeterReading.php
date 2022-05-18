@@ -63,7 +63,8 @@ trait StoresMeterReading
 
         try {
             DB::beginTransaction();
-            $bill = $this->calculateBill($meter->last_reading, $request->current_reading);
+            $user = User::where('meter_id', $meter->id)->firstOrFail();
+            $bill = $this->calculateBill($meter->last_reading, $request->current_reading, $user);
             $service_fee = $this->calculateServiceFee($bill, 'post-pay');
             $meter_reading = MeterReading::create([
                 'meter_id' => $request->meter_id,
@@ -81,7 +82,6 @@ trait StoresMeterReading
                 'last_reading' => $request->current_reading,
                 'last_reading_date' => Carbon::now()->toDateTimeString(),
             ]);
-            $user = User::where('meter_id', $meter->id)->first();
             if ($user){
                 if ($user->account_balance <= 0){
                     $user->update([

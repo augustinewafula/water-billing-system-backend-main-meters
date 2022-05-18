@@ -7,12 +7,17 @@ use App\Models\ServiceCharge;
 
 trait CalculatesBill
 {
-    public function calculateBill($previous_reading, $current_reading): float
+    public function calculateBill($previous_reading, $current_reading, $user): float
     {
-        $meter_charges = MeterCharge::where('for', 'post-pay')
-            ->first();
+        if ($user->use_custom_charges_for_cost_per_unit && $user->cost_per_unit > 0){
+            $cost_per_unit = $user->cost_per_unit;
+        }else {
+            $meter_charges = MeterCharge::where('for', 'post-pay')
+                ->first();
+            $cost_per_unit = $meter_charges->cost_per_unit;
+        }
         $units_consumed = $current_reading - $previous_reading;
-        $bill = $units_consumed * $meter_charges->cost_per_unit;
+        $bill = $units_consumed * $cost_per_unit;
 
         return round($bill);
     }
