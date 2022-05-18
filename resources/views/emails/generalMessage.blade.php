@@ -3,7 +3,7 @@
 
 <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-    <title>Water Token - {{ env('APP_NAME') }}</title>
+    <title>{{ $title }} - {{ env('APP_NAME') }}</title>
     <meta name="description" content="Meter Readings - {{ env('APP_NAME') }}.">
     <style type="text/css">
         a:hover {
@@ -43,7 +43,7 @@
                             <tr>
                                 <td style="padding:0 35px;">
                                     <h1 style="color:#1e1e2d; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;">
-                                        Meter token</h1>
+                                        {{ $title }}</h1>
                                     <span
                                         style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;"></span>
                                     <p style="color:#455056; text-align:left; font-size:15px;line-height:24px; margin:0;">

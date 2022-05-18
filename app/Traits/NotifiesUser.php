@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Enums\CommunicationChannels;
 use App\Jobs\SendSMS;
+use App\Mail\GeneralMessage;
 use App\Mail\MeterReadings;
 use App\Mail\MeterTokens;
 use Mail;
@@ -17,15 +18,23 @@ trait NotifiesUser
         }
 
         if (($message_type === 'meter readings') && $this->shouldNotifyViaEmail($user->communication_channels)) {
-            $message = str_replace("\n", '<br/>', $info->message);
+            $message = $this->formatMessageForEmail($info);
             Mail::to($user->email)
                 ->send(new MeterReadings($info->bill_month, $message));
+            return;
         }
 
         if (($message_type === 'meter tokens') && $this->shouldNotifyViaEmail($user->communication_channels)) {
-            $message = str_replace("\n", '<br/>', $info->message);
+            $message = $this->formatMessageForEmail($info);
             Mail::to($user->email)
                 ->send(new MeterTokens($message));
+            return;
+        }
+
+        if (($message_type === 'general') && $this->shouldNotifyViaEmail($user->communication_channels)) {
+            $message = $this->formatMessageForEmail($info);
+            Mail::to($user->email)
+                ->send(new GeneralMessage($info->title, $message));
         }
 
     }
@@ -38,6 +47,15 @@ trait NotifiesUser
     public function shouldNotifyViaEmail($user_communication_channels): bool
     {
         return in_array(CommunicationChannels::Email, $user_communication_channels, false);
+    }
+
+    /**
+     * @param $info
+     * @return mixed
+     */
+    private function formatMessageForEmail($info)
+    {
+        return str_replace("\n", '<br/>', $info->message);
     }
 
 }

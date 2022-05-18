@@ -7,6 +7,7 @@ use App\Enums\ValveStatus;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Traits\CalculatesUserAmount;
+use App\Traits\NotifiesUser;
 use Carbon\Carbon;
 use DB;
 use Exception;
@@ -20,7 +21,7 @@ use Throwable;
 
 class SendMeterDisconnectionRemainder implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CalculatesUserAmount;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CalculatesUserAmount, NotifiesUser;
 
     public $tries = 2;
     public $failOnTimeout = true;
@@ -74,7 +75,7 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
 
                 $message = "Hello $first_name, your water bill is passed due date. Your meter shall be disconnected by $tell_user_meter_disconnection_on. Please pay your total debt of Ksh $total_debt to avoid disconnection.\nPay via paybill number $paybill_number, account number $account_number";
 
-                SendSMS::dispatch($meter->user->phone, $message, $meter->user->id);
+                $this->notifyUser((object)['message' => $message, 'title' => 'Water bill debt'], $meter->user, 'general');
                 $processed_meters[] = $unpaid_meter->meter->id;
                 $meter_reading = MeterReading::find($unpaid_meter->id);
                 $meter_reading->update(['disconnection_remainder_sms_sent' => true]);

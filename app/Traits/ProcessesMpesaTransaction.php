@@ -29,7 +29,7 @@ trait ProcessesMpesaTransaction
      */
     private function processMpesaTransaction(MpesaTransaction $mpesa_transaction): void
     {
-        $user = User::select('users.id as id', 'users.account_number', 'users.phone', 'users.first_monthly_service_fee_on', 'users.should_pay_connection_fee', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
+        $user = User::select('users.id as id', 'users.account_number', 'users.phone', 'users.communication_channels', 'users.email', 'users.first_monthly_service_fee_on', 'users.should_pay_connection_fee', 'meters.id as meter_id', 'meters.number as meter_number', 'meter_types.name as meter_type_name')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->leftJoin('meter_types', 'meter_types.id', 'meters.type_id')
             ->where('account_number', $mpesa_transaction->BillRefNumber)

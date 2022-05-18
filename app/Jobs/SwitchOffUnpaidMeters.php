@@ -9,6 +9,7 @@ use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Traits\CalculatesUserAmount;
 use App\Traits\NotifiesOnJobFailure;
+use App\Traits\NotifiesUser;
 use App\Traits\TogglesValveStatus;
 use DB;
 use Exception;
@@ -23,7 +24,7 @@ use Throwable;
 
 class SwitchOffUnpaidMeters implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus, NotifiesOnJobFailure, CalculatesUserAmount;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus, NotifiesOnJobFailure, CalculatesUserAmount, NotifiesUser;
 
     public $tries = 2;
     public $failOnTimeout = true;
@@ -82,7 +83,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 if ($unpaid_meter->meter->mode === MeterMode::Manual) {
                     $message = "Hello $first_name, you have not paid your debt of Ksh $total_debt. Your water meter is going to be disconnected effective immediately.\nPay via paybill number $paybill_number, account number $account_number";
                 }
-                SendSMS::dispatch($meter->user->phone, $message, $meter->user->id);
+                $this->notifyUser((object)['message' => $message, 'title' => 'Water disconnection'], $meter->user, 'general');
             } catch (Throwable $th) {
                 DB::rollBack();
                 Log::error($th);

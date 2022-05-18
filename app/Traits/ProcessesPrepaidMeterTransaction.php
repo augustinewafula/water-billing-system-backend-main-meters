@@ -76,7 +76,7 @@ trait ProcessesPrepaidMeterTransaction
                 DB::rollBack();
                 Log::error($throwable);
             }
-            $this->notifyUser((object)['message' => $message], $user, 'meter tokens');
+            $this->notifyUser((object)['message' => $message, 'title' => 'Insufficient amount'], $user, 'general');
             return;
         }
 
