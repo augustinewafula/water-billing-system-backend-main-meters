@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
 use Log;
 use Str;
 use Throwable;
@@ -25,9 +26,12 @@ class SmsController extends Controller
         $this->middleware('permission:sms-create', ['only' => ['send', 'initiateSendSms']]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function index(Request $request): JsonResponse
     {
-        $sms = Sms::select('sms.*');
+        $sms = Sms::select('sms.*')->with('user:id,account_number');
         $sms = $this->filterQuery($request, $sms);
 
         return response()->json($sms->paginate(10));
