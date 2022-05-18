@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentStatus;
 use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
+use App\Models\MeterBilling;
 use App\Models\MeterReading;
+use App\Models\User;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\SendsMeterReading;
 use App\Traits\StoresMeterReading;
@@ -15,6 +18,7 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use JsonException;
 use Log;
 use Str;
 use Throwable;
@@ -36,7 +40,7 @@ class MeterReadingController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function index(Request $request): JsonResponse
     {
@@ -147,6 +151,7 @@ class MeterReadingController extends Controller
                     'last_reading' => $last_meter_reading->previous_reading
                 ]);
             }
+            $this->updateUserAccountBalance($meterReading);
             $meterReading->forceDelete();
             DB::commit();
             return response()->json('deleted');
@@ -158,10 +163,42 @@ class MeterReadingController extends Controller
         }
     }
 
+    public function updateUserAccountBalance($meterReading): void
+    {
+        $user = User::where('meter_id', $meterReading->meter_id)->firstOrFail();
+        if ($meterReading->status === PaymentStatus::NotPaid){
+            $user_total_amount = $user->account_balance + $meterReading->bill;
+            $user->update(['account_balance' => $user_total_amount]);
+            return;
+        }
+
+        if ($meterReading->status === PaymentStatus::Balance || $meterReading->status === PaymentStatus::OverPaid || $meterReading->status === PaymentStatus::Paid){
+            $meter_reading_payments = MeterBilling::where('meter_reading_id', $meterReading->id)->get();
+            $user_total_amount = $user->account_balance;
+            foreach ($meter_reading_payments as $meter_reading_payment){
+                if ($meter_reading_payment->amount_paid > 0){
+                    $actual_meter_reading_amount_paid = $meter_reading_payment->amount_paid - ($meter_reading_payment->monthly_service_charge_deducted + $meter_reading_payment->connection_fee_deducted);
+                }else{
+                    $actual_meter_reading_amount_paid = $meter_reading_payment->credit - ($meter_reading_payment->monthly_service_charge_deducted + $meter_reading_payment->connection_fee_deducted);
+                }
+                if ($meterReading->status === PaymentStatus::Balance || $meterReading->status === PaymentStatus::Paid){
+                    $user_total_amount += $actual_meter_reading_amount_paid;
+                    continue;
+                }
+                if ($meterReading->status === PaymentStatus::OverPaid){
+                    $user_total_amount += ($actual_meter_reading_amount_paid - $meter_reading_payment->amount_over_paid);
+                }
+            }
+            $user->update(['account_balance' => $user_total_amount]);
+        }
+
+    }
+
     /**
      * @param Request $request
      * @param $meter_readings
      * @return mixed
+     * @throws JsonException
      */
     public function filterQuery(Request $request, $meter_readings)
     {
