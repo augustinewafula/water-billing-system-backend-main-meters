@@ -99,8 +99,8 @@ class SmsController extends Controller
     {
         $africas_talking_username = env('AFRICASTKNG_USERNAME');
         $africas_talking_username === 'sandbox' ?
-            $url = "https://payments.sandbox.africastalking.com/query/wallet/balance?username=$africas_talking_username" :
-            $url = "https://payments.africastalking.com/query/wallet/balance?username=$africas_talking_username";
+            $url = "https://api.sandbox.africastalking.com/version1/user?username=$africas_talking_username" :
+            $url = "https://api.africastalking.com/version1/user?username=$africas_talking_username";
 
         $response = Http::withHeaders([
             'apiKey' => env('AFRICASTKNG_APIKEY'),
@@ -112,9 +112,8 @@ class SmsController extends Controller
         if ($response->successful()) {
             Log::info('response:' . $response->body());
             $response = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
-            if ($response->status === 'Success'){
-                return response()->json(['balance' => $response->balance]);
-            }
+            return response()->json(['balance' => $response->UserData->balance]);
+
         }
 
         $response = ['message' => 'Failed to get credit balance.'];
