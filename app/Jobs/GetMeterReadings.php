@@ -54,9 +54,9 @@ class GetMeterReadings implements ShouldQueue
                     ->setTimezone('Africa/Nairobi');
                 $meter_details = (object)[
                     'meter_number' => $meter->meterno,
-                    'meter_reading' => $meter->lasttotalall,
+                    'meter_reading' => (int)$meter->lasttotalall,
                     'meter_voltage' => $meter->battery,
-                    'signal_intensity' => $meter->rssi,
+                    'signal_intensity' => (int)$meter->rssi,
                     'last_communication_date' => $last_communication_date
                 ];
                 $this->saveMeterReading($meter_details);
@@ -68,9 +68,9 @@ class GetMeterReadings implements ShouldQueue
                     ->setTimezone('Africa/Nairobi');
                 $meter_details = (object)[
                     'meter_number' => $meter->MeterId,
-                    'meter_reading' => $meter->PositiveCumulativeFlow,
+                    'meter_reading' => (int)$meter->PositiveCumulativeFlow,
                     'meter_voltage' => $meter->MeterVoltage,
-                    'signal_intensity' => $meter->SignalIntensity,
+                    'signal_intensity' => (int)$meter->SignalIntensity,
                     'last_communication_date' => $last_communication_date
                 ];
                 $this->saveMeterReading($meter_details);
