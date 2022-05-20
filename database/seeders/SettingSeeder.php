@@ -15,6 +15,10 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         Setting::create([
+            'key' => 'meter_reading_on',
+            'value' => 5
+        ]);
+        Setting::create([
             'key' => 'bill_due_on',
             'value' => 5
         ]);
