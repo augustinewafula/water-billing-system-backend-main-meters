@@ -43,7 +43,13 @@ class SettingController extends Controller
             ->first();
         $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
             ->first();
+        $meter_reading_on_setting = Setting::where('key', 'meter_reading_on')
+            ->first();
         $bill_due_on_setting = Setting::where('key', 'bill_due_on')
+            ->first();
+        $tell_user_meter_disconnection_on_setting = Setting::where('key', 'tell_user_meter_disconnection_on')
+            ->first();
+        $actual_meter_disconnection_on_setting = Setting::where('key', 'actual_meter_disconnection_on')
             ->first();
         $delay_meter_reading_sms_setting = Setting::where('key', 'delay_meter_reading_sms')
             ->first();
@@ -81,8 +87,17 @@ class SettingController extends Controller
             $connection_fee_charges = json_decode($request->connection_fee_charge, false, 512, JSON_THROW_ON_ERROR);
             $this->updateConnectionFeeCharge($connection_fee_charges);
 
+            $meter_reading_on_setting->update([
+                'value' => $request->meter_reading_on
+            ]);
             $bill_due_on_setting->update([
                 'value' => $request->bill_due_on
+            ]);
+            $tell_user_meter_disconnection_on_setting->update([
+                'value' => $request->tell_user_meter_disconnection_on
+            ]);
+            $actual_meter_disconnection_on_setting->update([
+                'value' => $request->actual_meter_disconnection_on
             ]);
             $meter_reading_sms_delay_days_setting->update([
                 'value' => $request->meter_reading_sms_delay_days
