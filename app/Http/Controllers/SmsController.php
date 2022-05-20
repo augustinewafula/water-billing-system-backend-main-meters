@@ -110,7 +110,6 @@ class SmsController extends Controller
             ->get($url);
 
         if ($response->successful()) {
-            Log::info('response:' . $response->body());
             $response = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
             return response()->json(['balance' => $response->UserData->balance]);
 
