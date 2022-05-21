@@ -40,6 +40,10 @@ class RoleController extends Controller
         foreach ($permissions as $permission){
             $model_name = substr($permission, 0, strrpos($permission, '-'));
             $formatted_model_name = str_replace('-', ' ', $model_name);
+
+            if (in_array($formatted_model_name, $this->getIgnoredModels(), true)){
+                continue;
+            }
             $formatted_action_name = substr($permission, strrpos($permission, '-') + 1);
             $model_and_actions[] = ['name' => $formatted_model_name, 'action' => $formatted_action_name];
         }
@@ -178,9 +182,11 @@ class RoleController extends Controller
         }
 
         foreach ($this->getIgnoredModels() as $model) {
-            $permission_names[] = $this->setModelPermissions(str_replace(' ', '-', $model));
+            $permission_names_array = $this->setModelPermissions(str_replace(' ', '-', $model));
+            foreach ($permission_names_array as $permission_name){
+                $permission_names[] = $permission_name;
+            }
         }
-        $permission_names = Arr::collapse($permission_names);
 
         foreach ($permission_names as $permission_name) {
             Permission::updateOrCreate(
@@ -205,7 +211,7 @@ class RoleController extends Controller
             $permission_models[] = $formatted_model_name;
         }
         $unique_permission_models = array_unique($permission_models);
-        $unique_permission_models = $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
-        return $unique_permission_models;
+        return $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
+
     }
 }
