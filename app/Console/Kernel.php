@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Models\Setting;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,11 +25,17 @@ class Kernel extends ConsoleKernel
         $schedule->command('meter-readings:send')->everyMinute();
         $schedule->command('meter-readings:get --type=daily')->daily();
         $schedule->command('model:prune')->daily();
-        $schedule->command('meter-readings:get --type=monthly')->monthlyOn(25);
+        $schedule->command('meter-readings:get --type=monthly')->monthlyOn($this->meterReadingOn());
 //        $schedule->command('monthly-service-charge:generate')->monthly();
         $schedule->command('monthly-connection-fee:generate')->monthly();
         $schedule->command('backup:clean')->twiceDaily(0, 12);
         $schedule->command('backup:run --only-db')->twiceDaily();
+    }
+
+    public function meterReadingOn()
+    {
+        return Setting::where('key', 'meter_reading_on')
+            ->value('value');
     }
 
     /**
