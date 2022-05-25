@@ -8,6 +8,7 @@ use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Traits\ProcessesMpesaTransaction;
 use Http;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
@@ -67,7 +68,7 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException|Throwable
      */
-    public function mpesaConfirmation(Request $request)
+    public function mpesaConfirmation(Request $request): Response
     {
         $client_ip = $request->ip();
 //        if (!$this->isValidSafaricomIpAddress($client_ip)) {
@@ -92,6 +93,33 @@ class MeterBillingController extends Controller
         $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
         $response->setContent(json_encode(['C2BPaymentConfirmationResult' => 'Success'], JSON_THROW_ON_ERROR));
         return $response;
+    }
+
+    public function mspaceMpesaConfirmation(Request $request): JsonResponse
+    {
+        $request->validate([
+            'transID' => 'unique:mpesa_transactions'
+        ]);
+        $mpesa_transaction = $this->storeMspaceMpesaTransaction($request);
+        ProcessTransaction::dispatch($mpesa_transaction);
+        return response()->json('accepted');
+    }
+
+    /**
+     * @param Request $mpesa_transaction
+     * @return mixed
+     */
+    public function storeMspaceMpesaTransaction(Request $mpesa_transaction): MpesaTransaction
+    {
+        return MpesaTransaction::create([
+            'TransID' => $mpesa_transaction->TransID,
+            'TransAmount' => $mpesa_transaction->TransAmount,
+            'BusinessShortCode' => $mpesa_transaction->paybill,
+            'BillRefNumber' => $mpesa_transaction->accNo,
+            'OrgAccountBalance' => $mpesa_transaction->accBal,
+            'MSISDN' => $mpesa_transaction->mobile,
+            'FirstName' => $mpesa_transaction->name,
+        ]);
     }
 
 
