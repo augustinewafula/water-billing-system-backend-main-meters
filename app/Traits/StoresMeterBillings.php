@@ -145,9 +145,11 @@ trait StoresMeterBillings
                 $bill_month_name => $user_bill_balance,
                 'year' => $bill_year,
             ]);
-            MpesaTransaction::find($mpesa_transaction_id)->update([
-                'Consumed' => true,
-            ]);
+            if ($mpesa_transaction_id){
+                MpesaTransaction::find($mpesa_transaction_id)->update([
+                    'Consumed' => true,
+                ]);
+            }
             DB::commit();
             return true;
         } catch (Throwable $th) {
