@@ -106,7 +106,7 @@ Route::prefix('v1')->group(function () {
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
-    Route::post('mspace-transaction-confirmation', [MeterBillingController::class, 'mspaceMpesaConfirmation']);
+    Route::get('mspace-transaction-confirmation', [MeterBillingController::class, 'mspaceMpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
     Route::fallback(static function () {
         return response()->json([
