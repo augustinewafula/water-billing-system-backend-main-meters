@@ -96,12 +96,14 @@ class MeterReadingController extends Controller
         $has_message_been_resent = false;
         try {
             DB::beginTransaction();
+            $this->removeReadingsBillFromUserAccount($meterReading);
             $meterReading->update([
                 'meter_id' => $request->meter_id,
                 'current_reading' => $request->current_reading,
                 'month' => $request->month,
                 'bill' => $bill
             ]);
+            $this->addReadingBillToUserAccount($meterReading);
             if ($meterReading->bill_due_at <= now()) {
                 $meterReading->update([
                     'sms_sent' => false,
@@ -151,7 +153,7 @@ class MeterReadingController extends Controller
                     'last_reading' => $last_meter_reading->previous_reading
                 ]);
             }
-            $this->updateUserAccountBalance($meterReading);
+            $this->removeReadingsBillFromUserAccount($meterReading);
             $meterReading->forceDelete();
             DB::commit();
             return response()->json('deleted');
@@ -163,7 +165,14 @@ class MeterReadingController extends Controller
         }
     }
 
-    public function updateUserAccountBalance($meterReading): void
+    public function addReadingBillToUserAccount($meterReading): void
+    {
+        $user = User::where('meter_id', $meterReading->meter_id)->firstOrFail();
+        $user_total_amount = $user->account_balance - $meterReading->bill;
+        $user->update(['account_balance' => $user_total_amount]);
+    }
+
+    public function removeReadingsBillFromUserAccount($meterReading): void
     {
         $user = User::where('meter_id', $meterReading->meter_id)->firstOrFail();
         if ($meterReading->status === PaymentStatus::NotPaid){
