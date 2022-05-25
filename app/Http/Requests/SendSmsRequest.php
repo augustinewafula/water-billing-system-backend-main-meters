@@ -26,7 +26,7 @@ class SendSmsRequest extends FormRequest
         return [
             'recipient' => ['required', 'string'],
             'specific_recipients' => ['required_if:recipient,specific',  'nullable', 'array'],
-            'message' => ['required', 'string', 'max:140'],
+            'message' => ['required', 'string', 'max:256'],
         ];
     }
 }
