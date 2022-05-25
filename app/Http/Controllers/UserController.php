@@ -227,6 +227,9 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @throws JsonException
+     */
     private function filterQuery(Request $request, Builder $users): Builder
     {
         $search = $request->query('search');
@@ -238,6 +241,7 @@ class UserController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $status = $request->query('status');
 
         if ($request->has('search') && Str::length($search) > 0) {
             $users = $users->where(function ($users) use ($search, $stationId) {
@@ -278,6 +282,33 @@ class UserController extends Controller
             $users = $users->whereHas('meter', function ($query) use ($stationId) {
                 $query->where('station_id', $stationId);
             });
+        }
+        if ($request->has('status')) {
+            (int)$decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
+            if (!empty($decoded_status)){
+                $OPERATORS = [];
+
+                if(in_array(1, $decoded_status, false)){
+                    $OPERATORS[] = '=';
+                }
+                if(in_array(2, $decoded_status, false)){
+                    $OPERATORS[] = '<';
+                }
+                if(in_array(3, $decoded_status, false)){
+                    $OPERATORS[] = '>';
+                }
+
+                $users = $users->where(function ($users) use ($OPERATORS) {
+                    $users->where('account_balance', $OPERATORS[0], 0.00);
+                    if (array_key_exists(1, $OPERATORS)){
+                        $users->orWhere('account_balance', $OPERATORS[1], 0.00);
+                    }
+                    if (array_key_exists(2, $OPERATORS)){
+                        $users->orWhere('account_balance', $OPERATORS[2], 0.00);
+                    }
+                });
+            }
+
         }
         if ($sortBy !== 'undefined' && $request->has('sortBy')) {
             $users = $users->orderBy($sortBy, $sortOrder);
