@@ -112,8 +112,8 @@ class MeterBillingController extends Controller
     public function storeMspaceMpesaTransaction(Request $mpesa_transaction): MpesaTransaction
     {
         return MpesaTransaction::create([
-            'TransID' => $mpesa_transaction->TransID,
-            'TransAmount' => $mpesa_transaction->TransAmount,
+            'TransID' => $mpesa_transaction->transID,
+            'TransAmount' => $mpesa_transaction->amount,
             'BusinessShortCode' => $mpesa_transaction->paybill,
             'BillRefNumber' => $mpesa_transaction->accNo,
             'OrgAccountBalance' => $mpesa_transaction->accBal,
