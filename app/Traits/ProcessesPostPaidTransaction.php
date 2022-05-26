@@ -38,7 +38,6 @@ trait ProcessesPostPaidTransaction
         //TODO::make organization name dynamic
         $organization_name = env('APP_NAME');
         $message = "Dear $mpesa_transaction->FirstName, your payment of Ksh $mpesa_transaction->TransAmount to $organization_name has been received. Thank you for being our esteemed customer.";
-        SendSMS::dispatch($user->phone, $message, $user->id);
         $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
         $this->store($request, $mpesa_transaction->id);
     }
