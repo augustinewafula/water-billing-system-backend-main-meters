@@ -40,7 +40,7 @@ class MeterTokenController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $meter_tokens = MeterToken::select('meter_tokens.id', 'meter_tokens.token', 'meter_tokens.units', 'meter_tokens.service_fee', 'meters.id as meter_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount_paid', 'meters.number as meter_number', 'users.id as user_id', 'users.name as user_name', 'meter_tokens.created_at')
+        $meter_tokens = MeterToken::select('meter_tokens.id', 'meter_tokens.token', 'meter_tokens.units', 'meter_tokens.service_fee', 'meters.id as meter_id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount_paid', 'meters.number as meter_number', 'users.id as user_id', 'users.name as user_name',  'users.account_number', 'meter_tokens.created_at')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('users', 'users.meter_id', 'meters.id');
