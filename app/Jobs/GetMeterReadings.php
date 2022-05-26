@@ -86,6 +86,12 @@ class GetMeterReadings implements ShouldQueue
             'meter_id' => $database_meter->id,
             'reading' => round($meter_details->meter_reading)
         ]);
+
+        try {
+            $request->validate((new CreateDailyMeterReadingRequest)->rules());
+        }catch (Throwable $throwable){
+            return;
+        }
         try {
             DB::beginTransaction();
             $this->storeDailyReading($request);
@@ -115,6 +121,12 @@ class GetMeterReadings implements ShouldQueue
             'current_reading' => round($meter_reading),
             'month' => Carbon::now()->format('Y-m')
         ]);
+        try {
+            $request->validate((new CreateMeterReadingRequest)->rules());
+        }catch (Throwable $throwable){
+            return;
+        }
+        Log::info(print_r($request, true));
         try {
             DB::transaction(function () use ($request, $database_meter) {
                 $this->store($request);
