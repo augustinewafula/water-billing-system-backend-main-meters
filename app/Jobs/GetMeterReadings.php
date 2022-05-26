@@ -126,7 +126,6 @@ class GetMeterReadings implements ShouldQueue
         }catch (Throwable $throwable){
             return;
         }
-        Log::info(print_r($request, true));
         try {
             DB::transaction(function () use ($request, $database_meter) {
                 $this->store($request);
