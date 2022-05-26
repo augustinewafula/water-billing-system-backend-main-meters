@@ -15,22 +15,40 @@ trait GetsMeterInformation
      * @throws JsonException
      * @throws Throwable
      */
-    public function getShMeterReadings()
+    public function getShMeterReadings(): ?array
     {
         $database_meter_numbers = $this->getShDatabaseMeters();
         if (empty($database_meter_numbers)) {
-            return null;
+            return [];
         }
+        $details = $this->getSHMeterDetails($database_meter_numbers, env('SH_METER_USERNAME'), env('SH_METER_PASSWORD'));
+
+        if (env('SH_METER_USERNAME_2') && env('SH_METER_PASSWORD_2')){
+            $details_2 = $this->getSHMeterDetails($database_meter_numbers, env('SH_METER_USERNAME_2'), env('SH_METER_PASSWORD_2'));
+            $details = array_merge($details, $details_2);
+        }
+        return $details;
+    }
+
+    /**
+     * @param array $database_meter_numbers
+     * @param $username
+     * @param $password
+     * @return null
+     * @throws JsonException
+     */
+    private function getSHMeterDetails(array $database_meter_numbers, $username, $password): ?array
+    {
         $response = Http::retry(3, 3000)
             ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYGetMeterData.ashx', [
                 'MeterIdList' => $database_meter_numbers,
-                'UserName' => env('SH_METER_USERNAME'),
-                'PassWord' => env('SH_METER_PASSWORD')
+                'UserName' => $username,
+                'PassWord' => $password
             ]);
         if ($response->successful()) {
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->MeterDataList;
         }
-        return null;
+        return [];
     }
 
     public function getShDatabaseMeters(): array
@@ -66,4 +84,5 @@ trait GetsMeterInformation
         return null;
 
     }
+
 }
