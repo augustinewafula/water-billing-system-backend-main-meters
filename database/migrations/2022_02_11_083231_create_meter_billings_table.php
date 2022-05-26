@@ -18,7 +18,7 @@ class CreateMeterBillingsTable extends Migration
             $table->uuid('meter_reading_id');
             $table->foreign('meter_reading_id')->references('id')->on('meter_readings')->cascadeOnDelete();
             $table->decimal('amount_paid', 15);
-            $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('mpesa_transaction_id')->constrained()->cascadeOnDelete()->nullable();
             $table->decimal('balance', 15)->default(0);
             $table->decimal('credit', 15)->default(0);
             $table->decimal('amount_over_paid', 15)->default(0);
