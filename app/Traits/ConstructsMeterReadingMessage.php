@@ -39,10 +39,7 @@ trait ConstructsMeterReadingMessage
         if ($meter_billing = MeterBilling::where('meter_reading_id', $meter_reading->id)->first()) {
             $credit = $meter_billing->credit + $meter_reading->amount_paid;
         }
-        \Log::info("credit: $credit");
         $user_total_debt -= $carry_forward_balance;
-        \Log::info("meter_reading_bill: $meter_reading->bill");
-        \Log::info("user_total_debt: $user_total_debt");
 
         $paybill_number = $meter->station->paybill_number;
         $account_number = $meter->user->account_number;
@@ -51,9 +48,10 @@ trait ConstructsMeterReadingMessage
         if ($total_outstanding < 0) {
             $total_outstanding = 0;
         }
+        $user_account_balance = max($user->account_balance, 0);
+        $user_account_balance_text = $user_account_balance > 0 ? "\nAccount balance: Ksh $user_account_balance" : '';
 
-        $message = "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit applied: Ksh $credit\nStanding charge: Ksh $service_fee\nTotal outstanding: Ksh $user_total_debt\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
-        return $message;
+        return "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit applied: Ksh $credit\nStanding charge: Ksh $service_fee\nTotal outstanding: Ksh $user_total_debt $user_account_balance_text\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
     }
 
 }
