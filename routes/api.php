@@ -95,6 +95,7 @@ Route::prefix('v1')->group(function () {
         Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index'])->middleware('doNotCacheResponse');
         Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
         Route::get('sms-credit-balance', [SmsController::class, 'getCreditBalance'])->middleware('cacheResponse:Sms');
+        Route::get('meter-readings-preview-message/{meter_reading}', [MeterReadingController::class, 'previewMeterReadingMessage']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
