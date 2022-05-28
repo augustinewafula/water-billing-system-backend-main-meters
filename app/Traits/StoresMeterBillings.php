@@ -39,9 +39,6 @@ trait StoresMeterBillings
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
             $user = $user->refresh();
-            if ($user->account_balance > 0) {
-                $user_total_amount += $user->account_balance;
-            }
 
             $bill_to_pay = $pending_meter_reading->bill;
             if ($pending_meter_reading->status === PaymentStatus::Balance) {
