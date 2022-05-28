@@ -10,28 +10,21 @@ use DB;
 
 trait CalculatesUserAmount
 {
-    public function calculateUserTotalAmount($user_account_balance, $transaction_amount, $monthly_service_charge_deducted, $connection_fee_deducted)
+    public function calculateUserTotalAmount($user_account_balance, $transaction_amount, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted, $ignore_account_balance = false)
     {
         $user_total_amount = $transaction_amount;
-        $service_charge_overpaid = 0;
-        $connection_fee_overpaid = 0;
         if ($monthly_service_charge_deducted > 0) {
-            $user_total_amount = $transaction_amount - $monthly_service_charge_deducted;
-            $service_charge_overpaid = $user_total_amount;
+            $user_total_amount -= $monthly_service_charge_deducted;
+        }
+        if ($unaccounted_debt_deducted > 0) {
+            $user_total_amount -= $unaccounted_debt_deducted;
         }
         if ($connection_fee_deducted > 0) {
-            $user_total_amount = $transaction_amount - $connection_fee_deducted;
-            $connection_fee_overpaid = $user_total_amount;
+            $user_total_amount -= $connection_fee_deducted;
         }
-        if ($user_account_balance > 0) {
+        if ($user_account_balance > 0 && !$ignore_account_balance) {
             $user_total_amount += $user_account_balance;
 
-        }
-        if($service_charge_overpaid > 0){
-            $user_total_amount -= $service_charge_overpaid;
-        }
-        if($connection_fee_overpaid > 0){
-            $user_total_amount -= $connection_fee_overpaid;
         }
 
         return $user_total_amount;

@@ -21,17 +21,20 @@ trait StoresMeterBillings
      * @param $pending_meter_readings
      * @param $user
      * @param $mpesa_transaction_id
+     * @param $user_total_amount
      * @return void
      * @throws Throwable
      */
-    public function processMeterBillings(CreateMeterBillingRequest $request, $pending_meter_readings, $user, $mpesa_transaction_id): void
+    public function processMeterBillings(CreateMeterBillingRequest $request, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount): void
     {
         $monthly_service_charge_deducted = $request->monthly_service_charge_deducted;
         $connection_fee_deducted = $request->connection_fee_deducted;
+        $unaccounted_debt_deducted = $request->unaccounted_debt_deducted;
         $amount_paid = $request->amount_paid;
-        $user_total_amount = $amount_paid;
-        if ($monthly_service_charge_deducted > 0 || $connection_fee_deducted > 0) {
-            $user_total_amount = 0;
+        $credit_applied = 0;
+        if ($monthly_service_charge_deducted > 0 || $connection_fee_deducted > 0 || $unaccounted_debt_deducted > 0) {
+            $credit_applied = $amount_paid - ($monthly_service_charge_deducted + $connection_fee_deducted + $unaccounted_debt_deducted);
+            $amount_paid = 0;
         }
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
@@ -59,12 +62,16 @@ trait StoresMeterBillings
                 $user,
                 $monthly_service_charge_deducted,
                 $connection_fee_deducted,
+                $unaccounted_debt_deducted,
                 $pending_meter_reading,
+                $credit_applied,
                 $mpesa_transaction_id)) {
                     $user_total_amount = 0;
                     $amount_paid = 0;
                     $monthly_service_charge_deducted = 0;
                     $connection_fee_deducted = 0;
+                    $unaccounted_debt_deducted = 0;
+                    $credit_applied = 0;
             }
 
         }
@@ -76,7 +83,9 @@ trait StoresMeterBillings
      * @param $user
      * @param $monthly_service_charge_deducted
      * @param $connection_fee_deducted
+     * @param $unaccounted_debt_deducted
      * @param $meter_reading
+     * @param $credit_applied
      * @param $mpesa_transaction_id
      * @return bool
      * @throws Throwable
@@ -87,7 +96,9 @@ trait StoresMeterBillings
         $user,
         $monthly_service_charge_deducted,
         $connection_fee_deducted,
+        $unaccounted_debt_deducted,
         $meter_reading,
+        $credit_applied,
         $mpesa_transaction_id): bool
     {
         try {
@@ -96,12 +107,13 @@ trait StoresMeterBillings
                 $meter->update([
                     'last_billing_date' => Carbon::now()->toDateTimeString(),
                 ]);
+                $total_deductions = $monthly_service_charge_deducted + $connection_fee_deducted + $unaccounted_debt_deducted;
                 $user_bill_balance = $balance;
                 $amount_over_paid = 0;
-                $credit = 0;
                 if ($user->account_balance > 0) {
-                    $credit = $user->account_balance;
+                    $credit_applied += $user->account_balance;
                 }
+
                 if ($this->userHasFullyPaid($balance)) {
                     $user->update([
                         'account_balance' => abs($balance),
@@ -134,7 +146,8 @@ trait StoresMeterBillings
                     'balance' => $user_bill_balance,
                     'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
                     'connection_fee_deducted' => $connection_fee_deducted,
-                    'credit' => $credit,
+                    'unaccounted_debt_deducted' => $unaccounted_debt_deducted,
+                    'credit' => $credit_applied,
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id
                 ]);

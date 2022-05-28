@@ -44,33 +44,40 @@ trait ProcessesPrepaidMeterTransaction
      * @param $mpesa_transaction
      * @param $monthly_service_charge_deducted
      * @param $connection_fee_deducted
+     * @param $unaccounted_debt_deducted
      * @return void
      * @throws Throwable
      */
-    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted): void
+    private function processPrepaidTransaction($meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted): void
     {
         $user = User::where('meter_id', $meter_id)->first();
+        $mpesa_transaction_id =
         throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
 
-        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted, $connection_fee_deducted);
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
+
 
         if ($user_total_amount <= 0) {
-            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted);
-            SendSMS::dispatch($mpesa_transaction->MSISDN, $message, $user->id);
+            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
+            $this->notifyUser((object)['message' => $message, 'title' => 'Insufficient amount'], $user, 'general');
             return;
         }
         $units = $this->calculateUnits($user_total_amount, $user);
+        Log::info("$units: $units");
         if ($units < 0) {
-            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted);
+            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
             try {
                 DB::beginTransaction();
                 $user->update([
                     'account_balance' => $user_total_amount,
                     'last_mpesa_transaction_id' => $mpesa_transaction->id
                 ]);
-                MpesaTransaction::find($mpesa_transaction->id)->update([
-                    'Consumed' => true,
-                ]);
+
+                if ($mpesa_transaction_id){
+                    MpesaTransaction::find($mpesa_transaction->id)->update([
+                        'Consumed' => true,
+                    ]);
+                }
                 DB::commit();
             } catch (Throwable $throwable) {
                 DB::rollBack();
@@ -93,14 +100,17 @@ trait ProcessesPrepaidMeterTransaction
                 'service_fee' => $this->calculateServiceFee($user_total_amount, 'prepay'),
                 'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
                 'connection_fee_deducted' => $connection_fee_deducted,
+                'unaccounted_debt_deducted' => $unaccounted_debt_deducted,
                 'meter_id' => $user->meter_id,
             ]);
             $user->update([
                 'account_balance' => 0
             ]);
-            MpesaTransaction::find($mpesa_transaction->id)->update([
-                'Consumed' => true,
-            ]);
+            if ($mpesa_transaction_id){
+                MpesaTransaction::find($mpesa_transaction->id)->update([
+                    'Consumed' => true,
+                ]);
+            }
             $date = Carbon::now()->toDateTimeString();
             $message = "Meter: $meter_number\nToken: $token\nUnits: $units\nAmount: $user_total_amount\nDate: $date\nRef: $mpesa_transaction->TransID";
 
@@ -116,11 +126,15 @@ trait ProcessesPrepaidMeterTransaction
     /**
      * @param $monthly_service_charge_deducted
      * @param $connection_fee_deducted
+     * @param $unaccounted_debt_deducted
      * @return string
      */
-    private function constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted): string
+    private function constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted): string
     {
         $message = 'The amount you paid is insufficient to acquire tokens, ';
+        if ($unaccounted_debt_deducted > 0) {
+            $message .= "Ksh $unaccounted_debt_deducted was deducted for your previous debt. ";
+        }
         if ($monthly_service_charge_deducted > 0) {
             $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance. ";
         }

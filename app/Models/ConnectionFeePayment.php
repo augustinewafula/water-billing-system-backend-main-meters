@@ -21,7 +21,7 @@ class ConnectionFeePayment extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['connection_fee_id', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'monthly_service_charge_deducted', 'mpesa_transaction_id'];
+    protected $fillable = ['connection_fee_id', 'amount_paid', 'balance', 'credit', 'amount_over_paid', 'monthly_service_charge_deducted', 'mpesa_transaction_id', 'unaccounted_debt_deducted'];
 
     /**
      * Get connection fee that owns the connection fee payment

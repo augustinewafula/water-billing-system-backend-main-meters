@@ -22,7 +22,7 @@ class MeterToken extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['mpesa_transaction_id', 'token', 'service_fee', 'meter_id', 'units', 'monthly_service_charge_deducted', 'connection_fee_deducted'];
+    protected $fillable = ['mpesa_transaction_id', 'token', 'service_fee', 'meter_id', 'units', 'monthly_service_charge_deducted', 'connection_fee_deducted', 'unaccounted_debt_deducted'];
 
     /**
      * Get meter that owns the meter reading

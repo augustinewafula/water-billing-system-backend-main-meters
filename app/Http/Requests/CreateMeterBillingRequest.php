@@ -28,6 +28,7 @@ class CreateMeterBillingRequest extends FormRequest
             'amount_paid' => ['required', 'numeric'],
             'monthly_service_charge_deducted' => ['required', 'numeric'],
             'connection_fee_deducted' => ['required', 'numeric'],
+            'unaccounted_debt_deducted' => ['required', 'numeric'],
         ];
     }
 }

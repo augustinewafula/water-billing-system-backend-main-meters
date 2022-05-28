@@ -22,10 +22,11 @@ trait ProcessesPostPaidTransaction
      * @param MpesaTransaction $mpesa_transaction
      * @param $monthly_service_charge_deducted
      * @param $connection_fee_deducted
+     * @param $unaccounted_debt_deducted
      * @return void
      * @throws Throwable
      */
-    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted): void
+    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted): void
     {
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
@@ -33,9 +34,9 @@ trait ProcessesPostPaidTransaction
             'meter_id' => $user->meter_id,
             'amount_paid' => $mpesa_transaction->TransAmount,
             'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
-            'connection_fee_deducted' => $connection_fee_deducted
+            'connection_fee_deducted' => $connection_fee_deducted,
+            'unaccounted_debt_deducted' => $unaccounted_debt_deducted
         ]);
-        //TODO::make organization name dynamic
         $organization_name = env('APP_NAME');
         $message = "Dear $mpesa_transaction->FirstName, your payment of Ksh $mpesa_transaction->TransAmount to $organization_name has been received. Thank you for being our esteemed customer.";
         $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
@@ -52,12 +53,10 @@ trait ProcessesPostPaidTransaction
      */
     public function store(CreateMeterBillingRequest $request, $mpesa_transaction_id): JsonResponse
     {
-        $user = User::where('meter_id', $request->meter_id)->first();
-        if (!$user){
-            return response()->json('User not found', 422);
-        }
-        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted, $request->connection_fee_deducted);
-        if ($user_total_amount < 0){
+        $user = User::where('meter_id', $request->meter_id)->firstOrFail();
+
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted, $request->connection_fee_deducted, $request->unaccounted_debt_deducted);
+        if ($user_total_amount <= 0){
             return response()->json('Amount exhausted', 422);
         }
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
@@ -74,7 +73,7 @@ trait ProcessesPostPaidTransaction
             return response()->json('Meter reading not found', 422);
         }
 
-        $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id);
+        $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount);
         SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
         return response()->json('created', 201);
     }

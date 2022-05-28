@@ -16,6 +16,8 @@ use Throwable;
 
 trait ProcessConnectionFeeTransaction
 {
+    use CalculatesUserAmount;
+
     public function hasMonthlyConnectionFeeDebt($user_id): bool
     {
         $last_connection_fee = ConnectionFee::where('user_id', $user_id)
@@ -58,18 +60,14 @@ trait ProcessConnectionFeeTransaction
     /**
      * @throws Throwable
      */
-    public function storeConnectionFee($user_id, $mpesa_transaction, $amount, $monthly_service_charge_deducted)
+    public function storeConnectionFee($user_id, $mpesa_transaction, $amount, $monthly_service_charge_deducted, $unaccounted_debt_deducted)
     {
         $user = User::findOrFail($user_id);
         $amount_paid = $amount;
-        $user_total_amount = $amount_paid;
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $amount_paid, $monthly_service_charge_deducted, 0, $unaccounted_debt_deducted);
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getMonthToBill($user);
         $total_connection_fee_paid = 0;
-
-        if ($monthly_service_charge_deducted > 0){
-            $user_total_amount = 0;
-        }
 
         while ($month_to_bill->lessThanOrEqualTo($firstDayOfCurrentMonth)) {
             $credit = 0;
@@ -78,8 +76,12 @@ trait ProcessConnectionFeeTransaction
                 ->where('month', $month_to_bill)
                 ->first();
             if ($this->userHasFunds($user)) {
-                $user_total_amount += $user->account_balance;
                 $credit = $user->account_balance;
+            }
+            $deductions = $monthly_service_charge_deducted + $unaccounted_debt_deducted;
+            $credit_applied = $amount_paid - ($deductions + $credit);
+            if ($deductions > 0){
+                $amount_paid = 0;
             }
             if ($user_total_amount <= 0 && $amount_paid === 0) {
                 break;
@@ -110,25 +112,32 @@ trait ProcessConnectionFeeTransaction
             }
             try {
                 DB::beginTransaction();
-                ConnectionFeePayment::create([
+                $mpesa_transaction_id = null;
+                if (is_object($mpesa_transaction)){
+                    $mpesa_transaction_id = $mpesa_transaction->id;
+                }
+                    ConnectionFeePayment::create([
                     'connection_fee_id' => $connection_fee->id,
                     'amount_paid' => $amount_paid,
                     'balance' => $balance,
-                    'credit' => $credit,
+                    'credit' => abs($credit_applied),
                     'amount_over_paid' => $amount_over_paid,
                     'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
-                    'mpesa_transaction_id' => $mpesa_transaction->id,
+                    'unaccounted_debt_deducted' => $unaccounted_debt_deducted,
+                    'mpesa_transaction_id' => $mpesa_transaction_id,
                 ]);
                 $connection_fee->update([
                     'status' => $status
                 ]);
                 $user->update([
                     'account_balance' => $user_account_balance,
-                    'last_mpesa_transaction_id' => $mpesa_transaction->id
+                    'last_mpesa_transaction_id' => $mpesa_transaction_id
                 ]);
-                MpesaTransaction::find($mpesa_transaction->id)->update([
-                    'Consumed' => true,
-                ]);
+                if (is_object($mpesa_transaction)) {
+                    MpesaTransaction::find($mpesa_transaction_id)->update([
+                        'Consumed' => true,
+                    ]);
+                }
                 $total_connection_fee_paid += $amount_to_deduct;
                 DB::commit();
             } catch (Throwable $th) {
@@ -142,6 +151,7 @@ trait ProcessConnectionFeeTransaction
                 break;
             }
             $monthly_service_charge_deducted = 0;
+            $unaccounted_debt_deducted = 0;
 
         }
         $user->update([

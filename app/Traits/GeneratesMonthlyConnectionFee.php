@@ -34,7 +34,7 @@ trait GeneratesMonthlyConnectionFee
         }
         if ($user->account_balance > 0 && (!$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id))) {
             $mpesa_transaction = MpesaTransaction::find($user->last_mpesa_transaction_id);
-            $this->storeConnectionFee($user->id, $mpesa_transaction, 0, 0);
+            $this->storeConnectionFee($user->id, $mpesa_transaction, 0, 0, 0);
         }
     }
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUnresolvedMpesaTransactionsTable extends Migration
+class CreateUnaccountedDebtsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,13 @@ class CreateUnresolvedMpesaTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('unresolved_mpesa_transactions', function (Blueprint $table) {
+        Schema::create('unaccounted_debts', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
+            $table->decimal('amount_paid', 15);
+            $table->decimal('amount_deducted', 15);
+            $table->decimal('amount_remaining', 15);
             $table->foreignUuid('mpesa_transaction_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->tinyInteger('reason')->unsigned();
             $table->timestamps(6);
             $table->softDeletes();
         });
@@ -29,6 +32,6 @@ class CreateUnresolvedMpesaTransactionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('unresolved_mpesa_transactions');
+        Schema::dropIfExists('unaccounted_debts');
     }
 }

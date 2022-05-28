@@ -15,7 +15,7 @@ class CreateConnectionFeePaymentsTable extends Migration
     {
         Schema::create('connection_fee_payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('connection_fee_id');
+            $table->uuid('connection_fee_id')->nullable();
             $table->foreign('connection_fee_id', 'connection_fee_id')->references('id')->on('connection_fees')->cascadeOnDelete();
             $table->decimal('amount_paid', 15);
             $table->decimal('balance', 15)->default(0);

@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
-class MeterBilling extends Model
+class UnaccountedDebt extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, Searchable, ClearsResponseCache, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 
@@ -21,15 +22,15 @@ class MeterBilling extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['meter_reading_id', 'amount_paid', 'balance', 'mpesa_transaction_id', 'date_paid', 'amount_over_paid', 'credit', 'monthly_service_charge_deducted', 'connection_fee_deducted', 'unaccounted_debt_deducted'];
+    protected $fillable = ['user_id', 'amount_paid', 'amount_deducted', 'amount_remaining', 'mpesa_transaction_id'];
 
     /**
-     * Get meter reading that owns the meter billing
-     * @return BelongsTo
+     * Get the user that owns the sms.
+     * @return belongsTo
      */
-    public function meter_reading(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(MeterReading::class);
+        return $this->belongsTo(User::class);
     }
 
     /**

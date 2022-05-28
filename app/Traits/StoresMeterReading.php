@@ -23,7 +23,7 @@ use Throwable;
 
 trait StoresMeterReading
 {
-    use CalculatesBill, StoresMeterBillings;
+    use CalculatesBill, StoresMeterBillings, CalculatesUserAmount;
 
     /**
      * Store a newly created resource in storage.
@@ -119,9 +119,11 @@ trait StoresMeterReading
                 'amount_paid' => 0,
                 'monthly_service_charge_deducted' => 0,
                 'connection_fee_deducted' => 0,
+                'unaccounted_debt_deducted' => 0,
             ]);
+            $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, 0, 0, 0, 0);
 
-            $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id);
+            $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id, $user_total_amount);
         }
     }
 

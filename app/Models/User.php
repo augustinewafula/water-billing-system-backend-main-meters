@@ -72,7 +72,8 @@ class User extends Authenticatable
         'account_number',
         'use_custom_charges_for_cost_per_unit',
         'cost_per_unit',
-        'communication_channels'
+        'communication_channels',
+        'unaccounted_debt'
     ];
 
     /**
