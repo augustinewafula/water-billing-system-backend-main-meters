@@ -8,6 +8,7 @@ use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterReading;
 use App\Models\User;
+use App\Traits\ConstructsMeterReadingMessage;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\SendsMeterReading;
 use App\Traits\StoresMeterReading;
@@ -25,7 +26,7 @@ use Throwable;
 
 class MeterReadingController extends Controller
 {
-    use StoresMeterReading, SendsMeterReading, GetsUserConnectionFeeBalance;
+    use StoresMeterReading, SendsMeterReading, GetsUserConnectionFeeBalance, ConstructsMeterReadingMessage;
 
     public function __construct()
     {
@@ -67,6 +68,13 @@ class MeterReadingController extends Controller
             $meter_reading->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_reading->meter->station_id, $meter_reading->user->total_connection_fee_paid);
         }
         return response()->json($meter_reading);
+    }
+
+    public function previewMeterReadingMessage(MeterReading $meterReading): JsonResponse
+    {
+        $user = User::where('meter_id', $meterReading->meter_id)
+            ->firstOrFail();
+        return response()->json(['message' => $this->constructMeterReadingMessage($meterReading, $user)]);
     }
 
     /**
