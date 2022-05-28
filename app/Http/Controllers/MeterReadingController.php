@@ -52,13 +52,6 @@ class MeterReadingController extends Controller
     }
 
 
-
-    public function calculateBillUpdate($previous_reading, $current_reading, $previous_bill): float
-    {
-        return round((
-            ($current_reading * $previous_bill) / $previous_reading));
-    }
-
     /**
      * Display the specified resource.
      *
@@ -91,7 +84,9 @@ class MeterReadingController extends Controller
         }
 
         $meter = Meter::find($request->meter_id);
-        $bill = $this->calculateBillUpdate($meter->last_reading, $request->current_reading, $meterReading->bill);
+        $user = User::where('meter_id', $meter->id)->firstOrFail();
+        $bill = $this->calculateBill($request->previous_reading, $request->current_reading, $user);
+        $service_fee = $this->calculateServiceFee($bill, 'post-pay');
 
         $has_message_been_resent = false;
         try {
@@ -101,7 +96,8 @@ class MeterReadingController extends Controller
                 'meter_id' => $request->meter_id,
                 'current_reading' => $request->current_reading,
                 'month' => $request->month,
-                'bill' => $bill
+                'service_fee' => $service_fee,
+                'bill' => $bill + $service_fee
             ]);
             $this->addReadingBillToUserAccount($meterReading);
             if ($meterReading->bill_due_at <= now()) {
