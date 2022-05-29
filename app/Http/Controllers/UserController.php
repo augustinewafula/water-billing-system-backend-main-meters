@@ -376,19 +376,18 @@ class UserController extends Controller
         if ($action === 'save'){
             $password = $this->generatePassword(10);
             $data = Arr::add($data, 'password', Hash::make($password));
-        }
+            $credit = $request->credit;
+            if (empty($credit)){
+                $credit = 0;
+            }
+            $data = Arr::add($data, 'account_balance', $credit);
 
-        $credit = $request->credit;
-        if (empty($credit)){
-            $credit = 0;
+            $debt = $request->debt;
+            if (empty($debt)){
+                $debt = 0;
+            }
+            $data = Arr::add($data, 'unaccounted_debt', $debt);
         }
-        $data = Arr::add($data, 'account_balance', $credit);
-
-        $debt = $request->debt;
-        if (empty($debt)){
-            $debt = 0;
-        }
-        $data = Arr::add($data, 'unaccounted_debt', $debt);
 
         return $data;
     }
