@@ -26,7 +26,6 @@ trait ConstructsMeterReadingMessage
         $credit = 0;
 
         $user_total_debt = $user->unaccounted_debt;
-        \Log::info("user_total_debt: $user_total_debt");
         if ($user->account_balance < 0) {
             $user_total_debt += abs($user->account_balance);
             $remaining_amount = abs($user->account_balance) - $meter_reading->bill;
@@ -40,14 +39,11 @@ trait ConstructsMeterReadingMessage
             $credit = $meter_billing->credit + $meter_reading->amount_paid;
         }
         $user_total_debt -= $carry_forward_balance;
+        $carry_forward_balance += $user->unaccounted_debt;
 
         $paybill_number = $meter->station->paybill_number;
         $account_number = $meter->user->account_number;
-        $total_outstanding = round(($meter_reading->bill + $user_total_debt) - $credit);
         $service_fee = round($meter_reading->service_fee);
-        if ($total_outstanding < 0) {
-            $total_outstanding = 0;
-        }
         $user_account_balance = max($user->account_balance, 0);
         $user_account_balance_text = $user_account_balance > 0 ? "\nAccount balance: Ksh $user_account_balance" : '';
 
