@@ -47,7 +47,15 @@ class TransactionController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $prepaid_transactions = $this->filterQuery($prepaid_transactions, $request);
 
+        $unaccounted_debt_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
+            ->join('unaccounted_debts', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
+            ->join('users', 'users.id', 'unaccounted_debts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+        $unaccounted_debt_transactions = $this->filterQuery($unaccounted_debt_transactions, $request);
+
         $prepaid_transactions->union($postpaid_transactions);
+        $prepaid_transactions->union($unaccounted_debt_transactions);
 
         return response()->json($prepaid_transactions->paginate(10));
 
