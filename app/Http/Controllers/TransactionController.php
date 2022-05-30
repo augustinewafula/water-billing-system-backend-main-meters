@@ -7,6 +7,7 @@ use App\Models\MeterToken;
 use App\Models\MonthlyServiceCharge;
 use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
+use App\Models\UnaccountedDebt;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use Carbon\Carbon;
@@ -89,17 +90,25 @@ class TransactionController extends Controller
             throw_if($user === null);
         } catch (Throwable $throwable) {
             try {
-                $user = MonthlyServiceChargePayment::select('users.*')
-                    ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
-                    ->join('users', 'monthly_service_charges.user_id', 'users.id')
-                    ->where('mpesa_transaction_id', $transaction_id)
-                    ->first();
-                throw_if($user === null);
-            } catch (Throwable $throwable){
                 $user = MeterToken::select('users.*')
                     ->join('users', 'meter_tokens.meter_id', 'users.meter_id')
                     ->where('mpesa_transaction_id', $transaction_id)
                     ->first();
+                throw_if($user === null);
+            } catch (Throwable $throwable){
+                try {
+                    $user = UnaccountedDebt::select('users.*')
+                        ->join('users', 'unaccounted_debts.user_id', 'users.id')
+                        ->where('mpesa_transaction_id', $transaction_id)
+                        ->first();
+                    throw_if($user === null);
+                } catch (Throwable $throwable){
+                    $user = MonthlyServiceChargePayment::select('users.*')
+                        ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+                        ->join('users', 'monthly_service_charges.user_id', 'users.id')
+                        ->where('mpesa_transaction_id', $transaction_id)
+                        ->first();
+                }
             }
         }
         return $user;
