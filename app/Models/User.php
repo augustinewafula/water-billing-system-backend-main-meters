@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -104,6 +105,11 @@ class User extends Authenticatable
     public function meter(): belongsTo
     {
         return $this->belongsTo(Meter::class);
+    }
+
+    public function unaccounted_debts(): HasMany
+    {
+        return $this->hasMany(UnaccountedDebt::class);
     }
 
     /**

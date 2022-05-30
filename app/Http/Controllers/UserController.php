@@ -156,7 +156,8 @@ class UserController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $user = User::with('meter.type')
+        $user = User::with('meter.type', 'unaccounted_debts')
+            ->withCount('unaccounted_debts')
             ->where('id', $id)
             ->firstOrFail();
         if ($user->should_pay_connection_fee){
