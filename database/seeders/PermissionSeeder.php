@@ -40,6 +40,7 @@ class PermissionSeeder extends Seeder
             'service-charge',
             'system-user',
             'alert-contact',
+            'role',
             'setting',
             'sms',
             'unresolved-mpesa-transaction',
