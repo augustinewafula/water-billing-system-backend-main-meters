@@ -17,7 +17,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('queue:work --max-time=3600')->everyThreeMinutes()->withoutOverlapping(60);
+        $schedule->command('queue:restart')->everyFifteenMinutes();
+        $schedule->command('queue:work')->everyMinute()->withoutOverlapping(60);
         $schedule->command('meters:switch-off-unpaid')->everyMinute()->withoutOverlapping();
         $schedule->command('meters:confirm-valve-status')->everyTenMinutes()->withoutOverlapping();
         $schedule->command('meters:check-faulty')->everyFiveMinutes()->withoutOverlapping();
