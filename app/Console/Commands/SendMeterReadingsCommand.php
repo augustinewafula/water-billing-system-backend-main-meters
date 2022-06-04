@@ -42,6 +42,7 @@ class SendMeterReadingsCommand extends Command
     {
         $meter_readings = MeterReading::where('sms_sent', false)
             ->where('send_sms_at', '<=', Carbon::now())
+            ->take(10)
             ->get();
 
         foreach ($meter_readings as $meter_reading) {

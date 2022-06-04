@@ -56,6 +56,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 $query->whereStatus(PaymentStatus::NotPaid)
                     ->orWhere('status', PaymentStatus::Balance);
             })
+            ->take(10)
             ->get();
         foreach ($unpaid_meters as $unpaid_meter) {
             try {

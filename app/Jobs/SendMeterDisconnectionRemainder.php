@@ -53,6 +53,7 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
                 $query->whereStatus(PaymentStatus::NotPaid)
                     ->orWhere('status', PaymentStatus::Balance);
             })
+            ->take(10)
             ->get();
         $processed_meters = [];
         foreach ($unpaid_meters as $unpaid_meter) {
