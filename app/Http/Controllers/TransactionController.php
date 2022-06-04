@@ -57,8 +57,9 @@ class TransactionController extends Controller
 
         $prepaid_transactions->union($postpaid_transactions);
         $prepaid_transactions->union($unaccounted_debt_transactions);
+        $sum = $prepaid_transactions->sum('amount');
 
-        return response()->json($prepaid_transactions->paginate(10));
+        return response()->json(['transactions' => $prepaid_transactions->paginate(10), 'sum' => $sum]);
 
     }
 
