@@ -39,7 +39,6 @@ class ConfirmMeterValveStatus implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info('changsha...');
             if ($changshaMeters = $this->getChangshaNbIotMeterReadings()) {
                 foreach ($changshaMeters as $meter) {
                     $meter_number = $meter->meterno;
@@ -51,7 +50,6 @@ class ConfirmMeterValveStatus implements ShouldQueue
             Log::error($e);
         }
         try {
-            Log::info('SH...');
             if ($SHMeters = $this->getShMeterReadings()) {
                 foreach ($SHMeters as $meter) {
                     $meter_number = $meter->MeterId;
