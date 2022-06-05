@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Mail;
+use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 class ForgotPasswordController extends Controller
@@ -94,7 +95,7 @@ class ForgotPasswordController extends Controller
     {
         $request->validate([
             'email' => 'required|email|exists:users',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->mixedCase()->uncompromised()],
             'password_confirmation' => 'required'
         ]);
 
@@ -113,7 +114,7 @@ class ForgotPasswordController extends Controller
          }
 
         User::where('email', $request->email)
-            ->update(['password' => Hash::make($request->password)]);
+            ->update(['password' => Hash::make($request->password), 'should_reset_password' => false]);
 
         DB::table('password_resets')->where(['email' => $request->email])->delete();
 
