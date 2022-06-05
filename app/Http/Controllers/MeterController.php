@@ -123,7 +123,6 @@ class MeterController extends Controller
             }
 
             $meter = Meter::create($request->validated());
-            Activity::all()->last();
             return ['message' => $meter, 'status_code' => 201];
         }
         $meter = Meter::create([
@@ -132,7 +131,6 @@ class MeterController extends Controller
             'last_reading' => $request->last_reading,
             'mode' => $request->mode
         ]);
-        Activity::all()->last();
         return ['message' => $meter, 'status_code' => 201];
 
     }
