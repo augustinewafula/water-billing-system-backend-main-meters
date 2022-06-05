@@ -11,16 +11,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Meter extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable, LogsActivity;
 
     public $incrementing = false;
 
     protected $keyType = 'uuid';
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
+
+    protected static $submitEmptyLogs = false;
 
     protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'last_communication_date', 'battery_voltage', 'signal_intensity', 'main_meter', 'sim_card_number', 'valve_last_switched_off_by'];
 
@@ -34,6 +37,8 @@ class Meter extends Model
         'last_billing_date' => 'datetime',
         'last_communication_date' => 'datetime',
     ];
+
+    protected static $logFillable = true;
 
     /**
      * Get meter station that owns the meter
