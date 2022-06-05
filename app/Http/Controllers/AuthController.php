@@ -43,7 +43,7 @@ class AuthController extends Controller
             'exists' => 'Invalid email or password'
         ];
         $this->validate($request, $rules, $customMessages);
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->firstOrFail();
 
         if (!Hash::check($request->password, $user->password)) {
             $response = ['message' => 'The given data was invalid.', 'errors' => ['password' => ['Incorrect email or password']]];
@@ -62,6 +62,10 @@ class AuthController extends Controller
             'email' => $user->email,
             'permissions' => $permissions
         ];
+        activity()
+            ->causedBy($user)
+            ->performedOn($user)
+            ->log('logged in');
         return response()->json($response);
 
     }
@@ -95,11 +99,18 @@ class AuthController extends Controller
 
     public function logout(): JsonResponse
     {
-        $token = auth()->guard('api')->user()->token();
+        $user = auth()->guard('api')->user();
+        if ($user === null){
+            return response()->json('Not logged in', 422);
+        }
+        activity()
+            ->performedOn($user)
+            ->log('logged out');
+        $token = $user->token();
         $token->revoke();
 
         $response = 'You have been successfully logged out!';
-        return response()->json($response, 200);
+        return response()->json($response, );
     }
 
     public function user(): JsonResponse
