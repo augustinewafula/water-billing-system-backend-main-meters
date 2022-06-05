@@ -45,6 +45,11 @@ class AuthController extends Controller
         $this->validate($request, $rules, $customMessages);
         $user = User::where('email', $request->email)->firstOrFail();
 
+        if ($user->should_reset_password){
+            $response = ['message' => 'Your password appears to have been compromised; please use Forget Password to reset your account password.'];
+            return response()->json($response, 422);
+        }
+
         if (!Hash::check($request->password, $user->password)) {
             $response = ['message' => 'The given data was invalid.', 'errors' => ['password' => ['Incorrect email or password']]];
             return response()->json($response, 422);
