@@ -31,6 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('monthly-connection-fee:generate')->monthly();
         $schedule->command('backup:clean')->twiceDaily(0, 12);
         $schedule->command('backup:run --only-db')->twiceDaily();
+        $schedule->command('passport:purge')->everyThirtyMinutes();
     }
 
     public function meterReadingOn()
