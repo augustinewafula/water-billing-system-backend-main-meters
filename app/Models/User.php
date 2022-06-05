@@ -14,11 +14,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, ClearsResponseCache, SoftDeletes, MassPrunable, LogsActivity;
 
     public $incrementing = false;
 
@@ -27,6 +28,10 @@ class User extends Authenticatable
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
     protected $guard_name = 'api';
+
+    protected static $submitEmptyLogs = false;
+
+    protected static $logFillable = true;
 
     /**
      * Set the user's name.
