@@ -40,6 +40,11 @@ return [
             'token' => env('DROPBOX_TOKEN'),
         ],
 
+        'dropbox_2' => [
+            'driver' => 'dropbox',
+            'token' => env('DROPBOX_2_TOKEN'),
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
