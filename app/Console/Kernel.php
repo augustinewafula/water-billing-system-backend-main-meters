@@ -25,7 +25,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('meters:send-disconnection-remainder')->everyFiveMinutes();
         $schedule->command('meter-readings:send')->everyMinute();
         $schedule->command('meter-readings:get --type=daily')->daily();
-        $schedule->command('model:prune')->daily();
         $schedule->command('meter-readings:get --type=monthly')->monthlyOn($this->meterReadingOn());
 //        $schedule->command('monthly-service-charge:generate')->monthly();
         $schedule->command('monthly-connection-fee:generate')->monthly();
