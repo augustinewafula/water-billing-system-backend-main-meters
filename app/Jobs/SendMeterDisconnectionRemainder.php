@@ -43,10 +43,7 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
      */
     public function handle()
     {
-        $unpaid_meters = MeterReading::with(['meter' => function ($query) {
-            $query->whereValveStatus(ValveStatus::Open)
-                ->orWhere('valve_status', null);
-        }])
+        $unpaid_meters = MeterReading::with('meter')
             ->where('disconnection_remainder_sms_sent', false)
             ->whereDate('bill_due_at', '<=', now())
             ->where(function ($query) {
@@ -55,12 +52,8 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
             })
             ->take(10)
             ->get();
-        $processed_meters = [];
         foreach ($unpaid_meters as $unpaid_meter) {
             try {
-                if (in_array($unpaid_meter->meter->id, $processed_meters, true)) {
-                    continue;
-                }
                 if (!$unpaid_meter->meter) {
                     continue;
                 }
@@ -77,7 +70,6 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
                 $message = "Hello $first_name, your water bill is passed due date. Your meter shall be disconnected by $tell_user_meter_disconnection_on. Please pay your total debt of Ksh $total_debt to avoid disconnection.\nPay via paybill number $paybill_number, account number $account_number";
 
                 $this->notifyUser((object)['message' => $message, 'title' => 'Water bill debt'], $meter->user, 'general');
-                $processed_meters[] = $unpaid_meter->meter->id;
                 $meter_reading = MeterReading::find($unpaid_meter->id);
                 $meter_reading->update(['disconnection_remainder_sms_sent' => true]);
             } catch (Throwable $th) {
