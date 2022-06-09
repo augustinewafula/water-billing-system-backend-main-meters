@@ -48,7 +48,7 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
                 ->orWhere('valve_status', null);
         }])
             ->where('disconnection_remainder_sms_sent', false)
-            ->whereDate('tell_user_meter_disconnection_on', '<=', now())
+            ->whereDate('bill_due_at', '<=', now())
             ->where(function ($query) {
                 $query->whereStatus(PaymentStatus::NotPaid)
                     ->orWhere('status', PaymentStatus::Balance);
