@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Models\MeterCharge;
 use App\Models\MeterReading;
 use App\Models\ServiceCharge;
+use App\Models\User;
 use DB;
 
 trait CalculatesUserAmount
@@ -32,6 +33,7 @@ trait CalculatesUserAmount
 
     public function calculateUserMeterReadingDebt($meter_id)
     {
+        $user_unaccounted_debt = User::where('meter_id', $meter_id)->first()->unaccounted_debt;
         $unpaid_bills = DB::table('meter_readings')
             ->where('meter_id', $meter_id)
             ->whereDate('bill_due_at', '<=', now())
@@ -42,6 +44,6 @@ trait CalculatesUserAmount
             ->where('meter_reading_id', $meter_reading->id)
             ->sum('balance');
 
-        return $unpaid_bills + $balance_bills;
+        return $unpaid_bills + $balance_bills + $user_unaccounted_debt;
     }
 }
