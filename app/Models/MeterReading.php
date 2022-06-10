@@ -13,10 +13,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class MeterReading extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable, LogsActivity;
 
     public $incrementing = false;
 
@@ -37,6 +38,9 @@ class MeterReading extends Model
         'tell_user_meter_disconnection_on' => 'datetime:Y-m-d',
         'actual_meter_disconnection_on' => 'datetime:Y-m-d',
     ];
+
+    protected static $submitEmptyLogs = false;
+    protected static $logFillable = true;
 
     public function setMonthAttribute(string $value): void
     {
