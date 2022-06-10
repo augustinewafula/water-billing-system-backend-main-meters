@@ -10,12 +10,22 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ProcessTransaction implements ShouldQueue
+class ProcessTransaction implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, ProcessesMpesaTransaction;
     protected $mpesa_transaction;
 
     public $tries = 2;
+
+    /**
+     * The unique ID of the job.
+     *
+     * @return string
+     */
+    public function uniqueId(): string
+    {
+        return $this->mpesa_transaction->id;
+    }
 
     /**
      * Create a new job instance.
