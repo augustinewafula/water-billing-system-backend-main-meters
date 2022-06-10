@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use App\Models\User;
 use DB;
@@ -36,6 +37,9 @@ trait ProcessUnaccountedDebt
             $user->unaccounted_debt = $amount_remaining;
             $user->last_mpesa_transaction_id = $mpesa_transaction->id;
             $user->save();
+            MpesaTransaction::find($mpesa_transaction->id)->update([
+                'Consumed' => true,
+            ]);
             DB::commit();
 
         } catch (Throwable $throwable) {
