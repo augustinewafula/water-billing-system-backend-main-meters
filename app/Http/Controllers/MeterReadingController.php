@@ -61,7 +61,7 @@ class MeterReadingController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $meter_reading = MeterReading::with('meter.type', 'user', 'meter_billings')
+        $meter_reading = MeterReading::with('meter.type', 'user.unaccounted_debts', 'meter_billings')
             ->where('id', $id)
             ->firstOrFail();
         if ($meter_reading->user->should_pay_connection_fee){
