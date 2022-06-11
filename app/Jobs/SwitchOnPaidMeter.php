@@ -45,24 +45,13 @@ class SwitchOnPaidMeter implements ShouldQueue
      */
     public function handle(): void
     {
-        $month_ago = Carbon::now()->subtract(1, 'month')->format('Y-m');
-        $meter = MeterReading::with(['meter' => function ($query) {
-                $query->whereValveStatus(ValveStatus::Closed)
-                    ->orWhere('valve_last_switched_off_by', 'system');
-            }])->where('meter_id', $this->meter->id)
-            ->where('month', '>=', $month_ago)
-            ->whereStatus(PaymentStatus::Paid)
-            ->latest()
-            ->limit(1)
-            ->first();
-        if (!$meter) {
+        if ($this->meter->valve_status === ValveStatus::Open){
             return;
         }
-
         try {
             DB::beginTransaction();
             if ($this->meter->mode !== MeterMode::Manual) {
-                $this->toggleValve($meter, ValveStatus::Open);
+                $this->toggleValve($this->meter, ValveStatus::Open);
             }
             $this->meter->update([
                 'valve_status' => ValveStatus::Open,
