@@ -16,7 +16,7 @@ class SwitchOnPaidMetersCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'meters:switch-on-unpaid';
+    protected $signature = 'meters:switch-on-paid';
 
     /**
      * The console command description.

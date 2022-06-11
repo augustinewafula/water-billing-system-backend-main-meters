@@ -20,7 +20,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('queue:restart')->everyFifteenMinutes();
         $schedule->command('queue:work')->everyThreeMinutes()->withoutOverlapping(60);
         $schedule->command('meters:switch-off-unpaid')->everyThreeMinutes()->withoutOverlapping();
-        $schedule->command('meters:switch-on-unpaid')->everyTwoMinutes()->withoutOverlapping();
+        $schedule->command('meters:switch-on-paid')->everyTwoMinutes()->withoutOverlapping();
         $schedule->command('meters:confirm-valve-status')->everyTenMinutes()->withoutOverlapping();
         $schedule->command('meters:check-faulty')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('meters:send-disconnection-remainder')->everyFiveMinutes();
