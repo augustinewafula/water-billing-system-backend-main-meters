@@ -18,6 +18,9 @@ trait TogglesValveStatus
     public function toggleValve($meter, $command): bool
     {
         $meter_type = MeterType::find($meter->type_id);
+        if (!$meter_type){
+            return false;
+        }
         if ($meter_type->name === 'Sh Nb-iot' || $meter_type->name === 'Sh Gprs') {
             return $this->toggleShMeter($meter->number, $command);
         }
