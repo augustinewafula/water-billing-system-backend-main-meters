@@ -19,7 +19,7 @@ trait TogglesValveStatus
     {
         $meter_type = MeterType::find($meter->type_id);
         if ($meter_type->name === 'Sh Nb-iot' || $meter_type->name === 'Sh Gprs') {
-            return $this->toggleShMeterMeter($meter->number, $command);
+            return $this->toggleShMeter($meter->number, $command);
         }
         if ($meter_type->name === 'Changsha Nb-iot') {
             return $this->toggleChangshaNbIotMeter($meter->number, $command);
@@ -29,7 +29,7 @@ trait TogglesValveStatus
 
     /**
      */
-    public function toggleShMeterMeter($meter_number, $command): bool
+    public function toggleShMeter($meter_number, $command): bool
     {
         $CommandParameter = 153;
         if ($command === ValveStatus::Open) {
@@ -40,11 +40,25 @@ trait TogglesValveStatus
             'CommandType' => 67,
             'CommandParameter' => $CommandParameter
         ]]);
-        $response = Http::retry(3, 300)
+        $status = $this->sendToggleShMeterRequest($collection, env('SH_METER_USERNAME'), env('SH_METER_PASSWORD'));
+        if (env('SH_METER_USERNAME_2') && env('SH_METER_PASSWORD_2')){
+            $next_status = $this->sendToggleShMeterRequest($collection, env('SH_METER_USERNAME_2'), env('SH_METER_PASSWORD_2'));
+            if (!$status){
+                $status = $next_status;
+            }
+        }
+        return $status;
+    }
+
+    /**
+     */
+    private function sendToggleShMeterRequest($collection, $username, $password): bool
+    {
+        $response = Http::retry(3, 3000)
             ->post('http://47.103.146.199:6071/WebHttpApi_EN/TYPostComm.ashx', [
                 'CommandList' => $collection,
-                'UserName' => env('SH_METER_USERNAME'),
-                'PassWord' => env('SH_METER_PASSWORD')
+                'UserName' => $username,
+                'PassWord' => $password
             ]);
         if ($response->successful()) {
             Log::info($response->body());
