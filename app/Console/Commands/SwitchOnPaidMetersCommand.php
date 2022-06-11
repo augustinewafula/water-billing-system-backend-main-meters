@@ -53,6 +53,9 @@ class SwitchOnPaidMetersCommand extends Command
             ->get();
 
         foreach ($paid_meters as  $paid_meter){
+            if (!$paid_meter->meter){
+                continue;
+            }
             SwitchOnPaidMeter::dispatch(Meter::find($paid_meter->meter->id));
             \Log::info('Auto switching on paid meter id: '. $paid_meter->meter->id);
         }
