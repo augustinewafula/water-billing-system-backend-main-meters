@@ -251,7 +251,6 @@ class MeterController extends Controller
         }
         if ($request->has('valveStatus')) {
             $decoded_status = json_decode($valveStatus, false, 512, JSON_THROW_ON_ERROR);
-            Log::info($decoded_status);
             if (!empty($decoded_status)){
                 $meters = $meters->whereIn('valve_status', $decoded_status);
             }
