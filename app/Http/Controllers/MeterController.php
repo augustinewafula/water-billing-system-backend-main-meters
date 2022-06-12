@@ -218,12 +218,16 @@ class MeterController extends Controller
         return response()->json('deleted');
     }
 
+    /**
+     * @throws JsonException
+     */
     private function filterQuery(Request $request, Builder $meters): Builder
     {
         $search = $request->query('search');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
+        $valveStatus = $request->query('valveStatus');
 
         if ($request->has('search') && Str::length($search) > 0) {
             $meters = $meters->where(function ($meters) use ($search) {
@@ -244,6 +248,14 @@ class MeterController extends Controller
         }
         if ($request->has('sortBy')) {
             $meters = $meters->orderBy($sortBy, $sortOrder);
+        }
+        if ($request->has('valveStatus')) {
+            $decoded_status = json_decode($valveStatus, false, 512, JSON_THROW_ON_ERROR);
+            Log::info($decoded_status);
+            if (!empty($decoded_status)){
+                $meters = $meters->whereIn('valve_status', $decoded_status);
+            }
+
         }
         return $meters;
     }
