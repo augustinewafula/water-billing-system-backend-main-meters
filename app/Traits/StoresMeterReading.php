@@ -62,9 +62,9 @@ trait StoresMeterReading
                 ->toDateTimeString();
         }
 
-        $bill_due_on = Carbon::parse($bill_due_on . 'th ' . $next_month)->startOfDay()->addHours(7)->toDateTimeString();
-        $tell_user_meter_disconnection_on = Carbon::parse($tell_user_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->addHours(7)->toDateTimeString();
-        $actual_meter_disconnection_on = Carbon::parse($actual_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->addHours(7)->toDateTimeString();
+        $bill_due_on = Carbon::parse($bill_due_on . 'th ' . $next_month)->startOfDay()->toDateTimeString();
+        $tell_user_meter_disconnection_on = Carbon::parse($tell_user_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->toDateTimeString();
+        $actual_meter_disconnection_on = Carbon::parse($actual_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->toDateTimeString();
 
         try {
             DB::beginTransaction();
