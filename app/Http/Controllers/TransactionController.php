@@ -32,6 +32,8 @@ class TransactionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
 
         $postpaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
             ->join('meter_billings', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
@@ -67,6 +69,10 @@ class TransactionController extends Controller
         $prepaid_transactions->union($unaccounted_debt_transactions);
         $prepaid_transactions->union($connection_fee_transactions);
         $sum = $prepaid_transactions->sum('amount');
+
+        if ($sortBy !== 'undefined') {
+            $prepaid_transactions->orderBy($sortBy, $sortOrder);
+        }
 
         return response()->json(['transactions' => $prepaid_transactions->paginate(10), 'sum' => $sum]);
 
@@ -127,8 +133,6 @@ class TransactionController extends Controller
     private function filterQuery(Builder $query, Request $request): Builder
     {
         $search = $request->query('search');
-        $sortBy = $request->query('sortBy');
-        $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
@@ -154,10 +158,6 @@ class TransactionController extends Controller
                 $query = $query->join('users', 'users.meter_id', 'meters.id');
             }
             $query = $query->where('users.id', $request->query('user_id'));
-        }
-
-        if ($request->has('sortBy')) {
-            $query = $query->orderBy($sortBy, $sortOrder);
         }
 
         return $query;
