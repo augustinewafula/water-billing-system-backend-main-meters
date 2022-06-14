@@ -73,8 +73,14 @@ class TransactionController extends Controller
         if ($sortBy !== 'undefined') {
             $prepaid_transactions->orderBy($sortBy, $sortOrder);
         }
+        if ($request->has('forExport')){
+            $prepaid_transactions = $prepaid_transactions->get()
+                ->makeHidden('id');
+        }else{
+            $prepaid_transactions = $prepaid_transactions->paginate(10);
+        }
 
-        return response()->json(['transactions' => $prepaid_transactions->paginate(10), 'sum' => $sum]);
+        return response()->json(['transactions' => $prepaid_transactions, 'sum' => $sum]);
 
     }
 
