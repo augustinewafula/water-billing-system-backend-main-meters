@@ -58,14 +58,14 @@ trait ProcessesPrepaidMeterTransaction
 
 
         if ($user_total_amount <= 0) {
-            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
+            $message = $this->constructNotEnoughAmountMessage($this->userTotalDebt($user), $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
             $this->notifyUser((object)['message' => $message, 'title' => 'Insufficient amount'], $user, 'general');
             return;
         }
         $units = $this->calculateUnits($user_total_amount, $user);
         Log::info("$units: $units");
         if ($units < 0) {
-            $message = $this->constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
+            $message = $this->constructNotEnoughAmountMessage($this->userTotalDebt($user), $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
             try {
                 DB::beginTransaction();
                 $user->update([
@@ -129,7 +129,7 @@ trait ProcessesPrepaidMeterTransaction
      * @param $unaccounted_debt_deducted
      * @return string
      */
-    private function constructNotEnoughAmountMessage($monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted): string
+    private function constructNotEnoughAmountMessage($totalDebt, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted): string
     {
         $message = 'The amount you paid is insufficient to acquire tokens, ';
         if ($unaccounted_debt_deducted > 0) {
@@ -144,7 +144,18 @@ trait ProcessesPrepaidMeterTransaction
         if ($connection_fee_deducted > 0) {
             $message .= "Ksh $connection_fee_deducted was deducted for connection fee balance.";
         }
+        $message .= "Your current pending debt is Ksh $totalDebt.";
         return $message;
+    }
+
+    public function userTotalDebt($user){
+        $debt = 0;
+        if ($user->account_balance < 0){
+            $debt += abs($user->account_balance);
+        }
+        $debt += $user->unaccounted_debt;
+
+        return $debt;
     }
 
 }
