@@ -144,6 +144,7 @@ class SmsController extends Controller
      * @param Request $request
      * @param $sms
      * @return mixed
+     * @throws JsonException
      */
     private function filterQuery(Request $request, $sms)
     {
@@ -170,7 +171,7 @@ class SmsController extends Controller
             $sms = $sms->whereBetween('sms.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
-        if ($request->has('status')) {
+        if ($status !== 'undefined') {
             $decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
             if (!empty($decoded_status)){
                 $sms = $sms->whereIn('status', $decoded_status);
