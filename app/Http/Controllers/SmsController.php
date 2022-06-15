@@ -72,7 +72,7 @@ class SmsController extends Controller
         foreach ($users as $user) {
             try {
                 $first_name = explode(' ', trim($user->name))[0];
-                $to_replace = [$first_name, $user->name, $user->account_number, $user->meter->number];
+                $to_replace = [$first_name, $user->name, $user->account_number, $user->meter->number, $user->unaccounted_debt];
                 $personalized_message = $this->personalizeMessage($to_replace, $request->message);
                 $this->initiateSendSms($user->phone, $personalized_message, $user->id);
             } catch (Throwable $th) {
@@ -136,7 +136,7 @@ class SmsController extends Controller
 
     private function personalizeMessage(array $replace_with, $message): string
     {
-        $search_words = ['{first-name}', '{full-name}', '{account-number}', '{meter-number}'];
+        $search_words = ['{first-name}', '{full-name}', '{account-number}', '{meter-number}', '{previous-balance}'];
         return str_replace($search_words, $replace_with, $message);
     }
 
