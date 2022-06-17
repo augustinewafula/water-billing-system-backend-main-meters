@@ -136,9 +136,10 @@ trait ProcessesMonthlyServiceChargeTransaction
             }
 
         }
+        $total_monthly_service_charge_paid_formatted = number_format($total_monthly_service_charge_paid);
 
         $organization_name = env('APP_NAME');
-        $message = "Your monthly service fee of Ksh $total_monthly_service_charge_paid has been received by $organization_name";
+        $message = "Your monthly service fee of Ksh $total_monthly_service_charge_paid_formatted has been received by $organization_name";
         SendSMS::dispatch($user->phone, $message, $user->id);
 
         return $total_monthly_service_charge_paid;

@@ -124,6 +124,7 @@ trait ProcessesPrepaidMeterTransaction
     }
 
     /**
+     * @param $totalDebt
      * @param $monthly_service_charge_deducted
      * @param $connection_fee_deducted
      * @param $unaccounted_debt_deducted
@@ -133,18 +134,22 @@ trait ProcessesPrepaidMeterTransaction
     {
         $message = 'The amount you paid is insufficient to acquire tokens, ';
         if ($unaccounted_debt_deducted > 0) {
-            $message .= "Ksh $unaccounted_debt_deducted was deducted for your previous debt. ";
+            $unaccounted_debt_deducted_formatted = number_format($unaccounted_debt_deducted);
+            $message .= "Ksh $unaccounted_debt_deducted_formatted was deducted for your previous debt. ";
         }
         if ($monthly_service_charge_deducted > 0) {
-            $message .= "Ksh $monthly_service_charge_deducted was deducted for monthly service fee balance. ";
+            $monthly_service_charge_deducted_formatted = number_format($monthly_service_charge_deducted);
+            $message .= "Ksh $monthly_service_charge_deducted_formatted was deducted for monthly service fee balance. ";
         }
         if ($monthly_service_charge_deducted > 0 && $connection_fee_deducted > 0) {
             $message .= 'And ';
         }
         if ($connection_fee_deducted > 0) {
-            $message .= "Ksh $connection_fee_deducted was deducted for connection fee balance.";
+            $connection_fee_deducted_formatted = number_format($connection_fee_deducted);
+            $message .= "Ksh $connection_fee_deducted_formatted was deducted for connection fee balance.";
         }
-        $message .= "Your current pending debt is Ksh $totalDebt.";
+        $total_debt_formatted = number_format($totalDebt);
+        $message .= "Your current pending debt is Ksh $total_debt_formatted.";
         return $message;
     }
 

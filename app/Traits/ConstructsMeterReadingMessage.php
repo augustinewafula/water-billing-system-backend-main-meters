@@ -39,15 +39,20 @@ trait ConstructsMeterReadingMessage
             $credit = $meter_billing->credit + $meter_reading->amount_paid;
         }
         $user_total_debt -= $carry_forward_balance;
+        $user_total_debt_formatted = number_format($user_total_debt);
         $carry_forward_balance += $user->unaccounted_debt;
+        $carry_forward_balance_formatted = number_format($carry_forward_balance);
+        $credit_formatted = number_format($credit);
 
         $paybill_number = $meter->station->paybill_number;
         $account_number = $meter->user->account_number;
         $service_fee = round($meter_reading->service_fee);
+        $service_fee_formatted = number_format($service_fee);
         $user_account_balance = max($user->account_balance, 0);
-        $user_account_balance_text = $user_account_balance > 0 ? "\nAccount balance: Ksh $user_account_balance" : '';
+        $user_account_balance_formatted = number_format($user_account_balance);
+        $user_account_balance_text = $user_account_balance > 0 ? "\nAccount balance: Ksh $user_account_balance_formatted" : '';
 
-        return "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance\nCredit applied: Ksh $credit\nStanding charge: Ksh $service_fee\nTotal outstanding: Ksh $user_total_debt $user_account_balance_text\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
+        return "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance_formatted\nCredit applied: Ksh $credit_formatted\nStanding charge: Ksh $service_fee_formatted\nTotal outstanding: Ksh $user_total_debt_formatted $user_account_balance_text\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
     }
 
 }
