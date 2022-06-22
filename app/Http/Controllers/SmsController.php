@@ -32,7 +32,7 @@ class SmsController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $sms = Sms::select('sms.*')->with('user:id,account_number');
+        $sms = Sms::select('sms.*')->with('user:id,name,account_number');
         $sms = $this->filterQuery($request, $sms);
 
         return response()->json($sms->paginate(10));
