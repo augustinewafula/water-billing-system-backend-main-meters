@@ -35,7 +35,7 @@ class TransactionController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
 
-        $postpaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
+        $postpaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.name', 'users.account_number')
             ->join('meter_billings', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
@@ -43,21 +43,21 @@ class TransactionController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $postpaid_transactions = $this->filterQuery($postpaid_transactions, $request);
 
-        $prepaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
+        $prepaid_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.name', 'users.account_number')
             ->join('meter_tokens', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('users', 'users.meter_id', 'meters.id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $prepaid_transactions = $this->filterQuery($prepaid_transactions, $request);
 
-        $unaccounted_debt_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
+        $unaccounted_debt_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.name', 'users.account_number')
             ->join('unaccounted_debts', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
             ->join('users', 'users.id', 'unaccounted_debts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $unaccounted_debt_transactions = $this->filterQuery($unaccounted_debt_transactions, $request);
 
-        $connection_fee_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.account_number')
+        $connection_fee_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.name', 'users.account_number')
             ->join('connection_fee_payments', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
             ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
             ->join('users', 'users.id', 'connection_fees.user_id')
