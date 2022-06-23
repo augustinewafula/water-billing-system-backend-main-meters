@@ -44,6 +44,7 @@ class MeterController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws JsonException
      */
     public function index(Request $request): JsonResponse
     {
@@ -105,6 +106,9 @@ class MeterController extends Controller
         return response()->json($response['message'], $response['status_code']);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function storeMainMeter(CreateMainMeterRequest $request): JsonResponse
     {
         $response = $this->save($request);
@@ -115,7 +119,7 @@ class MeterController extends Controller
     /**
      * @throws JsonException
      */
-    public function save($request)
+    public function save($request): array
     {
         if ((int)$request->mode === MeterMode::Automatic) {
             if (MeterType::find($request->type_id)->name === 'Prepaid') {
@@ -125,11 +129,16 @@ class MeterController extends Controller
             $meter = Meter::create($request->validated());
             return ['message' => $meter, 'status_code' => 201];
         }
+        $main_meter = $request->main_meter;
+        if (!$main_meter) {
+            $main_meter = false;
+        }
         $meter = Meter::create([
             'number' => $request->number,
             'station_id' => $request->station_id,
             'last_reading' => $request->last_reading,
-            'mode' => $request->mode
+            'mode' => $request->mode,
+            'main_meter' => $main_meter,
         ]);
         return ['message' => $meter, 'status_code' => 201];
 
