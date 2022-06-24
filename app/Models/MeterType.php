@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MeterType extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 

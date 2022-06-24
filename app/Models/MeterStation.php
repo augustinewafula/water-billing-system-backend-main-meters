@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MeterStation extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 

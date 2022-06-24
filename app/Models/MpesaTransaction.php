@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MpesaTransaction extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 
@@ -21,6 +21,10 @@ class MpesaTransaction extends Model
     protected $keyType = 'uuid';
 
     protected $fillable = ['FirstName', 'MiddleName', 'LastName', 'TransactionType', 'TransID', 'TransTime', 'BusinessShortCode', 'BillRefNumber', 'InvoiceNumber', 'ThirdPartyTransID', 'MSISDN', 'TransAmount', 'OrgAccountBalance', 'Consumed'];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
 
     /**
      * Get the prunable model query.

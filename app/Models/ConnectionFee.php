@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ConnectionFee extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 

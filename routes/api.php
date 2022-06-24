@@ -38,7 +38,7 @@ Route::prefix('v1')->group(function () {
             Route::post('password/reset', [ForgotPasswordController::class, 'submitResetPasswordForm']);
             Route::group(['middleware' => ['role:super-admin|admin|supervisor', 'auth:api']], function () {
                 Route::get('profile', [AuthController::class, 'user']);
-                Route::put('profile/{user}', [AuthController::class, 'update'])->middleware('cacheResponse:User');
+                Route::put('profile/{user}', [AuthController::class, 'update']);
                 Route::get('logout', [AuthController::class, 'logout']);
             });
         });
@@ -48,7 +48,7 @@ Route::prefix('v1')->group(function () {
             Route::post('password/email', [ForgotPasswordController::class, 'getResetToken']);
             Route::group(['middleware' => 'role:user'], function () {
                 Route::group(['middleware' => 'auth:api'], function () {
-                    Route::get('profile', [AuthController::class, 'user'])->middleware('cacheResponse:User');
+                    Route::get('profile', [AuthController::class, 'user']);
                     Route::get('logout', [AuthController::class, 'logout']);
                 });
             });
@@ -69,32 +69,30 @@ Route::prefix('v1')->group(function () {
         ]);
         Route::apiResource('transactions', TransactionController::class)->only([
             'index', 'show'
-        ])->middleware('doNotCacheResponse');
+        ]);
         Route::apiResource('meter-tokens', MeterTokenController::class)->except([
             'update', 'destroy'
         ]);
-        Route::get('settings', [SettingController::class, 'index'])->middleware('doNotCacheResponse:User');
+        Route::get('settings', [SettingController::class, 'index']);
         Route::post('settings', [SettingController::class, 'update']);
         Route::get('permission-models', [RoleController::class, 'permissionModelsIndex']);
-        Route::get('system-users', [UserController::class, 'systemUsersIndex'])->middleware('cacheResponse:User');
+        Route::get('system-users', [UserController::class, 'systemUsersIndex']);
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
-        Route::group(['middleware' => ['doNotCacheResponse']], static function () {
-            Route::get('statistics', [StatisticsController::class, 'index']);
-            Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
-            Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
-            Route::get('statistics/main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
-            Route::get('statistics/per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
-            Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
-            Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
-            Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
-            Route::get('download-users', [UserController::class, 'download']);
-        });
-        Route::get('available-meters', [MeterController::class, 'availableIndex'])->middleware('cacheResponse:Meter');
-        Route::get('meter-types', [MeterController::class, 'typeIndex'])->middleware('cacheResponse:MeterType');
-        Route::get('meter-types/{name}', [MeterController::class, 'showMeterTypeByNameIndex'])->middleware('cacheResponse:MeterType');
-        Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index'])->middleware('doNotCacheResponse');
-        Route::get('sms', [SmsController::class, 'index'])->middleware('cacheResponse:Sms');
-        Route::get('sms-credit-balance', [SmsController::class, 'getCreditBalance'])->middleware('cacheResponse:Sms');
+        Route::get('statistics', [StatisticsController::class, 'index']);
+        Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
+        Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
+        Route::get('statistics/main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
+        Route::get('statistics/per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
+        Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
+        Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
+        Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
+        Route::get('download-users', [UserController::class, 'download']);
+        Route::get('available-meters', [MeterController::class, 'availableIndex']);
+        Route::get('meter-types', [MeterController::class, 'typeIndex']);
+        Route::get('meter-types/{name}', [MeterController::class, 'showMeterTypeByNameIndex']);
+        Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index']);
+        Route::get('sms', [SmsController::class, 'index']);
+        Route::get('sms-credit-balance', [SmsController::class, 'getCreditBalance']);
         Route::get('meter-readings-preview-message/{meter_reading}', [MeterReadingController::class, 'previewMeterReadingMessage']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
@@ -107,6 +105,7 @@ Route::prefix('v1')->group(function () {
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
+    Route::post('pull-transactions', [MeterBillingController::class, 'mpesaPullTransactions']);
     Route::get('mspace-transaction-confirmation', [MeterBillingController::class, 'mspaceMpesaConfirmation']);
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
     Route::fallback(static function () {

@@ -17,7 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class MeterReading extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable, LogsActivity;
+    use HasFactory, HasUuid, SoftDeletes, MassPrunable, LogsActivity;
 
     public $incrementing = false;
 

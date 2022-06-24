@@ -14,7 +14,7 @@ use Laravel\Scout\Searchable;
 
 class UnaccountedDebt extends Model
 {
-    use HasFactory, HasUuid, Searchable, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, Searchable, SoftDeletes, MassPrunable;
 
     public $incrementing = false;
 

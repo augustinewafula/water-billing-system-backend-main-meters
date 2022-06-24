@@ -19,7 +19,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, ClearsResponseCache, SoftDeletes, MassPrunable, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, SoftDeletes, MassPrunable, LogsActivity;
 
     public $incrementing = false;
 

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Setting extends Model
 {
-    use HasFactory, ClearsResponseCache, SoftDeletes, MassPrunable;
+    use HasFactory, SoftDeletes, MassPrunable;
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 

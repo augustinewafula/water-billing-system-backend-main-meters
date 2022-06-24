@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Meter extends Model
 {
-    use HasFactory, HasUuid, ClearsResponseCache, SoftDeletes, MassPrunable, LogsActivity;
+    use HasFactory, HasUuid, SoftDeletes, MassPrunable, LogsActivity;
 
     public $incrementing = false;
 
