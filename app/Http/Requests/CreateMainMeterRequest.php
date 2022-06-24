@@ -25,7 +25,7 @@ class CreateMainMeterRequest extends FormRequest
             'valve_status' => ['required_if:mode,1', 'nullable', new EnumValue(ValveStatus::class, false)],
             'sim_card_number' => ['nullable', 'numeric'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
-            'main_meter' => ['nullable', 'boolean']
+            'main_meter' => ['required', 'boolean']
         ];
     }
 
