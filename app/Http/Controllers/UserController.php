@@ -56,7 +56,14 @@ class UserController extends Controller
         $users->with('meter');
         $users = $this->filterQuery($request, $users);
         $users = $users->role('user');
-        return response()->json($users->paginate(10));
+
+        if ($request->has('forExport')){
+            $users = $users->get()
+                ->makeHidden('id');
+        }else{
+            $users = $users->paginate(10);
+        }
+        return response()->json($users);
     }
 
     public function systemUsersIndex(Request $request): JsonResponse
