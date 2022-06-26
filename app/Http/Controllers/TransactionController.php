@@ -74,13 +74,14 @@ class TransactionController extends Controller
             $prepaid_transactions->orderBy($sortBy, $sortOrder);
         }
         if ($request->has('forExport')){
-            $prepaid_transactions = $prepaid_transactions->get()
+            $data = $prepaid_transactions->get()
                 ->makeHidden('id');
         }else{
             $prepaid_transactions = $prepaid_transactions->paginate(10);
+            $data = ['transactions' => $prepaid_transactions, 'sum' => $sum];
         }
 
-        return response()->json(['transactions' => $prepaid_transactions, 'sum' => $sum]);
+        return response()->json($data);
 
     }
 
