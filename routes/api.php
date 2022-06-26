@@ -102,6 +102,7 @@ Route::prefix('v1')->group(function () {
         Route::post('meter-tokens-clear', [MeterTokenController::class, 'clear']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
         Route::post('roles-update/{role}', [RoleController::class, 'update']);
+        Route::delete('unresolved-transactions/{unresolvedMpesaTransaction}', [UnresolvedTransactionController::class, 'destroy']);
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);

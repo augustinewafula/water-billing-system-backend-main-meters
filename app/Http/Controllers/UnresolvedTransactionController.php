@@ -54,4 +54,11 @@ class UnresolvedTransactionController extends Controller
         return response()->json('success');
 
     }
+
+
+    public function destroy(UnresolvedMpesaTransaction $unresolvedMpesaTransaction): JsonResponse
+    {
+        $unresolvedMpesaTransaction->delete();
+        return response()->json(['message' => 'Transaction deleted']);
+    }
 }
