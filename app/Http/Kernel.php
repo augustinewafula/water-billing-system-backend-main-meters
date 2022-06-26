@@ -90,7 +90,5 @@ class Kernel extends HttpKernel
         'permission' => PermissionMiddleware::class,
         'role' => RoleMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
-        'doNotCacheResponse' => DoNotCacheResponse::class,
-        'cacheResponse' => CacheResponse::class,
     ];
 }
