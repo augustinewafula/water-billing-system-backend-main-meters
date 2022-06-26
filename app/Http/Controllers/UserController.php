@@ -49,6 +49,7 @@ class UserController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws JsonException
      */
     public function index(Request $request): JsonResponse
     {
@@ -58,8 +59,28 @@ class UserController extends Controller
         $users = $users->role('user');
 
         if ($request->has('forExport')){
-            $users = $users->get()
-                ->makeHidden('id');
+            $users = $users->get();
+            $users = $users->map(static function ($user)
+            {
+                $debt = $user->unaccounted_debt;
+                $credit = 0;
+                if ($user->account_balance < 0){
+                    $debt += abs($user->account_balance);
+                }
+                if ($user->account_balance > 0){
+                    $credit += $user->account_balance;
+                }
+                return [
+                    'account_number' => $user->account_number,
+                    'name' => $user->name,
+                    'phone' => $user->phone,
+                    'email' => $user->email,
+                    'meter_number' => $user->meter->number,
+                    'debt' => $debt,
+                    'credit' => $credit,
+                ];
+
+            });
         }else{
             $users = $users->paginate(10);
         }
