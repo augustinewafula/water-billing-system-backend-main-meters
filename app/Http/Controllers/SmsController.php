@@ -189,6 +189,12 @@ class SmsController extends Controller
                 ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
                 ->where('meter_stations.id', $stationId);
         }
+
+        if ($request->has('user_id')) {
+            $sms = $sms->whereHas('user', function ($query) use ($request) {
+                $query->where('id', $request->query('user_id'));
+            });
+        }
         return $sms;
     }
 }
