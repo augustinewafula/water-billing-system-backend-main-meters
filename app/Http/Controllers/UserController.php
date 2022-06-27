@@ -316,24 +316,35 @@ class UserController extends Controller
             (int)$decoded_status = json_decode($status, false, 512, JSON_THROW_ON_ERROR);
             if (!empty($decoded_status)){
                 $OPERATORS = [];
+                $with_debt_check = false;
+                $without_debt_check = false;
 
                 if(in_array(1, $decoded_status, false)){
                     $OPERATORS[] = '=';
+                    $without_debt_check = true;
                 }
                 if(in_array(2, $decoded_status, false)){
                     $OPERATORS[] = '<';
+                    $with_debt_check = true;
                 }
                 if(in_array(3, $decoded_status, false)){
                     $OPERATORS[] = '>';
                 }
 
-                $users = $users->where(function ($users) use ($OPERATORS) {
+                $users = $users->where(function ($users) use ($OPERATORS, $with_debt_check, $without_debt_check) {
                     $users->where('account_balance', $OPERATORS[0], 0.00);
                     if (array_key_exists(1, $OPERATORS)){
                         $users->orWhere('account_balance', $OPERATORS[1], 0.00);
                     }
                     if (array_key_exists(2, $OPERATORS)){
                         $users->orWhere('account_balance', $OPERATORS[2], 0.00);
+                    }
+                    if ($with_debt_check){
+                        $users->orWhere('unaccounted_debt', '>', 0.00);
+                    }
+                    if ($without_debt_check){
+                        $users->where('unaccounted_debt', '=', 0.00);
+                        $users->orWhere('account_balance', '>', 0.00);
                     }
                 });
             }
