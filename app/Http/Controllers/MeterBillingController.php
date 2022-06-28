@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\MpesaTransactionRequest;
 use App\Jobs\ProcessTransaction;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
 use App\Models\User;
-use App\Traits\ProcessesMpesaTransaction;
+use App\Traits\StoresMpesaTransaction;
 use Http;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
+    use StoresMpesaTransaction;
 
     public function __construct()
     {
@@ -68,7 +70,7 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException|Throwable
      */
-    public function mpesaConfirmation(Request $request): Response
+    public function mpesaConfirmation(MpesaTransactionRequest $request): Response
     {
         $client_ip = $request->ip();
 //        if (!$this->isValidSafaricomIpAddress($client_ip)) {
@@ -81,9 +83,7 @@ class MeterBillingController extends Controller
 //            $this->queryMpesaTransactionStatus($request);
 //        }
 
-        $request->validate([
-            'TransID' => 'unique:mpesa_transactions'
-        ]);
+
         $mpesa_transaction = $this->storeMpesaTransaction($request);
         ProcessTransaction::dispatch($mpesa_transaction);
 //        $this->queryMpesaTransactionStatus($request);
@@ -119,30 +119,6 @@ class MeterBillingController extends Controller
             'OrgAccountBalance' => $mpesa_transaction->accBal,
             'MSISDN' => $mpesa_transaction->mobile,
             'FirstName' => $mpesa_transaction->name,
-        ]);
-    }
-
-
-    /**
-     * @param Request $mpesa_transaction
-     * @return mixed
-     */
-    public function storeMpesaTransaction(Request $mpesa_transaction): MpesaTransaction
-    {
-        return MpesaTransaction::create([
-            'TransactionType' => $mpesa_transaction->TransactionType,
-            'TransID' => $mpesa_transaction->TransID,
-            'TransTime' => $mpesa_transaction->TransTime,
-            'TransAmount' => $mpesa_transaction->TransAmount,
-            'BusinessShortCode' => $mpesa_transaction->BusinessShortCode,
-            'BillRefNumber' => $mpesa_transaction->BillRefNumber,
-            'InvoiceNumber' => $mpesa_transaction->InvoiceNumber,
-            'OrgAccountBalance' => $mpesa_transaction->OrgAccountBalance,
-            'ThirdPartyTransID' => $mpesa_transaction->ThirdPartyTransID,
-            'MSISDN' => $mpesa_transaction->MSISDN,
-            'FirstName' => $mpesa_transaction->FirstName,
-            'MiddleName' => $mpesa_transaction->MiddleName,
-            'LastName' => $mpesa_transaction->LastName,
         ]);
     }
 
