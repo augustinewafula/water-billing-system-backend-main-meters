@@ -1,13 +1,5 @@
 <?php
 
-use Spatie\Backup\Notifications\Notifiable;
-use Spatie\Backup\Notifications\Notifications\BackupHasFailed;
-use Spatie\Backup\Notifications\Notifications\BackupWasSuccessful;
-use Spatie\Backup\Notifications\Notifications\CleanupHasFailed;
-use Spatie\Backup\Notifications\Notifications\CleanupWasSuccessful;
-use Spatie\Backup\Notifications\Notifications\HealthyBackupWasFound;
-use Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFound;
-use Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
@@ -128,7 +120,7 @@ return [
              */
             'disks' => [
                 'local',
-                'dropbox',
+                'dropbox'
             ],
         ],
 
@@ -158,23 +150,24 @@ return [
      * For Slack you need to install laravel/slack-notification-channel.
      *
      * You can also use your own notification classes, just make sure the class is named after one of
-     * the `Spatie\Backup\Events` classes.
+     * the `Spatie\Backup\Notifications\Notifications` classes.
      */
     'notifications' => [
 
         'notifications' => [
-            BackupWasSuccessful::class => [],
-            BackupHasFailed::class => ['mail'],
-            UnhealthyBackupWasFound::class => ['mail'],
-            CleanupHasFailed::class => ['mail'],
-            CleanupWasSuccessful::class => [],
+            \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => ['mail'],
         ],
 
         /*
          * Here you can specify the notifiable to which the notifications should be sent. The default
          * notifiable will use the variables specified in this config file.
          */
-        'notifiable' => Notifiable::class,
+        'notifiable' => \Spatie\Backup\Notifications\Notifiable::class,
 
         'mail' => [
             'to' => 'augustinetreezy@gmail.com',
@@ -198,6 +191,14 @@ return [
             'icon' => null,
 
         ],
+
+        'discord' => [
+            'webhook_url' => '',
+
+            'username' => null,
+
+            'avatar_url' => null,
+        ],
     ],
 
     /*
@@ -211,7 +212,7 @@ return [
             'disks' => ['local'],
             'health_checks' => [
                 MaximumAgeInDays::class => 1,
-                MaximumStorageInMegabytes::class => 5000,
+                MaximumStorageInMegabytes::class => 2000,
             ],
         ],
 
@@ -237,34 +238,34 @@ return [
          * No matter how you configure it the default strategy will never
          * delete the newest backup.
          */
-        'strategy' => DefaultStrategy::class,
+        'strategy' => \Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy::class,
 
         'default_strategy' => [
 
             /*
              * The number of days for which backups must be kept.
              */
-            'keep_all_backups_for_days' => 3,
+            'keep_all_backups_for_days' => 7,
 
             /*
              * The number of days for which daily backups must be kept.
              */
-            'keep_daily_backups_for_days' => 4,
+            'keep_daily_backups_for_days' => 16,
 
             /*
              * The number of weeks for which one weekly backup must be kept.
              */
-            'keep_weekly_backups_for_weeks' => 5,
+            'keep_weekly_backups_for_weeks' => 8,
 
             /*
              * The number of months for which one monthly backup must be kept.
              */
-            'keep_monthly_backups_for_months' => 2,
+            'keep_monthly_backups_for_months' => 4,
 
             /*
              * The number of years for which one yearly backup must be kept.
              */
-            'keep_yearly_backups_for_years' => 1,
+            'keep_yearly_backups_for_years' => 2,
 
             /*
              * After cleaning up the backups remove the oldest backup until

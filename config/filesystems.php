@@ -37,21 +37,9 @@ return [
 
         'dropbox' => [
             'driver' => 'dropbox',
-            'token' => env('DROPBOX_TOKEN'),
-        ],
-
-        'dropbox_2' => [
-            'driver' => 'dropbox',
-            'token' => env('DROPBOX_2_TOKEN'),
-        ],
-
-        'google' => [
-            'driver' => 'google',
-            'clientId' => env('GOOGLE_DRIVE_CLIENT_ID'),
-            'clientSecret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
-            'refreshToken' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
-            'folderId' => env('GOOGLE_DRIVE_FOLDER_ID'),
-            // 'teamDriveId' => env('GOOGLE_DRIVE_TEAM_DRIVE_ID'),
+            'key' => env('DROPBOX_APP_KEY'),
+            'secret' => env('DROPBOX_APP_SECRET'),
+            'authorization_token' => env('DROPBOX_ACCESS_TOKEN'),
         ],
 
         'public' => [
