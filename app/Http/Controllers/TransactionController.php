@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreditAccountRequest;
+use App\Http\Requests\MpesaTransactionRequest;
+use App\Jobs\ProcessTransaction;
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
 use App\Models\MonthlyServiceCharge;
@@ -10,6 +13,7 @@ use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
+use App\Traits\StoresMpesaTransaction;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +23,8 @@ use Throwable;
 
 class TransactionController extends Controller
 {
+    use StoresMpesaTransaction;
+
     public function __construct()
     {
         $this->middleware('permission:mpesa-transaction-list|unresolved-mpesa-transaction-list', ['only' => ['index', 'unresolvedTransactionIndex', 'show']]);
@@ -83,6 +89,30 @@ class TransactionController extends Controller
 
         return response()->json($data);
 
+    }
+
+    public function creditAccount(CreditAccountRequest $request){
+        $user = User::findOrFail($request->user_id);
+
+        $mpesa_request = new MpesaTransactionRequest();
+        $mpesa_request->setMethod('POST');
+        $mpesa_request->request->add([
+            'TransID' => 'SimulatedTransaction_'.now()->timestamp,
+            'TransTime' => now()->timestamp,
+            'TransAmount' => $request->amount,
+            'FirstName' => $user->name,
+            'BillRefNumber' => $user->account_number,
+        ]);
+        try {
+            $mpesa_request->validate((new MpesaTransactionRequest)->rules());
+            $mpesa_transaction = $this->storeMpesaTransaction($mpesa_request);
+            ProcessTransaction::dispatch($mpesa_transaction);
+        }catch (Throwable $throwable){
+            \Log::error($throwable->getMessage());
+            $response = ['message' => 'Failed to credit account'];
+            return response($response, 422);
+        }
+        return response()->json('success', 201);
     }
 
     /**
