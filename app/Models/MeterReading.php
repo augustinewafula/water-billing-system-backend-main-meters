@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class MeterReading extends Model
@@ -39,8 +39,12 @@ class MeterReading extends Model
         'actual_meter_disconnection_on' => 'datetime:Y-m-d',
     ];
 
-    protected static $submitEmptyLogs = false;
-    protected static $logFillable = true;
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable);
+        // Chain fluent methods for configuration options
+    }
 
     public function setMonthAttribute(string $value): void
     {

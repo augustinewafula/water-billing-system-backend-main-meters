@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +15,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
@@ -29,9 +29,12 @@ class User extends Authenticatable
 
     protected $guard_name = 'api';
 
-    protected static $submitEmptyLogs = false;
-
-    protected static $logFillable = true;
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable);
+        // Chain fluent methods for configuration options
+    }
 
     /**
      * Set the user's name.
