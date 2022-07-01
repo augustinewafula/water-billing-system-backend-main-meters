@@ -244,7 +244,8 @@ class MeterController extends Controller
                     $query->where('name', 'like', '%' . $search . '%');
                 })->orWhere('number', 'like', '%' . $search . '%')
                     ->orWhereHas('user', function ($query) use ($search) {
-                        $query->where('name', 'like', '%' . $search . '%');
+                        $query->where('account_number', 'like', '%' . $search . '%')
+                            ->orWhere('name', 'like', '%' . $search . '%');
                     });
             });
         }
