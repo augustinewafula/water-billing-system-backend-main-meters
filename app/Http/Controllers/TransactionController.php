@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreditAccountRequest;
 use App\Http\Requests\MpesaTransactionRequest;
 use App\Jobs\ProcessTransaction;
+use App\Models\CreditAccount;
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
 use App\Models\MonthlyServiceCharge;
@@ -71,9 +72,17 @@ class TransactionController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $connection_fee_transactions = $this->filterQuery($connection_fee_transactions, $request);
 
+        $credit_account_transactions = MpesaTransaction::select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'users.name', 'users.account_number')
+            ->join('credit_accounts', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
+            ->join('users', 'users.id', 'credit_accounts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+        $credit_account_transactions = $this->filterQuery($credit_account_transactions, $request);
+
         $prepaid_transactions->union($postpaid_transactions);
         $prepaid_transactions->union($unaccounted_debt_transactions);
         $prepaid_transactions->union($connection_fee_transactions);
+        $prepaid_transactions->union($credit_account_transactions);
         $sum = $prepaid_transactions->sum('amount');
 
         if ($sortBy !== 'undefined') {
@@ -141,26 +150,34 @@ class TransactionController extends Controller
                 ->where('mpesa_transaction_id', $transaction_id)
                 ->first();
             throw_if($user === null);
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
             try {
                 $user = MeterToken::select('users.*')
                     ->join('users', 'meter_tokens.meter_id', 'users.meter_id')
                     ->where('mpesa_transaction_id', $transaction_id)
                     ->first();
                 throw_if($user === null);
-            } catch (Throwable $throwable){
+            } catch (Throwable){
                 try {
                     $user = UnaccountedDebt::select('users.*')
                         ->join('users', 'unaccounted_debts.user_id', 'users.id')
                         ->where('mpesa_transaction_id', $transaction_id)
                         ->first();
                     throw_if($user === null);
-                } catch (Throwable $throwable){
-                    $user = MonthlyServiceChargePayment::select('users.*')
-                        ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
-                        ->join('users', 'monthly_service_charges.user_id', 'users.id')
-                        ->where('mpesa_transaction_id', $transaction_id)
-                        ->first();
+                } catch (Throwable){
+                    try {
+                        $user = MonthlyServiceChargePayment::select('users.*')
+                            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+                            ->join('users', 'monthly_service_charges.user_id', 'users.id')
+                            ->where('mpesa_transaction_id', $transaction_id)
+                            ->first();
+                        throw_if($user === null);
+                    } catch (Throwable){
+                        $user = CreditAccount::select('users.*')
+                            ->join('users', 'credit_accounts.user_id', 'users.id')
+                            ->where('mpesa_transaction_id', $transaction_id)
+                            ->first();
+                    }
                 }
             }
         }

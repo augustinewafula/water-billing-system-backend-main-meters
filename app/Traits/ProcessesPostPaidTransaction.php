@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Jobs\SendSMS;
 use App\Jobs\SwitchOnPaidMeter;
+use App\Models\CreditAccount;
 use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
@@ -71,6 +72,13 @@ trait ProcessesPostPaidTransaction
             $user->update([
                 'account_balance' => $user_total_amount
             ]);
+            if ($request->monthly_service_charge_deducted === 0 && $request->connection_fee_deducted === 0 && $request->unaccounted_debt_deducted === 0) {
+                CreditAccount::create([
+                    'user_id' => $user->id,
+                    'amount' => $request->amount_paid,
+                    'mpesa_transaction_id' => $mpesa_transaction_id,
+                ]);
+            }
             return response()->json('Meter reading not found', 422);
         }
 
