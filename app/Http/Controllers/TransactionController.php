@@ -192,8 +192,10 @@ class TransactionController extends Controller
         $toDate = $request->query('toDate');
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $query = $query->where(function ($query) use ($search) {
-                $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%');
-                $query->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%');
+                $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%')
+                ->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%')
+                ->orWhere('users.account_number', 'like', '%' . $search . '%')
+                ->orWhere('users.name', 'like', '%' . $search . '%');
             });
         }
 

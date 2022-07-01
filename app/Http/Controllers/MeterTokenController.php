@@ -104,6 +104,7 @@ class MeterTokenController extends Controller
                 })->orWhere('meter_tokens.token', 'like', '%' . $search . '%')
                     ->orWhere('meters.number', 'like', '%' . $search . '%')
                     ->orWhere('users.name', 'like', '%' . $search . '%')
+                    ->orWhere('users.account_number', 'like', '%' . $search . '%')
                     ->orWhere('meter_tokens.units', 'like', '%' . $search . '%');
             });
         }

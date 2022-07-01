@@ -161,7 +161,9 @@ class SmsController extends Controller
                 $sms->where('sms.phone', 'like', '%' . $search . '%')
                     ->orWhere('sms.status', 'like', '%' . $search . '%')
                     ->orWhere('sms.cost', 'like', '%' . $search . '%')
-                    ->orWhere('sms.message', 'like', '%' . $search . '%');
+                    ->orWhere('sms.message', 'like', '%' . $search . '%')
+                    ->orWhere('users.account_number', 'like', '%' . $search . '%')
+                    ->orWhere('users.name', 'like', '%' . $search . '%');
             });
         }
 
