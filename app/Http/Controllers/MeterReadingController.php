@@ -229,6 +229,7 @@ class MeterReadingController extends Controller
                 $meter_readings->where('meter_readings.current_reading', 'like', '%' . $search . '%')
                     ->orWhere('meters.number', 'like', '%' . $search . '%')
                     ->orWhere('users.name', 'like', '%' . $search . '%')
+                    ->orWhere('users.account_number', 'like', '%' . $search . '%')
                     ->orWhere('meter_readings.bill', 'like', '%' . $search . '%')
                     ->orWhere('meter_readings.previous_reading', 'like', '%' . $search . '%');
             });
