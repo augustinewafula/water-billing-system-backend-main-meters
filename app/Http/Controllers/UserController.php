@@ -14,6 +14,7 @@ use App\Traits\GeneratesMonthlyConnectionFee;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use App\Traits\GetsUserConnectionFeeBalance;
+use App\Traits\SendsSetPasswordEmail;
 use Carbon\Carbon;
 use DB;
 use Exception;
@@ -33,7 +34,7 @@ use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee, GetsUserConnectionFeeBalance;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee, GetsUserConnectionFeeBalance, SendsSetPasswordEmail;
 
     public function __construct()
     {
@@ -354,23 +355,6 @@ class UserController extends Controller
             $users = $users->orderBy($sortBy, $sortOrder);
         }
         return $users;
-    }
-
-    /**
-     * @param $email
-     * @return void
-     */
-    public function sendSetPasswordEmail($email): void
-    {
-        $token = Str::random(64);
-        DB::table('password_resets')->insert([
-            'email' => $email,
-            'token' => $token,
-            'created_at' => Carbon::now()
-        ]);
-
-        $url = env('APP_FRONTEND_URL') . "reset-password/$token?email=$email&action=set";
-        SendSetPasswordEmail::dispatch($email, $url);
     }
 
     /**
