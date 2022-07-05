@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Traits\setsModelPermissions;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
+    use setsModelPermissions;
     /**
      * Run the database seeds.
      *
@@ -18,17 +20,8 @@ class RoleSeeder extends Seeder
         $permissions = Permission::pluck('name')
             ->all();
 
-        $admin_permissions = $this->except($permissions, [
-            'service-charge-list',
-            'service-charge-create',
-            'service-charge-edit',
-            'service-charge-delete',
-        ]);
-        $supervisor_permissions = $this->except($admin_permissions, [
-            'admin-list',
-            'admin-create',
-            'admin-edit',
-            'admin-delete',
+        $admin_blacklist_permissions = array_merge($this->constructModelPermission(['service-charge', 'role']));
+        $supervisor_blacklist_permissions = array_merge($this->constructModelPermission(['admin']), [
             'meter-edit',
             'meter-delete',
             'meter-station-edit',
@@ -42,8 +35,10 @@ class RoleSeeder extends Seeder
             'meter-token-edit',
             'monthly-service-charge-create',
             'monthly-service-charge-edit',
-            'monthly-service-charge-delete',
-        ]);
+            'monthly-service-charge-delete']);
+
+        $admin_permissions = $this->except($permissions, $admin_blacklist_permissions);
+        $supervisor_permissions = $this->except($admin_permissions, $supervisor_blacklist_permissions);
         $user_permissions = [
             'meter-list',
             'user-list',
@@ -75,6 +70,16 @@ class RoleSeeder extends Seeder
             'guard_name' => 'api',
         ]);
         // gets all permissions via Gate::before rule; see AuthServiceProvider
+    }
+
+    public function constructModelPermission($models): array
+    {
+        $model_permissions = [];
+        foreach ($models as $model){
+            $model_permission = $this->setModelPermissions($model);
+            $model_permissions[] = $model_permission;
+        }
+        return array_merge(...$model_permissions);
     }
 
     public function except($array, $filter): array
