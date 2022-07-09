@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use JsonException;
+use Spatie\WebhookServer\WebhookCall;
 use Throwable;
 
 class MeterBillingController extends Controller
@@ -87,6 +88,14 @@ class MeterBillingController extends Controller
         $mpesa_transaction = $this->storeMpesaTransaction($request);
         ProcessTransaction::dispatch($mpesa_transaction);
 //        $this->queryMpesaTransactionStatus($request);
+        $mpesa_transaction_callback_url = env('TRANSACTION_CALLBACK_URL');
+        if ($mpesa_transaction_callback_url){
+            WebhookCall::create()
+                ->url($mpesa_transaction_callback_url)
+                ->payload($request->all())
+                ->useSecret('sign-using-this-secret')
+                ->dispatch();
+        }
 
 
         $response = new Response();
