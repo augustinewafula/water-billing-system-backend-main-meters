@@ -7,8 +7,11 @@ use App\Jobs\ProcessTransaction;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
 use App\Models\User;
+use App\Traits\NotifiesUser;
 use App\Traits\StoresMpesaTransaction;
 use Http;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,7 +21,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use StoresMpesaTransaction;
+    use StoresMpesaTransaction, NotifiesUser;
 
     public function __construct()
     {
@@ -45,7 +48,7 @@ class MeterBillingController extends Controller
      */
     public function mpesaValidation(Request $mpesa_transaction): Response
     {
-        if ($this->accountNumberExists($mpesa_transaction->BillRefNumber)){
+        if ($this->shouldAcceptTransaction($mpesa_transaction->BillRefNumber)){
             $result_code = '0';
             $result_description = 'Accepted validation request.';
         }else{
@@ -55,15 +58,24 @@ class MeterBillingController extends Controller
         return $this->createValidationResponse($result_code, $result_description);
     }
 
-    public function accountNumberExists($bill_reference_number): bool
+    public function shouldAcceptTransaction($bill_reference_number): bool
     {
-        $user = User::select('account_number')
+        if ($user = $this->accountNumberExists($bill_reference_number)){
+            if (!$user->can_generate_token){
+                $message = 'Your account is not allowed to generate tokens. Please contact the administrator for more details.';
+                $this->notifyUser((object)['message' => $message, 'title' => 'Payment rejected'], $user, 'general');
+            }
+            return $user->can_generate_token;
+        }
+        return true;
+    }
+
+    public function accountNumberExists($bill_reference_number): Model|Builder|null
+    {
+        return User::select('users.id', 'users.account_number', 'users.communication_channels', 'users.email', 'users.phone', 'meters.can_generate_token')
+            ->join('meters', 'meters.id', 'users.meter_id')
             ->where('account_number', $bill_reference_number)
             ->first();
-        if ($user){
-            return true;
-        }
-        return false;
 
     }
 
