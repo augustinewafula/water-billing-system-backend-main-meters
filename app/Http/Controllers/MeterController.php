@@ -155,7 +155,7 @@ class MeterController extends Controller
         $meter = Meter::with('user', 'station', 'type')
             ->where('id', $id)
             ->firstOrFail();
-        if ($meter->user->should_pay_connection_fee){
+        if ($meter->user && $meter->user->should_pay_connection_fee){
             $meter->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter->station_id, $meter->user->total_connection_fee_paid);
         }
         return response()->json($meter);
