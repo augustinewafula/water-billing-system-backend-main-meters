@@ -20,21 +20,21 @@ trait NotifiesUser
         if (($message_type === 'meter readings') && $this->shouldNotifyViaEmail($user->communication_channels)) {
             $message = $this->formatMessageForEmail($info);
             Mail::to($user->email)
-                ->send(new MeterReadings($info->bill_month, $message));
+                ->queue(new MeterReadings($info->bill_month, $message));
             return;
         }
 
         if (($message_type === 'meter tokens') && $this->shouldNotifyViaEmail($user->communication_channels)) {
             $message = $this->formatMessageForEmail($info);
             Mail::to($user->email)
-                ->send(new MeterTokens($message));
+                ->queue(new MeterTokens($message));
             return;
         }
 
         if (($message_type === 'general') && $this->shouldNotifyViaEmail($user->communication_channels)) {
             $message = $this->formatMessageForEmail($info);
             Mail::to($user->email)
-                ->send(new GeneralMessage($info->title, $message));
+                ->queue(new GeneralMessage($info->title, $message));
         }
 
     }
