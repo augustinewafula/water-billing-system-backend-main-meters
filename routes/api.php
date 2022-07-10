@@ -95,6 +95,7 @@ Route::prefix('v1')->group(function () {
         Route::get('sms-credit-balance', [SmsController::class, 'getCreditBalance']);
         Route::get('meter-readings-preview-message/{meter_reading}', [MeterReadingController::class, 'previewMeterReadingMessage']);
         Route::put('valve-status/{meter}', [MeterController::class, 'updateValveStatus']);
+        Route::put('can-generate-token/{meter}', [MeterController::class, 'updateCanGenerateTokenStatus']);
         Route::post('main-meters', [MeterController::class, 'storeMainMeter']);
         Route::post('unresolved-transactions', [UnresolvedTransactionController::class, 'assign']);
         Route::post('sms', [SmsController::class, 'send']);
