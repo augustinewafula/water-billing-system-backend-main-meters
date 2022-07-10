@@ -215,6 +215,17 @@ class MeterController extends Controller
         return response()->json($meter->number);
     }
 
+    public function updateCanGenerateTokenStatus(Request $request, Meter $meter): JsonResponse
+    {
+        $request->validate([
+            'can_generate_token' => ['required', 'boolean'],
+        ]);
+        $meter->update([
+            'can_generate_token' => $request->can_generate_token,
+        ]);
+        return response()->json($meter->number);
+    }
+
     /**
      * Remove the specified resource from storage.
      *

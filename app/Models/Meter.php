@@ -23,7 +23,7 @@ class Meter extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'last_communication_date', 'battery_voltage', 'signal_intensity', 'main_meter', 'sim_card_number', 'valve_last_switched_off_by'];
+    protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'last_communication_date', 'battery_voltage', 'signal_intensity', 'main_meter', 'sim_card_number', 'valve_last_switched_off_by', 'can_generate_token'];
 
     /**
      * The attributes that should be cast.
