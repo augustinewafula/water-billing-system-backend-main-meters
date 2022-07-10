@@ -19,7 +19,7 @@ trait NotifiesOnJobFailure
         $to = env('CRITICAL_NOTIFICATIONS_EMAIL');
         if ($to){
             Mail::to($to)
-                ->send(new CriticalNotification($exception));
+                ->queue(new CriticalNotification($exception));
 
         }
     }
