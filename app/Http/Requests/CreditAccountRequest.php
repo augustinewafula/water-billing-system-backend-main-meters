@@ -26,6 +26,7 @@ class CreditAccountRequest extends FormRequest
         return [
             'user_id' => ['required', 'string', 'exists:users,id'],
             'amount' => ['required', 'numeric', 'min:1'],
+            'mpesa_transaction_reference' => ['nullable', 'string'],
         ];
     }
 }

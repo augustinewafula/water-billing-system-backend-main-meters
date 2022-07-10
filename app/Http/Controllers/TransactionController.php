@@ -100,13 +100,19 @@ class TransactionController extends Controller
 
     }
 
-    public function creditAccount(CreditAccountRequest $request){
+    public function creditAccount(CreditAccountRequest $request): JsonResponse
+    {
         $user = User::findOrFail($request->user_id);
+        if (empty($request->mpesa_transaction_reference)) {
+            $transaction_id = 'SimulatedTransaction_'.now()->timestamp;
+        } else {
+            $transaction_id = $request->mpesa_transaction_reference;
+        }
 
         $mpesa_request = new MpesaTransactionRequest();
         $mpesa_request->setMethod('POST');
         $mpesa_request->request->add([
-            'TransID' => 'SimulatedTransaction_'.now()->timestamp,
+            'TransID' => $transaction_id,
             'TransTime' => now()->timestamp,
             'TransAmount' => $request->amount,
             'FirstName' => $user->name,
@@ -117,9 +123,9 @@ class TransactionController extends Controller
             $mpesa_transaction = $this->storeMpesaTransaction($mpesa_request);
             ProcessTransaction::dispatch($mpesa_transaction);
         }catch (Throwable $throwable){
-            \Log::error($throwable->getMessage());
+            \Log::error($throwable);
             $response = ['message' => 'Failed to credit account'];
-            return response($response, 422);
+            return response()->json($response, 422);
         }
         return response()->json('success', 201);
     }
