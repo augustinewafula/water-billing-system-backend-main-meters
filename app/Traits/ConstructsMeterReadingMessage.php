@@ -38,7 +38,7 @@ trait ConstructsMeterReadingMessage
         if ($meter_billing = MeterBilling::where('meter_reading_id', $meter_reading->id)->first()) {
             $credit = $meter_billing->credit + $meter_reading->amount_paid;
         }
-        $user_total_debt -= $carry_forward_balance;
+//        $user_total_debt -= $carry_forward_balance;
         $user_total_debt_formatted = number_format($user_total_debt);
         $carry_forward_balance += $user->unaccounted_debt;
         $carry_forward_balance_formatted = number_format($carry_forward_balance);
