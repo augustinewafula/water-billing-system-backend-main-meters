@@ -44,6 +44,7 @@ trait ProcessUnaccountedDebt
 
         } catch (Throwable $throwable) {
             DB::rollBack();
+            $amount_deducted = 0;
             Log::error($throwable);
         }
         return $amount_deducted;
