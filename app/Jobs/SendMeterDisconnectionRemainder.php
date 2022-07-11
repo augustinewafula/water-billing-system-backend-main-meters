@@ -57,6 +57,9 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
                 if (!$unpaid_meter->meter) {
                     continue;
                 }
+                if ($unpaid_meter->meter->valve_status === ValveStatus::Closed) {
+                    continue;
+                }
                 $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter->meter->id);
                 if (!$meter->user) {
                     continue;
