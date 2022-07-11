@@ -39,10 +39,15 @@ trait CalculatesUserAmount
             ->whereDate('bill_due_at', '<=', now())
             ->whereStatus(PaymentStatus::NotPaid)
             ->sum('bill');
-        $meter_reading = MeterReading::where('meter_id', $meter_id)->first();
-        $balance_bills = DB::table('meter_billings')
-            ->where('meter_reading_id', $meter_reading->id)
-            ->sum('balance');
+        $meter_reading = MeterReading::where('meter_id', $meter_id)->get();
+
+        $balance_bills = 0;
+        foreach ($meter_reading as $reading) {
+            $balance = DB::table('meter_billings')
+                ->where('meter_reading_id', $reading->id)
+                ->sum('balance');
+            $balance_bills += $balance;
+        }
 
         return $unpaid_bills + $balance_bills + $user_unaccounted_debt;
     }
