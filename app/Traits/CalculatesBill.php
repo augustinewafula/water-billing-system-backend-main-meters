@@ -24,6 +24,14 @@ trait CalculatesBill
 
     private function calculateUnits($amount_paid, $user): float
     {
+        $cost_per_unit = $this->getCostPerUnit($user);
+        $final_amount = $amount_paid - $this->calculateServiceFee($amount_paid, 'prepay');
+
+        return round($final_amount / $cost_per_unit, 1);
+    }
+
+    private function getCostPerUnit($user): float
+    {
         if ($user->use_custom_charges_for_cost_per_unit && $user->cost_per_unit > 0){
             $cost_per_unit = $user->cost_per_unit;
         }else {
@@ -31,9 +39,7 @@ trait CalculatesBill
                 ->first();
             $cost_per_unit = $meter_charges->cost_per_unit;
         }
-        $final_amount = $amount_paid - $this->calculateServiceFee($amount_paid, 'prepay');
-
-        return round($final_amount / $cost_per_unit, 1);
+        return $cost_per_unit;
     }
 
     private function calculateServiceFee($amount_paid, $for): float
