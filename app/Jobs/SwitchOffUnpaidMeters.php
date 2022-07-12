@@ -65,9 +65,6 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 }
                 $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter->meter->id);
                 DB::beginTransaction();
-                if ($unpaid_meter->meter->mode !== MeterMode::Manual) {
-                    $this->toggleValve($meter, ValveStatus::Closed);
-                }
                 $meter->update([
                     'valve_status' => ValveStatus::Closed,
                 ]);
@@ -82,7 +79,12 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 $total_debt_formatted = number_format($total_debt);
 
                 if ($total_debt <= 200){
+                    Log::info("Skipping meter disconnection for user {$meter->user->account_number} because total debt is {$total_debt_formatted}");
                     continue;
+                }
+                if ($unpaid_meter->meter->mode !== MeterMode::Manual) {
+                    Log::info("disconnecting user {$meter->user->account_number}. Total debt is {$total_debt_formatted}");
+                    $this->toggleValve($meter, ValveStatus::Closed);
                 }
 
                 $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. Please pay your total debt of Ksh $total_debt_formatted. \nPay via paybill number $paybill_number, account number $account_number";
