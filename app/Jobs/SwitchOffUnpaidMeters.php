@@ -64,8 +64,6 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                     continue;
                 }
                 $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter->meter->id);
-                DB::beginTransaction();
-                DB::commit();
                 if (!$meter->user) {
                     continue;
                 }
@@ -93,7 +91,6 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 }
                 $this->notifyUser((object)['message' => $message, 'title' => 'Water disconnection'], $meter->user, 'general');
             } catch (Throwable $th) {
-                DB::rollBack();
                 Log::error($th);
             }
         }
