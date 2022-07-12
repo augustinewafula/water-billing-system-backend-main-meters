@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MpesaTransactionRequest;
 use App\Jobs\ProcessTransaction;
+use App\Models\Meter;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
 use App\Models\User;
+use App\Traits\CalculatesBill;
 use App\Traits\NotifiesUser;
 use App\Traits\StoresMpesaTransaction;
 use Http;
@@ -21,7 +23,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use StoresMpesaTransaction, NotifiesUser;
+    use StoresMpesaTransaction, NotifiesUser, CalculatesBill;
 
     public function __construct()
     {
@@ -48,7 +50,7 @@ class MeterBillingController extends Controller
      */
     public function mpesaValidation(Request $mpesa_transaction): Response
     {
-        if ($this->shouldAcceptTransaction($mpesa_transaction->BillRefNumber)){
+        if ($this->shouldAcceptTransaction($mpesa_transaction->BillRefNumber, $mpesa_transaction->TransAmount)){
             $result_code = '0';
             $result_description = 'Accepted validation request.';
         }else{
@@ -58,21 +60,55 @@ class MeterBillingController extends Controller
         return $this->createValidationResponse($result_code, $result_description);
     }
 
-    public function shouldAcceptTransaction($bill_reference_number): bool
+    public function shouldAcceptTransaction($bill_reference_number, $amount_paid): bool
     {
         if ($user = $this->accountNumberExists($bill_reference_number)){
             if (!$user->can_generate_token){
                 $message = 'Your account is not allowed to generate tokens. Please contact the administrator for more details.';
                 $this->notifyUser((object)['message' => $message, 'title' => 'Payment rejected'], $user, 'general');
             }
+
+            if ($this->isPrepaidMeter($user->meter_id) && !$this->isAmountEnoughToGenerateToken($amount_paid, $user)){
+                $minimum_amount = $this->getMinimumAmountToGenerateToken($user);
+                $message = 'Amount paid is not enough to acquire token. A minimum of Ksh '.$minimum_amount.' is required.';
+                $this->notifyUser((object)['message' => $message, 'title' => 'Payment rejected'], $user, 'general');
+
+                return false;
+            }
+
             return $user->can_generate_token;
         }
+
         return true;
+    }
+
+    public function isPrepaidMeter($meter_id): bool
+    {
+        $meter_type = Meter::select('meter_types.name')
+            ->join('meter_types', 'meters.type_id', 'meter_types.id')
+            ->where('meters.id', $meter_id)
+            ->value('name');
+        return $meter_type === 'Prepaid';
+    }
+
+    public function isAmountEnoughToGenerateToken($amount_paid, $user): bool
+    {
+        $units = $this->calculateUnits($amount_paid, $user);
+        return $units > 0;
+    }
+
+    public function getMinimumAmountToGenerateToken($user): float
+    {
+        $MINIMUM_UNITS_TO_GENERATE = 0.1;
+        $service_fee = $this->calculateServiceFee(10, 'prepay');
+        $cost_per_unit = $this->getCostPerUnit($user);
+        $amount_required_for_minimum_units = $MINIMUM_UNITS_TO_GENERATE * $cost_per_unit;
+        return $service_fee + $amount_required_for_minimum_units;
     }
 
     public function accountNumberExists($bill_reference_number): Model|Builder|null
     {
-        return User::select('users.id', 'users.account_number', 'users.communication_channels', 'users.email', 'users.phone', 'meters.can_generate_token')
+        return User::select('users.id', 'users.account_number', 'users.communication_channels', 'users.email', 'users.phone', 'meters.id as meter_id', 'meters.can_generate_token')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->where('account_number', $bill_reference_number)
             ->first();
