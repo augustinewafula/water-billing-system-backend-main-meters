@@ -104,7 +104,7 @@ class TransactionController extends Controller
     {
         $user = User::findOrFail($request->user_id);
         if (empty($request->mpesa_transaction_reference)) {
-            $transaction_id = 'SimulatedTransaction_'.now()->timestamp;
+            $transaction_id = 'ST_'.now()->timestamp;
         } else {
             $transaction_id = $request->mpesa_transaction_reference;
         }
