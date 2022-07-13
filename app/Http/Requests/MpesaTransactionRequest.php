@@ -27,4 +27,11 @@ class MpesaTransactionRequest extends FormRequest
             'TransID' => 'unique:mpesa_transactions'
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'TransID.unique' => 'Transaction already exists.'
+        ];
+    }
 }
