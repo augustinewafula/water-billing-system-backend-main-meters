@@ -1,17 +1,13 @@
 <?php
 
-namespace App\Traits;
+namespace App\Services;
 
 use App\Http\Requests\MpesaTransactionRequest;
 use App\Models\MpesaTransaction;
 
-trait StoresMpesaTransaction
+class MpesaService
 {
-    /**
-     * @param MpesaTransactionRequest $mpesa_transaction
-     * @return mixed
-     */
-    public function storeMpesaTransaction(MpesaTransactionRequest $mpesa_transaction): MpesaTransaction
+    public function store(MpesaTransactionRequest $mpesa_transaction): MpesaTransaction
     {
         return MpesaTransaction::create([
             'TransactionType' => $mpesa_transaction->TransactionType,

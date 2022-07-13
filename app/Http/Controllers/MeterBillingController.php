@@ -8,9 +8,9 @@ use App\Models\Meter;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
 use App\Models\User;
+use App\Services\MpesaService;
 use App\Traits\CalculatesBill;
 use App\Traits\NotifiesUser;
-use App\Traits\StoresMpesaTransaction;
 use Http;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
@@ -23,7 +23,7 @@ use Throwable;
 
 class MeterBillingController extends Controller
 {
-    use StoresMpesaTransaction, NotifiesUser, CalculatesBill;
+    use NotifiesUser, CalculatesBill;
 
     public function __construct()
     {
@@ -119,7 +119,7 @@ class MeterBillingController extends Controller
     /**
      * @throws JsonException|Throwable
      */
-    public function mpesaConfirmation(MpesaTransactionRequest $request): Response
+    public function mpesaConfirmation(MpesaTransactionRequest $request, MpesaService $mpesaService): Response
     {
         $client_ip = $request->ip();
 //        if (!$this->isValidSafaricomIpAddress($client_ip)) {
@@ -133,7 +133,7 @@ class MeterBillingController extends Controller
 //        }
 
 
-        $mpesa_transaction = $this->storeMpesaTransaction($request);
+        $mpesa_transaction = $mpesaService->store($request);
         ProcessTransaction::dispatch($mpesa_transaction);
 //        $this->queryMpesaTransactionStatus($request);
         $mpesa_transaction_callback_url = env('TRANSACTION_CALLBACK_URL');

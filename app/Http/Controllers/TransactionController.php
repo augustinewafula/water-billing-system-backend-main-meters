@@ -8,13 +8,11 @@ use App\Jobs\ProcessTransaction;
 use App\Models\CreditAccount;
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
-use App\Models\MonthlyServiceCharge;
 use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
-use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
-use App\Traits\StoresMpesaTransaction;
+use App\Services\MpesaService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +22,6 @@ use Throwable;
 
 class TransactionController extends Controller
 {
-    use StoresMpesaTransaction;
 
     public function __construct()
     {
@@ -100,7 +97,7 @@ class TransactionController extends Controller
 
     }
 
-    public function creditAccount(CreditAccountRequest $request): JsonResponse
+    public function creditAccount(CreditAccountRequest $request, MpesaService $mpesaService): JsonResponse
     {
         $user = User::findOrFail($request->user_id);
         if (empty($request->mpesa_transaction_reference)) {
@@ -120,7 +117,7 @@ class TransactionController extends Controller
         ]);
         try {
             $mpesa_request->validate((new MpesaTransactionRequest)->rules());
-            $mpesa_transaction = $this->storeMpesaTransaction($mpesa_request);
+            $mpesa_transaction = $mpesaService->store($mpesa_request);
             ProcessTransaction::dispatch($mpesa_transaction);
         }catch (Throwable $throwable){
             \Log::error($throwable);
