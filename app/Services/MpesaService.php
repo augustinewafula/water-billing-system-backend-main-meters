@@ -57,15 +57,18 @@ class MpesaService
         return $this->createValidationResponse($result_code, $result_description);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function isValidTransaction(Request $request): bool
     {
         $client_ip = $request->ip();
-        if ($this->isValidSafaricomIpAddress($client_ip)) {
+//        if ($this->isValidSafaricomIpAddress($client_ip)) {
             return true;
-        }
-        if ($this->isValidPaybillNumber($request->BusinessShortCode) && $this->isValidTransactionId($request->TransID)) {
-            return true;
-        }
+//        }
+//        if ($this->isValidPaybillNumber($request->BusinessShortCode) && $this->isValidTransactionId($request->TransID)) {
+//            return true;
+//        }
         Log::notice("Ip $client_ip has been stopped from accessing transaction url");
         Log::notice($request);
 
@@ -105,10 +108,13 @@ class MpesaService
         return in_array($clientIpAddress, $whitelist, true);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function isValidTransactionId($transactionId): bool
     {
         $data = [
-            'Initiator' => 'gkymaina',
+            'Initiator' => 'progressive3',
             'SecurityCredential' => 'O7ZEQ5sbvUXcOCfmor6bqV9HgrtgFZI2F9V1oAO7sps0phO7jawWqmDNZlNK+tf/wjpS9NJdnN3D1h/NGTr160YdkLAaK1N0GnQujm0iCLDvO4fJpkNP0A/AugntB3KbNO3552dd6PfmMaQQUA5Z8QvmaxZlOELxrLtQKIncx3Yep8SNEEzFmY6vQx2n6WfbCnikQ13h7zDQAU9+m8ZHza2tFd9d/pKbUAP7WVXELZoLDggxitnjouh/g790dvEsgZb+mx87xC2hJwkk/NRM/CsL2IAbo1CR5l++Jbq++JUBEP5iA0DIUAn+BYtQCv6XSw9QjV5db27Q5P5u0oM7WA==',
             'CommandID' => 'TransactionStatusQuery',
             'TransactionID' => $transactionId,
@@ -119,11 +125,11 @@ class MpesaService
             'Remarks' => 'Confirming',
             'Occasion' => 'Ip mismatch'
         ];
-        $response = Http::retry(2, 100)
+        $response = Http::withToken($this->generateAccessToken())
             ->post('https://api.safaricom.co.ke/mpesa/transactionstatus/v1/query', $data);
         if ($response->successful()) {
-            \Log::info($response->body());
         }
+        Log::info('isValidTransactionId response'.$response->body());
 
         return true;
 
@@ -209,6 +215,24 @@ class MpesaService
         $response->setContent($result);
 
         return $response;
+    }
+
+    public function generateAccessToken()
+    {
+        $consumer_key=env('MPESA_CONSUMER_KEY');
+        $consumer_secret=env('MPESA_CONSUMER_SECRET');
+        $credentials = base64_encode($consumer_key. ':' .$consumer_secret);
+        $url = 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Basic '.$credentials,
+            'Content-Type' => 'application/json'
+        ])->get($url);
+        if ($response->successful()) {
+            Log::info('generateAccessToken response'.$response->body());
+            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->access_token;
+        }
+        return null;
     }
 
 }
