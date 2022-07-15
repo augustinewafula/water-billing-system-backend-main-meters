@@ -156,6 +156,9 @@ class MpesaService
 
             if ($this->isPrepaidMeter($user->meter_id) && !$this->isAmountEnoughToGenerateToken($amount_paid, $user)){
                 $minimum_amount = $this->getMinimumAmountToGenerateToken($user);
+                if (env('MINIMUM_AMOUNT_FOR_TOKEN')){
+                    $minimum_amount = env('MINIMUM_AMOUNT_FOR_TOKEN');
+                }
                 $message = 'Amount paid is not enough to acquire token. A minimum of Ksh '.$minimum_amount.' is required.';
                 $this->notifyUser((object)['message' => $message, 'title' => 'Payment rejected'], $user, 'general');
 
@@ -180,6 +183,10 @@ class MpesaService
 
     public function isAmountEnoughToGenerateToken($amount_paid, $user): bool
     {
+        $minimum_amount_allowed = env('MINIMUM_AMOUNT_FOR_TOKEN');
+        if ($amount_paid < $minimum_amount_allowed) {
+            return false;
+        }
         $units = $this->calculateUnits($amount_paid, $user);
 
         return $units > 0;
