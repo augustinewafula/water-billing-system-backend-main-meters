@@ -113,6 +113,7 @@ class TransactionController extends Controller
             'TransTime' => now()->timestamp,
             'TransAmount' => $request->amount,
             'FirstName' => $user->name,
+            'MSISDN' => $user->phone,
             'BillRefNumber' => $user->account_number,
         ]);
         try {
