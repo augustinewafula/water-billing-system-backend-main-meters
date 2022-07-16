@@ -9,6 +9,7 @@ use App\Models\Meter;
 use App\Models\MeterToken;
 use App\Models\MpesaTransaction;
 use App\Models\User;
+use App\Services\PrepaidMeterService;
 use App\Traits\ClearsMeterToken;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\ProcessesPrepaidMeterTransaction;
@@ -77,6 +78,25 @@ class MeterTokenController extends Controller
 
         } catch (Throwable $throwable){
             $response = ['message' => 'Failed to reset token'];
+            return response()->json($response, 422);
+        }
+        return response()->json($token);
+
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function clearTamperRecord(ClearMeterTokenRequest $request, PrepaidMeterService $prepaidMeterService): JsonResponse
+    {
+        $meter_number = Meter::find($request->meter_id)->number;
+        try {
+            $token = $prepaidMeterService->clearTamperRecord($meter_number);
+            throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
+            $token = strtok($token, ',');
+
+        } catch (Throwable $throwable){
+            $response = ['message' => 'Failed to clear tamper record'];
             return response()->json($response, 422);
         }
         return response()->json($token);
