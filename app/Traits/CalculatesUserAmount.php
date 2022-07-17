@@ -47,7 +47,9 @@ trait CalculatesUserAmount
         foreach ($meter_readings_with_balance as $reading) {
             $balance = DB::table('meter_billings')
                 ->where('meter_reading_id', $reading->id)
-                ->sum('balance');
+                ->latest()
+                ->first()
+                ->balance;
             $balance_bills += $balance;
         }
 
