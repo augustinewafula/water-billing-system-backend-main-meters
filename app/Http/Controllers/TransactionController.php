@@ -113,7 +113,7 @@ class TransactionController extends Controller
             'TransTime' => now()->timestamp,
             'TransAmount' => $request->amount,
             'FirstName' => $user->name,
-            'MSISDN' => $user->phone,
+            'MSISDN' => $this->phoneNumberToInternationalFormat($user->phone),
             'BillRefNumber' => $user->account_number,
         ]);
         try {
@@ -126,6 +126,12 @@ class TransactionController extends Controller
             return response()->json($response, 422);
         }
         return response()->json('success', 201);
+    }
+
+    public function phoneNumberToInternationalFormat(string $phoneNumber): string
+    {
+        $phoneNumber = substr($phoneNumber, 1);
+        return '254'.$phoneNumber;
     }
 
     /**
