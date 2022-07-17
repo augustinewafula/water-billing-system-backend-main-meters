@@ -51,7 +51,7 @@ trait StoresMeterBillings
             $balance = $bill_to_pay - $user_total_amount;
 
             if (round($user_total_amount) <= 0.00) {
-                Log::info('User total amount is zero. No need to create meter billing.');
+                Log::info("User total amount is $user_total_amount. No need to create meter billing.");
                 break;
             }
 
