@@ -38,6 +38,7 @@ trait StoresMeterBillings
         }
 
         foreach ($pending_meter_readings as $pending_meter_reading) {
+            Log::info('Processing meter billing for meter reading: '. $pending_meter_reading->id);
             $user = $user->refresh();
 
             $bill_to_pay = $pending_meter_reading->bill;
@@ -50,6 +51,7 @@ trait StoresMeterBillings
             $balance = $bill_to_pay - $user_total_amount;
 
             if (round($user_total_amount) <= 0.00) {
+                Log::info('User total amount is zero. No need to create meter billing.');
                 break;
             }
 
@@ -63,7 +65,7 @@ trait StoresMeterBillings
                 $pending_meter_reading,
                 $credit_applied,
                 $mpesa_transaction_id)) {
-                    $user_total_amount = 0;
+                    $user_total_amount -= $bill_to_pay;
                     $amount_paid = 0;
                     $monthly_service_charge_deducted = 0;
                     $connection_fee_deducted = 0;

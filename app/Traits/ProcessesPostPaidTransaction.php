@@ -58,6 +58,7 @@ trait ProcessesPostPaidTransaction
         $user = User::where('meter_id', $request->meter_id)->firstOrFail();
 
         $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted, $request->connection_fee_deducted, $request->unaccounted_debt_deducted);
+        \Log::info('User total amount: '. $user_total_amount);
         if ($user_total_amount <= 0){
             return response()->json('Amount exhausted', 422);
         }
@@ -67,6 +68,9 @@ trait ProcessesPostPaidTransaction
                 $query->orWhere('status', PaymentStatus::Balance);
             })
             ->orderBy('created_at', 'ASC')->get();
+
+        \Log::info('Pending meter readings: '. json_encode($pending_meter_readings, JSON_THROW_ON_ERROR));
+        \Log::info('Pending meter readings count: '. $pending_meter_readings->count());
 
         if ($pending_meter_readings->count() === 0) {
             $user->update([
