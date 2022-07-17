@@ -73,7 +73,6 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 $total_debt_formatted = number_format($total_debt);
 
                 if ($total_debt <= 200){
-                    Log::info("Skipping meter disconnection for user {$meter->user->account_number} because total debt is {$total_debt_formatted}");
                     continue;
                 }
                 $meter->update([

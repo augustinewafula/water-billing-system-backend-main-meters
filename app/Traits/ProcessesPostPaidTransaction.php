@@ -69,7 +69,6 @@ trait ProcessesPostPaidTransaction
             })
             ->orderBy('created_at', 'ASC')->get();
 
-        \Log::info('Pending meter readings: '. json_encode($pending_meter_readings, JSON_THROW_ON_ERROR));
         \Log::info('Pending meter readings count: '. $pending_meter_readings->count());
 
         if ($pending_meter_readings->count() === 0) {
