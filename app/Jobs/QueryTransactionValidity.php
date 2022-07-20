@@ -48,7 +48,7 @@ class QueryTransactionValidity implements ShouldQueue
             'TransactionID' => $this->transaction_reference_id,
             'PartyA' => env('MPESA_SHORT_CODE'),
             'IdentifierType' => '1',
-            'ResultURL' => 'https://backend.progressiveutilities.com/api/v1/query-transaction-status-callback',
+            'ResultURL' => 'https://backend.progressiveutilities.com/api/v1/query-transaction-status-result-callback',
             'QueueTimeOutURL' => 'https://backend.progressiveutilities.com/api/v1/query-transaction-status-queue-timeout-callback',
             'Remarks' => 'Confirming',
             'Occasion' => 'Ip mismatch'
