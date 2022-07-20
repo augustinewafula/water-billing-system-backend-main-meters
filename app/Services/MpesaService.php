@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\UnverifiedMpesaTransactionStatus;
 use App\Http\Requests\MpesaTransactionRequest;
+use App\Jobs\ProcessTransaction;
 use App\Models\Meter;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
+use App\Models\UnverifiedMpesaTransaction;
 use App\Models\User;
 use App\Traits\CalculatesBill;
 use App\Traits\NotifiesUser;
@@ -17,6 +20,7 @@ use Illuminate\Http\Response;
 use JsonException;
 use Log;
 use Spatie\WebhookServer\WebhookCall;
+use Throwable;
 
 class MpesaService
 {
@@ -41,6 +45,33 @@ class MpesaService
         ]);
     }
 
+    public function storeUnverifiedTransaction(MpesaTransactionRequest $mpesa_transaction): MpesaTransaction
+    {
+        return UnverifiedMpesaTransaction::create([
+            'ClientIp' => $mpesa_transaction->ip(),
+            'TransactionType' => $mpesa_transaction->TransactionType,
+            'TransID' => $mpesa_transaction->TransID,
+            'TransTime' => $mpesa_transaction->TransTime,
+            'TransAmount' => $mpesa_transaction->TransAmount,
+            'BusinessShortCode' => $mpesa_transaction->BusinessShortCode,
+            'BillRefNumber' => $mpesa_transaction->BillRefNumber,
+            'InvoiceNumber' => $mpesa_transaction->InvoiceNumber,
+            'OrgAccountBalance' => $mpesa_transaction->OrgAccountBalance,
+            'ThirdPartyTransID' => $mpesa_transaction->ThirdPartyTransID,
+            'MSISDN' => $mpesa_transaction->MSISDN,
+            'FirstName' => $mpesa_transaction->FirstName,
+            'MiddleName' => $mpesa_transaction->MiddleName,
+            'LastName' => $mpesa_transaction->LastName,
+        ]);
+    }
+
+    public function acceptTransaction(MpesaTransactionRequest $request): void
+    {
+        $mpesa_transaction = $this->store($request);
+        ProcessTransaction::dispatch($mpesa_transaction);
+        $this->initiateWebhook($request->all());
+    }
+
     /**
      * @throws JsonException
      */
@@ -57,22 +88,32 @@ class MpesaService
         return $this->createValidationResponse($result_code, $result_description);
     }
 
-    /**
-     * @throws JsonException
-     */
-    public function isValidTransaction(Request $request): bool
+    public function handleTransactionStatusResult(Request $request): void
     {
-        $client_ip = $request->ip();
-//        if ($this->isValidSafaricomIpAddress($client_ip)) {
-            return true;
-//        }
-//        if ($this->isValidPaybillNumber($request->BusinessShortCode) && $this->isValidTransactionId($request->TransID)) {
-//            return true;
-//        }
-        Log::notice("Ip $client_ip has been stopped from accessing transaction url");
-        Log::notice($request);
+        $unverified_mpesa_transaction = UnverifiedMpesaTransaction::where('ConversationID', $request->ConversationID)->firstOrFail();
+        if ($request->ResponseCode === '0'){
+            $mpesa_transaction_request = new MpesaTransactionRequest();
+            $mpesa_transaction_request->setMethod('POST');
+            $mpesa_transaction_request->request->add($unverified_mpesa_transaction);
+            try {
+                $mpesa_transaction_request->validate((new MpesaTransactionRequest)->rules());
+                $this->acceptTransaction($mpesa_transaction_request);
+                $unverified_mpesa_transaction->delete();
+            }catch (Throwable $throwable){
+                \Log::error($throwable);
+            }
 
-        return false;
+            return;
+        }
+        $unverified_mpesa_transaction->status = UnverifiedMpesaTransactionStatus::FRAUDLET;
+        $unverified_mpesa_transaction->save();
+
+    }
+
+    public  function handleTransactionStatusQueueTimeout(Request $request): void
+    {
+        $unverified_mpesa_transaction = UnverifiedMpesaTransaction::where('ConversationID', $request->ConversationID)->firstOrFail();
+        $unverified_mpesa_transaction->update(['status' => UnverifiedMpesaTransactionStatus::UNVERIFIED]);
     }
 
     public function initiateWebhook($request): void
@@ -87,7 +128,7 @@ class MpesaService
         }
     }
 
-    private function isValidSafaricomIpAddress($clientIpAddress): bool
+    public function isValidSafaricomIpAddress($clientIpAddress): bool
     {
         $whitelist = [
             '196.201.214.200',
@@ -105,39 +146,12 @@ class MpesaService
             '196.201.212.138',
             '196.201.212.69'];
 
-        return in_array($clientIpAddress, $whitelist, true);
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public function isValidTransactionId($transactionId): bool
-    {
-        $data = [
-            'Initiator' => 'progressive3',
-            'SecurityCredential' => 'O7ZEQ5sbvUXcOCfmor6bqV9HgrtgFZI2F9V1oAO7sps0phO7jawWqmDNZlNK+tf/wjpS9NJdnN3D1h/NGTr160YdkLAaK1N0GnQujm0iCLDvO4fJpkNP0A/AugntB3KbNO3552dd6PfmMaQQUA5Z8QvmaxZlOELxrLtQKIncx3Yep8SNEEzFmY6vQx2n6WfbCnikQ13h7zDQAU9+m8ZHza2tFd9d/pKbUAP7WVXELZoLDggxitnjouh/g790dvEsgZb+mx87xC2hJwkk/NRM/CsL2IAbo1CR5l++Jbq++JUBEP5iA0DIUAn+BYtQCv6XSw9QjV5db27Q5P5u0oM7WA==',
-            'CommandID' => 'TransactionStatusQuery',
-            'TransactionID' => $transactionId,
-            'PartyA' => '994470',
-            'IdentifierType' => '1',
-            'ResultURL' => '',
-            'QueueTimeOutURL' => '',
-            'Remarks' => 'Confirming',
-            'Occasion' => 'Ip mismatch'
-        ];
-        $response = Http::withToken($this->generateAccessToken())
-            ->post('https://api.safaricom.co.ke/mpesa/transactionstatus/v1/query', $data);
-        if ($response->successful()) {
-        }
-        Log::info('isValidTransactionId response'.$response->body());
-
-        return true;
-
+        return in_array($clientIpAddress, $whitelist, false);
     }
 
     public function isValidPaybillNumber($paybill_number): bool
     {
-        return in_array($paybill_number, $this->validPaybillNumbers(), true);
+        return in_array($paybill_number, $this->validPaybillNumbers(), false);
     }
 
     public function validPaybillNumbers(): array
@@ -224,6 +238,9 @@ class MpesaService
         return $response;
     }
 
+    /**
+     * @throws JsonException
+     */
     public function generateAccessToken()
     {
         $consumer_key=env('MPESA_CONSUMER_KEY');

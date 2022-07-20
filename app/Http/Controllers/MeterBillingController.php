@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MpesaTransactionRequest;
 use App\Jobs\ProcessTransaction;
+use App\Jobs\QueryTransactionValidity;
 use App\Models\MpesaTransaction;
 use App\Services\MpesaService;
 use Illuminate\Http\JsonResponse;
@@ -36,15 +37,17 @@ class MeterBillingController extends Controller
      */
     public function mpesaConfirmation(MpesaTransactionRequest $request, MpesaService $mpesaService): Response
     {
-        if ($mpesaService->isValidTransaction($request)) {
-            $mpesa_transaction = $mpesaService->store($request);
-            ProcessTransaction::dispatch($mpesa_transaction);
-            $mpesaService->initiateWebhook($request->all());
+        if ($mpesaService->isValidSafaricomIpAddress($request->ip())) {
+            $mpesaService->acceptTransaction($request);
 
             $response = new Response();
             $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
             $response->setContent(json_encode(['C2BPaymentConfirmationResult' => 'Success'], JSON_THROW_ON_ERROR));
             return $response;
+        }
+        if ($mpesaService->isValidPaybillNumber($request->BusinessShortCode)){
+            $mpesaService->storeUnverifiedTransaction($request);
+            QueryTransactionValidity::dispatch($request->TransID);
         }
         return response(['message' => 'End of road, goodbye.'], 408);
     }

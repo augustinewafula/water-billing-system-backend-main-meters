@@ -28,6 +28,20 @@ class TransactionController extends Controller
         $this->middleware('permission:mpesa-transaction-list|unresolved-mpesa-transaction-list', ['only' => ['index', 'unresolvedTransactionIndex', 'show']]);
     }
 
+    public function queryTransactionStatusResultCallback(Request $request, MpesaService $mpesaService): JsonResponse
+    {
+        \Log::info('Query transaction status result callback: '. $request);
+        $mpesaService->handleTransactionStatusResult($request);
+        return response()->json('ok');
+    }
+
+    public function queryTransactionStatusQueueTimeoutCallback(Request $request, MpesaService $mpesaService): JsonResponse
+    {
+        \Log::info('Query transaction status queue timeout callback: '. $request);
+        $mpesaService->handleTransactionStatusQueueTimeout($request);
+        return response()->json('ok');
+    }
+
     /**
      * Display a listing of the resource.
      *
