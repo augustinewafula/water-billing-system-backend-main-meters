@@ -45,7 +45,7 @@ class MpesaService
         ]);
     }
 
-    public function storeUnverifiedTransaction(MpesaTransactionRequest $mpesa_transaction): MpesaTransaction
+    public function storeUnverifiedTransaction(MpesaTransactionRequest $mpesa_transaction): UnverifiedMpesaTransaction
     {
         return UnverifiedMpesaTransaction::create([
             'ClientIp' => $mpesa_transaction->ip(),
