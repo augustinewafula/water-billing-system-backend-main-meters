@@ -40,6 +40,7 @@ class QueryTransactionValidity implements ShouldQueue
      */
     public function handle(MpesaService $mpesaService): void
     {
+        Log::info('QueryTransactionValidity for: '.$this->transaction_reference_id);
         $data = [
             'Initiator' => env('MPESA_INITIATOR'),
             'SecurityCredential' => env('MPESA_SECURITY_CREDENTIAL'),
