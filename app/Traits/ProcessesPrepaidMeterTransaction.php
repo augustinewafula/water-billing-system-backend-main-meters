@@ -112,7 +112,7 @@ trait ProcessesPrepaidMeterTransaction
                 ]);
             }
             $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $meter_number\nToken: $token\nUnits: $units\nAmount: $user_total_amount\nDate: $date\nRef: $mpesa_transaction->TransID";
+            $message = "Meter: $meter_number\nToken: $token\nUnits: $units\nAmount: $user_total_amount\nAccount: $user->account_number\nDate: $date\nRef: $mpesa_transaction->TransID";
 
             $this->notifyUser((object)['message' => $message], $user, 'meter tokens');
             DB::commit();
