@@ -82,10 +82,14 @@ class UserController extends Controller
                 ];
 
             });
-        }else{
-            $users = $users->paginate(10);
+            return response()->json($users);
         }
-        return response()->json($users);
+        if ($request->has('perPage')){
+            $users = $users->paginate($request->perPage);
+            return response()->json($users);
+        }
+        return response()->json(10);
+
     }
 
     public function systemUsersIndex(Request $request): JsonResponse
