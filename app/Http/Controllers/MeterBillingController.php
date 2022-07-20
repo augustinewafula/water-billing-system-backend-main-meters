@@ -45,6 +45,7 @@ class MeterBillingController extends Controller
             $response->setContent(json_encode(['C2BPaymentConfirmationResult' => 'Success'], JSON_THROW_ON_ERROR));
             return $response;
         }
+        \Log::info('IP mismatch: '.$request->ip());
         if ($mpesaService->isValidPaybillNumber($request->BusinessShortCode)){
             $mpesaService->storeUnverifiedTransaction($request);
             QueryTransactionValidity::dispatch($request->TransID);
