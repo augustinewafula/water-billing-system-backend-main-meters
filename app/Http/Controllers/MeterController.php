@@ -50,7 +50,12 @@ class MeterController extends Controller
     {
         $meters = Meter::with('user', 'station', 'type');
         $meters = $this->filterQuery($request, $meters);
-        return response()->json($meters->paginate(10));
+
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        return response()->json($meters->paginate($perPage));
     }
 
     public function availableIndex(Request $request): JsonResponse

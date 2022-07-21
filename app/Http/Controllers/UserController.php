@@ -84,11 +84,11 @@ class UserController extends Controller
             });
             return response()->json($users);
         }
+        $perPage = 10;
         if ($request->has('perPage')){
-            $users = $users->paginate($request->perPage);
-            return response()->json($users);
+            $perPage = $request->perPage;
         }
-        return response()->json(10);
+        return response()->json($users->paginate($perPage));
 
     }
 

@@ -49,7 +49,12 @@ class MeterReadingController extends Controller
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
             ->join('users', 'users.meter_id', 'meters.id');
         $meter_readings = $this->filterQuery($request, $meter_readings);
-        return response()->json($meter_readings->paginate(10));
+
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        return response()->json($meter_readings->paginate($perPage));
     }
 
 

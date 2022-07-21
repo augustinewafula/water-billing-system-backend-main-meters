@@ -102,12 +102,19 @@ class TransactionController extends Controller
         if ($request->has('forExport')){
             $data = $prepaid_transactions->get()
                 ->makeHidden('id');
-        }else{
-            $prepaid_transactions = $prepaid_transactions->paginate(10);
-            $data = ['transactions' => $prepaid_transactions, 'sum' => $sum];
+
+            return response()->json($data);
         }
 
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        $prepaid_transactions = $prepaid_transactions->paginate($perPage);
+        $data = ['transactions' => $prepaid_transactions, 'sum' => $sum];
+
         return response()->json($data);
+
 
     }
 

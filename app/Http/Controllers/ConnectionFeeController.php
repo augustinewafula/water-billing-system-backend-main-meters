@@ -8,6 +8,7 @@ use App\Traits\GetsUserConnectionFeeBalance;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
 use Str;
 
 class ConnectionFeeController extends Controller
@@ -24,14 +25,18 @@ class ConnectionFeeController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function index(Request $request): JsonResponse
     {
         $connection_fees = ConnectionFee::with('user');
         $connection_fees = $this->filterQuery($request, $connection_fees);
-        return response()->json(
-            $connection_fees->paginate(10));
+
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        return response()->json($connection_fees->paginate($perPage));
     }
 
     /**

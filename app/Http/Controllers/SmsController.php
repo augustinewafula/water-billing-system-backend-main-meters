@@ -35,7 +35,11 @@ class SmsController extends Controller
         $sms = Sms::select('sms.*')->with('user:id,name,account_number');
         $sms = $this->filterQuery($request, $sms);
 
-        return response()->json($sms->paginate(10));
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        return response()->json($sms->paginate($perPage));
     }
 
     /**
