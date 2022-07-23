@@ -9,7 +9,7 @@ use App\Traits\ProcessConnectionFeeTransaction;
 use Carbon\Carbon;
 use Throwable;
 
-class GenerateConnectionFee
+class GenerateConnectionFeeAction
 {
     use ProcessConnectionFeeTransaction;
 

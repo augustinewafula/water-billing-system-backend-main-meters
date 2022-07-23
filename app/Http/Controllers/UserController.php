@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\GenerateConnectionFee;
+use App\Actions\GenerateConnectionFeeAction;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Jobs\SendSetPasswordEmail;
-use App\Models\ConnectionFeeCharge;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\User;
-use App\Traits\GeneratesMonthlyConnectionFee;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -134,7 +131,7 @@ class UserController extends Controller
      * @return Application|ResponseFactory|JsonResponse|Response
      * @throws Exception|Throwable
      */
-    public function store(CreateUserRequest $request, GenerateConnectionFee $generateConnectionFee)
+    public function store(CreateUserRequest $request, GenerateConnectionFeeAction $generateConnectionFeeAction)
     {
         try {
             DB::beginTransaction();
@@ -152,7 +149,7 @@ class UserController extends Controller
 //            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
             if ($user->should_pay_connection_fee){
-                $generateConnectionFee->execute($user);
+                $generateConnectionFeeAction->execute($user);
             }
             DB::commit();
         } catch (Throwable $th) {
@@ -231,15 +228,17 @@ class UserController extends Controller
      *
      * @param UpdateUserRequest $request
      * @param User $user
+     * @param GenerateConnectionFeeAction $generateConnectionFeeAction
      * @return JsonResponse
+     * @throws JsonException
      * @throws Throwable
      */
-    public function update(UpdateUserRequest $request, User $user, GenerateConnectionFee $generateConnectionFee): JsonResponse
+    public function update(UpdateUserRequest $request, User $user, GenerateConnectionFeeAction $generateConnectionFeeAction): JsonResponse
     {
         $data = $this->getRequestData($request, 'update');
         $user->update($data);
         if ($user->should_pay_connection_fee){
-            $generateConnectionFee->execute($user);
+            $generateConnectionFeeAction->execute($user);
         }
         return response()->json($user);
     }
