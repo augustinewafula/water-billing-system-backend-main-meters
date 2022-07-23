@@ -18,6 +18,7 @@ class GenerateConnectionFeeAction
      */
     public function execute(User $user): void
     {
+        \Log::info('Generating connection fee for user: ' . $user->id);
         $numberOfMonthsToBill = $user->number_of_months_to_pay_connection_fee;
         $billPerMonth = round($user->connection_fee / $numberOfMonthsToBill);
 

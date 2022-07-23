@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\User;
+use App\Services\ConnectionFeeService;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -124,14 +125,15 @@ class UserController extends Controller
         ]);
     }
 
-    /**re
+    /**
      * Store a newly created resource in storage.
      *
      * @param CreateUserRequest $request
+     * @param ConnectionFeeService $connectionFeeService
      * @return Application|ResponseFactory|JsonResponse|Response
-     * @throws Exception|Throwable
+     * @throws Throwable
      */
-    public function store(CreateUserRequest $request, GenerateConnectionFeeAction $generateConnectionFeeAction)
+    public function store(CreateUserRequest $request, ConnectionFeeService $connectionFeeService)
     {
         try {
             DB::beginTransaction();
@@ -148,8 +150,8 @@ class UserController extends Controller
 //                ->value;
 //            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
-            if ($user->should_pay_connection_fee){
-                $generateConnectionFeeAction->execute($user);
+            if ($user->should_pay_connection_fee) {
+                $connectionFeeService->generate($user);
             }
             DB::commit();
         } catch (Throwable $th) {
@@ -228,17 +230,34 @@ class UserController extends Controller
      *
      * @param UpdateUserRequest $request
      * @param User $user
-     * @param GenerateConnectionFeeAction $generateConnectionFeeAction
+     * @param ConnectionFeeService $connectionFeeService
      * @return JsonResponse
      * @throws JsonException
      * @throws Throwable
      */
-    public function update(UpdateUserRequest $request, User $user, GenerateConnectionFeeAction $generateConnectionFeeAction): JsonResponse
+    public function update(UpdateUserRequest $request, User $user, ConnectionFeeService $connectionFeeService): JsonResponse
     {
         $data = $this->getRequestData($request, 'update');
-        $user->update($data);
-        if ($user->should_pay_connection_fee){
-            $generateConnectionFeeAction->execute($user);
+
+        try {
+            DB::beginTransaction();
+            $shouldUpdateConnectionFee = $user->should_pay_connection_fee && $connectionFeeService->hasConnectionFeeBeenUpdated($user, $request->connection_fee, $request->number_of_months_to_pay_connection_fee);
+            if ($shouldUpdateConnectionFee){
+                $connectionFeeService->destroyAll($user);
+                $user->refresh();
+                $user->update($data);
+                $connectionFeeService->generate($user);
+            }
+
+            if (!$shouldUpdateConnectionFee){
+                $user->update($data);
+            }
+            DB::commit();
+        } catch (Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            $response = ['message' => 'Something went wrong, please try again later'];
+            return response()->json($response, 422);
         }
         return response()->json($user);
     }
