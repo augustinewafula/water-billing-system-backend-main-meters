@@ -10,7 +10,5 @@ use BenSampo\Enum\Enum;
  */
 final class UnresolvedMpesaTransactionReason extends Enum
 {
-    public const InvalidAccountNumber = 0;
-    public const MeterReadingNotFound = 1;
-    public const UserNotFound = 2;
+    public const INVALID_ACCOUNT_NUMBER = 0;
 }

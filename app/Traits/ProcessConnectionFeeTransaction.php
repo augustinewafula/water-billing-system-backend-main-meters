@@ -28,7 +28,7 @@ trait ProcessConnectionFeeTransaction
 
         if ($last_connection_fee) {
             $last_connection_fee_month = Carbon::createFromFormat('Y-m', $last_connection_fee->month)->startOfMonth();
-            return ($last_connection_fee->status === PaymentStatus::NotPaid || $last_connection_fee->status === PaymentStatus::Balance) && $last_connection_fee_month->lessThanOrEqualTo($firstDayOfCurrentMonth);
+            return ($last_connection_fee->status === PaymentStatus::NOT_PAID || $last_connection_fee->status === PaymentStatus::PARTIALLY_PAID) && $last_connection_fee_month->lessThanOrEqualTo($firstDayOfCurrentMonth);
 
         }
 
@@ -87,7 +87,7 @@ trait ProcessConnectionFeeTransaction
                 break;
             }
             $expected_amount = $connection_fee->amount;
-            if ($connection_fee->status === PaymentStatus::Balance) {
+            if ($connection_fee->status === PaymentStatus::PARTIALLY_PAID) {
                 $connection_fee_payment = ConnectionFeePayment::where('connection_fee_id', $connection_fee->id)
                     ->latest('created_at')
                     ->take(1)
@@ -95,19 +95,19 @@ trait ProcessConnectionFeeTransaction
                 $expected_amount = $connection_fee_payment->balance;
             }
             if ($this->userHasPaidInFull($user_total_amount, $expected_amount)) {
-                $status = PaymentStatus::Paid;
+                $status = PaymentStatus::PAID;
                 $amount_over_paid = $user_total_amount - $expected_amount;
                 $balance = 0;
                 $user_account_balance = $amount_over_paid;
                 $amount_to_deduct = $expected_amount;
                 if ($amount_over_paid > 0) {
-                    $status = PaymentStatus::OverPaid;
+                    $status = PaymentStatus::OVER_PAID;
                 }
             } else {
                 $balance = $expected_amount - $user_total_amount;
                 $amount_over_paid = 0;
                 $user_account_balance = -$balance;
-                $status = PaymentStatus::Balance;
+                $status = PaymentStatus::PARTIALLY_PAID;
                 $amount_to_deduct = $user_total_amount;
             }
             try {
@@ -170,8 +170,8 @@ trait ProcessConnectionFeeTransaction
     {
         $last_connection_fee = ConnectionFee::where('user_id', $user->id)
             ->where(function ($users) {
-                $users->orWhere('status', PaymentStatus::NotPaid)
-                    ->orWhere('status', PaymentStatus::Balance);
+                $users->orWhere('status', PaymentStatus::NOT_PAID)
+                    ->orWhere('status', PaymentStatus::PARTIALLY_PAID);
             })
             ->oldest()
             ->limit(1)

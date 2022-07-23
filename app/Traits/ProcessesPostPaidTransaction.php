@@ -64,8 +64,8 @@ trait ProcessesPostPaidTransaction
         }
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
             ->where(function ($query) {
-                $query->where('status', PaymentStatus::NotPaid);
-                $query->orWhere('status', PaymentStatus::Balance);
+                $query->where('status', PaymentStatus::NOT_PAID);
+                $query->orWhere('status', PaymentStatus::PARTIALLY_PAID);
             })
             ->orderBy('created_at', 'ASC')->get();
 

@@ -35,7 +35,7 @@ trait TogglesValveStatus
     public function toggleShMeter($meter_number, $command): bool
     {
         $CommandParameter = 153;
-        if ($command === ValveStatus::Open) {
+        if ($command === ValveStatus::OPEN) {
             $CommandParameter = 85;
         }
         $collection = collect([[

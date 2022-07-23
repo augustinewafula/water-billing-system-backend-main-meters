@@ -41,12 +41,12 @@ trait NotifiesUser
 
     public function shouldNotifyViaSms($user_communication_channels): bool
     {
-        return in_array(CommunicationChannels::Sms, $user_communication_channels, false);
+        return in_array(CommunicationChannels::SMS, $user_communication_channels, false);
     }
 
     public function shouldNotifyViaEmail($user_communication_channels): bool
     {
-        return in_array(CommunicationChannels::Email, $user_communication_channels, false);
+        return in_array(CommunicationChannels::EMAIL, $user_communication_channels, false);
     }
 
     /**

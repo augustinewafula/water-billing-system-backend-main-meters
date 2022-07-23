@@ -126,7 +126,7 @@ class MeterController extends Controller
      */
     public function save($request): array
     {
-        if ((int)$request->mode === MeterMode::Automatic) {
+        if ((int)$request->mode === MeterMode::AUTOMATIC) {
             if (MeterType::find($request->type_id)->name === 'Prepaid') {
                 $this->registerPrepaidMeter($request->number);
             }
@@ -210,7 +210,7 @@ class MeterController extends Controller
         }
 
         $valve_last_switched_off_by = 'system';
-        if ((int)$request->valve_status === ValveStatus::Closed) {
+        if ((int)$request->valve_status === ValveStatus::CLOSED) {
             $valve_last_switched_off_by = 'user';
         }
         $meter->update([

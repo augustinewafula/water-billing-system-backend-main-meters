@@ -105,7 +105,7 @@ class MpesaService
 
             return;
         }
-        $unverified_mpesa_transaction->status = UnverifiedMpesaTransactionStatus::FRAUDLET;
+        $unverified_mpesa_transaction->status = UnverifiedMpesaTransactionStatus::FRAUDULENT;
         $unverified_mpesa_transaction->save();
 
     }

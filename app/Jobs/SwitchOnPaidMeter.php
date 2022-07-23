@@ -45,16 +45,16 @@ class SwitchOnPaidMeter implements ShouldQueue
      */
     public function handle(): void
     {
-        if ($this->meter->valve_status === ValveStatus::Open){
+        if ($this->meter->valve_status === ValveStatus::OPEN){
             return;
         }
         try {
             DB::beginTransaction();
-            if ($this->meter->mode !== MeterMode::Manual) {
-                $this->toggleValve($this->meter, ValveStatus::Open);
+            if ($this->meter->mode !== MeterMode::MANUAL) {
+                $this->toggleValve($this->meter, ValveStatus::OPEN);
             }
             $this->meter->update([
-                'valve_status' => ValveStatus::Open,
+                'valve_status' => ValveStatus::OPEN,
             ]);
             DB::commit();
 

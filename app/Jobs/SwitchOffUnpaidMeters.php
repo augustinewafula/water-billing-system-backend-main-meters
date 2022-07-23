@@ -48,13 +48,13 @@ class SwitchOffUnpaidMeters implements ShouldQueue
     public function handle(): void
     {
         $unpaid_meters = MeterReading::with(['meter' => function ($query) {
-            $query->whereValveStatus(ValveStatus::Open)
+            $query->whereValveStatus(ValveStatus::OPEN)
                 ->orWhere('valve_status', null);
         }])
             ->whereDate('actual_meter_disconnection_on', '<=', now())
             ->where(function ($query) {
-                $query->whereStatus(PaymentStatus::NotPaid)
-                    ->orWhere('status', PaymentStatus::Balance);
+                $query->whereStatus(PaymentStatus::NOT_PAID)
+                    ->orWhere('status', PaymentStatus::PARTIALLY_PAID);
             })
             ->get();
         foreach ($unpaid_meters as $unpaid_meter) {
@@ -76,15 +76,15 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                     continue;
                 }
                 $meter->update([
-                    'valve_status' => ValveStatus::Closed,
+                    'valve_status' => ValveStatus::CLOSED,
                 ]);
-                if ($unpaid_meter->meter->mode !== MeterMode::Manual) {
+                if ($unpaid_meter->meter->mode !== MeterMode::MANUAL) {
                     Log::info("disconnecting user {$meter->user->account_number}. Total debt is {$total_debt_formatted}");
-                    $this->toggleValve($meter, ValveStatus::Closed);
+                    $this->toggleValve($meter, ValveStatus::CLOSED);
                 }
 
                 $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. Please pay your total debt of Ksh $total_debt_formatted. \nPay via paybill number $paybill_number, account number $account_number";
-                if ($unpaid_meter->meter->mode === MeterMode::Manual) {
+                if ($unpaid_meter->meter->mode === MeterMode::MANUAL) {
                     $message = "Hello $first_name, you have not paid your debt of Ksh $total_debt_formatted. Your water meter is going to be disconnected effective immediately.\nPay via paybill number $paybill_number, account number $account_number";
                 }
                 $this->notifyUser((object)['message' => $message, 'title' => 'Water disconnection'], $meter->user, 'general');

@@ -18,7 +18,7 @@ class CreateMonthlyServiceChargesTable extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->decimal('service_charge', 15);
-            $table->tinyInteger('status')->unsigned()->default(PaymentStatus::NotPaid);
+            $table->tinyInteger('status')->unsigned()->default(PaymentStatus::NOT_PAID);
             $table->dateTime('month');
             $table->timestamps(6);
             $table->softDeletes();

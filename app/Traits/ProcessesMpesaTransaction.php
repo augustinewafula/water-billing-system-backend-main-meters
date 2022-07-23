@@ -38,7 +38,7 @@ trait ProcessesMpesaTransaction
         if (!$user) {
             UnresolvedMpesaTransaction::create([
                 'mpesa_transaction_id' => $mpesa_transaction->id,
-                'reason' => UnresolvedMpesaTransactionReason::InvalidAccountNumber
+                'reason' => UnresolvedMpesaTransactionReason::INVALID_ACCOUNT_NUMBER
             ]);
             return;
         }

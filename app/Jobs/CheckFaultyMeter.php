@@ -52,7 +52,7 @@ class CheckFaultyMeter implements ShouldQueue
             ->where('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
             ->get();
 
-        $this->saveAndNotify($meters_with_delayed_communication, FaultyMeterFaultType::LostCommunication);
+        $this->saveAndNotify($meters_with_delayed_communication, FaultyMeterFaultType::LOST_COMMUNICATION);
     }
 
     private function checkMetersWithLowBattery(): void
@@ -61,7 +61,7 @@ class CheckFaultyMeter implements ShouldQueue
             ->where('battery_voltage', '<', $this->minimum_battery_voltage)
             ->get();
 
-        $this->saveAndNotify($meter_with_low_battery, FaultyMeterFaultType::LowBattery);
+        $this->saveAndNotify($meter_with_low_battery, FaultyMeterFaultType::LOW_BATTERY);
     }
 
     /**
@@ -88,11 +88,11 @@ class CheckFaultyMeter implements ShouldQueue
             ]);
             $station_name = $meter->station->name;
             $message = "Meter number $meter->number belonging to $station_name has ";
-            if ($fault_type === FaultyMeterFaultType::LowBattery){
+            if ($fault_type === FaultyMeterFaultType::LOW_BATTERY){
                 $message .= "battery voltage of below $this->minimum_battery_voltage volts.";
             }
             $difference_in_hours = $this->maximum_meter_communication_delay_time->diffInHours(now());
-            if ($fault_type === FaultyMeterFaultType::LostCommunication){
+            if ($fault_type === FaultyMeterFaultType::LOST_COMMUNICATION){
                 $message .= "not communicated with the server for more than $difference_in_hours hours";
             }
             SendAlert::dispatch($message);
@@ -103,10 +103,10 @@ class CheckFaultyMeter implements ShouldQueue
     {
         $faulty_meters = FaultyMeter::with('meter')->get();
         foreach ($faulty_meters as $faulty_meter){
-            if ($faulty_meter->fault_type === FaultyMeterFaultType::LostCommunication && $this->isDelayedCommunicationFixed($faulty_meter)){
+            if ($faulty_meter->fault_type === FaultyMeterFaultType::LOST_COMMUNICATION && $this->isDelayedCommunicationFixed($faulty_meter)){
                 FaultyMeter::find($faulty_meter->id)->forceDelete();
             }
-            if ($faulty_meter->fault_type === FaultyMeterFaultType::LowBattery && $this->isLowBatteryFixed($faulty_meter)){
+            if ($faulty_meter->fault_type === FaultyMeterFaultType::LOW_BATTERY && $this->isLowBatteryFixed($faulty_meter)){
                 FaultyMeter::find($faulty_meter->id)->forceDelete();
             }
         }

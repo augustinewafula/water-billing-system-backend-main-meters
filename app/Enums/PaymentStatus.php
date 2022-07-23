@@ -10,8 +10,8 @@ use BenSampo\Enum\Enum;
  */
 final class PaymentStatus extends Enum
 {
-    public const NotPaid = 0;
-    public const Paid = 1;
-    public const Balance = 2;
-    public const OverPaid = 3;
+    public const NOT_PAID = 0;
+    public const PAID = 1;
+    public const PARTIALLY_PAID = 2;
+    public const OVER_PAID = 3;
 }

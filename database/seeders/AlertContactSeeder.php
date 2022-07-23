@@ -21,7 +21,7 @@ class AlertContactSeeder extends Seeder
         foreach ($admins as $admin){
             AlertContact::create([
                 'user_id' => $admin->id,
-                'type' => AlertContactTypes::Email,
+                'type' => AlertContactTypes::EMAIL,
                 'value'=> $admin->email
             ]);
         }

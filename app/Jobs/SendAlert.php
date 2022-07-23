@@ -43,7 +43,7 @@ class SendAlert implements ShouldQueue
 
     private function sendAlertEmail(): void
     {
-        $alert_contacts = AlertContact::where('type', AlertContactTypes::Email)
+        $alert_contacts = AlertContact::where('type', AlertContactTypes::EMAIL)
             ->get();
         foreach ($alert_contacts as $alert_contact){
             Mail::to($alert_contact->value)
@@ -55,7 +55,7 @@ class SendAlert implements ShouldQueue
 
     private function sendAlertSms(): void
     {
-        $alert_contacts = AlertContact::where('type', AlertContactTypes::Phone)
+        $alert_contacts = AlertContact::where('type', AlertContactTypes::PHONE)
             ->get();
         foreach ($alert_contacts as $alert_contact){
             SendSMS::dispatch($alert_contact->value, $this->message, $alert_contact->user_id);

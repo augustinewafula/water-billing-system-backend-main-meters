@@ -42,7 +42,7 @@ trait StoresMeterBillings
             $user = $user->refresh();
 
             $bill_to_pay = $pending_meter_reading->bill;
-            if ($pending_meter_reading->status === PaymentStatus::Balance) {
+            if ($pending_meter_reading->status === PaymentStatus::PARTIALLY_PAID) {
                 $bill_to_pay = MeterBilling::where('meter_reading_id', $pending_meter_reading->id)
                     ->latest()
                     ->first()
@@ -121,11 +121,11 @@ trait StoresMeterBillings
                     if ($this->userHasOverPaid($balance)) {
                         $amount_over_paid = abs($balance);
                         $meter_reading->update([
-                            'status' => PaymentStatus::OverPaid,
+                            'status' => PaymentStatus::OVER_PAID,
                         ]);
                     } else {
                         $meter_reading->update([
-                            'status' => PaymentStatus::Paid,
+                            'status' => PaymentStatus::PAID,
                         ]);
                     }
                     $user_bill_balance = 0;
@@ -135,7 +135,7 @@ trait StoresMeterBillings
                         'last_mpesa_transaction_id' => $mpesa_transaction_id
                     ]);
                     $meter_reading->update([
-                        'status' => PaymentStatus::Balance,
+                        'status' => PaymentStatus::PARTIALLY_PAID,
                     ]);
                 }
                 MeterBilling::updateOrCreate([

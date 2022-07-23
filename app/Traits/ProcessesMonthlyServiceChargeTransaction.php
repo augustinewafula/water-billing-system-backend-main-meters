@@ -27,7 +27,7 @@ trait ProcessesMonthlyServiceChargeTransaction
 
         if ($last_monthly_service_charge) {
             $last_monthly_service_charge_month = Carbon::createFromFormat('Y-m', $last_monthly_service_charge->month)->startOfMonth();
-            return ($last_monthly_service_charge->status === PaymentStatus::NotPaid || $last_monthly_service_charge->status === PaymentStatus::Balance) && $last_monthly_service_charge_month->lessThanOrEqualTo($firstDayOfCurrentMonth);
+            return ($last_monthly_service_charge->status === PaymentStatus::NOT_PAID || $last_monthly_service_charge->status === PaymentStatus::PARTIALLY_PAID) && $last_monthly_service_charge_month->lessThanOrEqualTo($firstDayOfCurrentMonth);
 
         }
 
@@ -71,7 +71,7 @@ trait ProcessesMonthlyServiceChargeTransaction
                 break;
             }
             $expected_amount = $monthly_service_charge->service_charge;
-            if ($monthly_service_charge->status === PaymentStatus::Balance) {
+            if ($monthly_service_charge->status === PaymentStatus::PARTIALLY_PAID) {
                 $monthly_service_charge_payment = MonthlyServiceChargePayment::where('monthly_service_charge_id', $monthly_service_charge->id)
                     ->latest('created_at')
                     ->take(1)
@@ -79,19 +79,19 @@ trait ProcessesMonthlyServiceChargeTransaction
                 $expected_amount = $monthly_service_charge_payment->balance;
             }
             if ($this->userHasPaidFully($user_total_amount, $expected_amount)) {
-                $status = PaymentStatus::Paid;
+                $status = PaymentStatus::PAID;
                 $amount_over_paid = $user_total_amount - $expected_amount;
                 $balance = 0;
                 $user_account_balance = $amount_over_paid;
                 $amount_to_deduct = $expected_amount;
                 if ($amount_over_paid > 0) {
-                    $status = PaymentStatus::OverPaid;
+                    $status = PaymentStatus::OVER_PAID;
                 }
             } else {
                 $balance = $expected_amount - $user_total_amount;
                 $amount_over_paid = 0;
                 $user_account_balance = -$balance;
-                $status = PaymentStatus::Balance;
+                $status = PaymentStatus::PARTIALLY_PAID;
                 $amount_to_deduct = $user_total_amount;
             }
             try {
@@ -149,8 +149,8 @@ trait ProcessesMonthlyServiceChargeTransaction
     {
         $last_monthly_service_charge = MonthlyServiceCharge::where('user_id', $user->id)
             ->where(function ($users) {
-                $users->orWhere('status', PaymentStatus::NotPaid)
-                    ->orWhere('status', PaymentStatus::Balance);
+                $users->orWhere('status', PaymentStatus::NOT_PAID)
+                    ->orWhere('status', PaymentStatus::PARTIALLY_PAID);
             })
             ->oldest()
             ->limit(1)

@@ -20,7 +20,7 @@ public function up()
         $table->tinyInteger('valve_status')->unsigned()->nullable();
         $table->uuid('station_id');
         $table->foreign('station_id')->references('id')->on('meter_stations')->cascadeOnDelete();
-        $table->tinyInteger('mode')->unsigned()->default(MeterMode::Manual);
+        $table->tinyInteger('mode')->unsigned()->default(MeterMode::MANUAL);
         $table->foreignUuid('type_id')->nullable()->constrained('meter_types')->cascadeOnDelete();
         $table->integer('last_reading');
         $table->dateTime('last_reading_date')->nullable();

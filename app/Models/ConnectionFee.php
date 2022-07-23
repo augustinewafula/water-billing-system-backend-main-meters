@@ -42,12 +42,12 @@ class ConnectionFee extends Model
 
     public function scopeNotPaid(Builder $query): Builder
     {
-        return $query->where('status', PaymentStatus::NotPaid);
+        return $query->where('status', PaymentStatus::NOT_PAID);
     }
 
     public function scopeHasBalance(Builder $query): Builder
     {
-        return $query->where('status', PaymentStatus::Balance);
+        return $query->where('status', PaymentStatus::PARTIALLY_PAID);
     }
 
     public function scopeCurrentMonth(Builder $query): Builder

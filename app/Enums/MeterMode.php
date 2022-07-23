@@ -10,6 +10,6 @@ use BenSampo\Enum\Enum;
  */
 final class MeterMode extends Enum
 {
-    public const Manual = 0;
-    public const Automatic = 1;
+    public const MANUAL = 0;
+    public const AUTOMATIC = 1;
 }

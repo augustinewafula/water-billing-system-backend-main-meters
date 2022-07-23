@@ -6,7 +6,7 @@ use BenSampo\Enum\Enum;
 
 class CommunicationChannels extends Enum
 {
-    public const Sms = 1;
-    public const Email = 2;
+    public const SMS = 1;
+    public const EMAIL = 2;
 
 }

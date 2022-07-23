@@ -43,12 +43,12 @@ class SwitchOnPaidMetersCommand extends Command
     public function handle()
     {
         $paid_meters = MeterReading::with(['meter' => function ($query) {
-                $query->whereValveStatus(ValveStatus::Closed);
+                $query->whereValveStatus(ValveStatus::CLOSED);
             }])
             ->whereDate('month', '>=', now()->subMonth()->startOfMonth()->startOfDay())
             ->where(function ($query) {
-                $query->whereStatus(PaymentStatus::Paid)
-                    ->orWhere('status', PaymentStatus::OverPaid);
+                $query->whereStatus(PaymentStatus::PAID)
+                    ->orWhere('status', PaymentStatus::OVER_PAID);
             })
             ->get();
 
