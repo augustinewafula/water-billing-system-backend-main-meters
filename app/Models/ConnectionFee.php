@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentStatus;
 use App\Traits\HasUuid;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,27 @@ class ConnectionFee extends Model
     {
         return Carbon::parse($value)->format('Y-m');
     }
+
+    public function scopeNotAddedToUserTotalDebt(Builder $query): Builder
+    {
+        return $query->where('added_to_user_total_debt', false);
+    }
+
+    public function scopeNotPaid(Builder $query): Builder
+    {
+        return $query->where('status', PaymentStatus::NotPaid);
+    }
+
+    public function scopeHasBalance(Builder $query): Builder
+    {
+        return $query->where('status', PaymentStatus::Balance);
+    }
+
+    public function scopeCurrentMonth(Builder $query): Builder
+    {
+        return $query->where('month', Carbon::now()->startOfMonth()->startOfDay());
+    }
+
 
     /**
      * Get user that owns the user reading
