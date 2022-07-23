@@ -49,6 +49,32 @@ class ConnectionFeeService
 
     }
 
+    public function addConnectionFeeBillToUserAccount($connectionFee): void
+    {
+        if ($connectionFee->status === PaymentStatus::Paid || $connectionFee->status === PaymentStatus::OverPaid) {
+            return;
+        }
+        $user = User::findOrFail($connectionFee->user_id);
+
+        if ($connectionFee->status === PaymentStatus::Balance) {
+            $partialPayments = ConnectionFeePayment::where('connection_fee_id', $connectionFee->id)->get();
+            $partialPaymentAmount = 0;
+            foreach ($partialPayments as $partialPayment) {
+                $partialPaymentAmount += $partialPayment->amount_paid;
+            }
+
+            $user_total_amount = $user->account_balance - $partialPaymentAmount;
+            $user->update(['account_balance' => $user_total_amount]);
+
+            return;
+        }
+
+
+        $user_total_amount = $user->account_balance - $connectionFee->amount;
+        $user->update(['account_balance' => $user_total_amount]);
+
+    }
+
     private function removeConnectionFeeBillFromUserAccount($connectionFee): void
     {
         $user = User::findOrFail($connectionFee->user_id);
