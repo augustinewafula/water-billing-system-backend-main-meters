@@ -7,11 +7,15 @@ use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Traits\ProcessConnectionFeeTransaction;
 use Carbon\Carbon;
+use Throwable;
 
 class GenerateConnectionFee
 {
     use ProcessConnectionFeeTransaction;
 
+    /**
+     * @throws Throwable
+     */
     public function execute(User $user): void
     {
         $numberOfMonthsToBill = $user->number_of_months_to_pay_connection_fee;
