@@ -30,6 +30,8 @@ class UpdateUserRequest extends FormRequest
             'account_number' => ['required', 'string', "unique:users,email,$this->id", 'max:50'],
             'meter_id' => ['required', 'exists:meters,id', "unique:users,meter_id,$this->id"],
             'should_pay_connection_fee' => ['nullable', 'boolean'],
+            'connection_fee' => ['required_if:should_pay_connection_fee,true', 'nullable', 'numeric', 'min:1'],
+            'number_of_months_to_pay_connection_fee' => ['required_if:should_pay_connection_fee,true', 'numeric', 'min:1'],
             'first_connection_fee_on' => ['required_if:should_pay_connection_fee,true', 'nullable', 'date_format:Y-m'],
             'use_custom_charges_for_cost_per_unit' => ['required', 'boolean'],
             'cost_per_unit' => ['required_if:use_custom_charges_for_cost_per_unit,true', 'nullable', 'numeric'],

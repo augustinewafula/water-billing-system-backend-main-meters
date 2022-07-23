@@ -83,7 +83,9 @@ class User extends Authenticatable
         'cost_per_unit',
         'communication_channels',
         'unaccounted_debt',
-        'should_reset_password'
+        'should_reset_password',
+        'connection_fee',
+        'number_of_months_to_pay_connection_fee',
     ];
 
     /**

@@ -399,7 +399,9 @@ class UserController extends Controller
             'should_pay_connection_fee' => $request->should_pay_connection_fee,
             'use_custom_charges_for_cost_per_unit' => $request->use_custom_charges_for_cost_per_unit,
             'cost_per_unit' => $request->cost_per_unit,
-            'communication_channels' => $communication_channels
+            'communication_channels' => $communication_channels,
+            'connection_fee' => $request->connection_fee,
+            'number_of_months_to_pay_connection_fee' => $request->number_of_months_to_pay_connection_fee,
         ];
         if ($action === 'save'){
             $password = $this->generatePassword(10);
