@@ -26,7 +26,7 @@ class GenerateConnectionFeeAction
 
         for ($i = 0; $i < $numberOfMonthsToBill; $i++) {
             $currentMonth = Carbon::now()->startOfMonth()->startOfDay();
-            ConnectionFee::create([
+            $connectionFee = ConnectionFee::create([
                 'user_id' => $user->id,
                 'month' => $monthToGenerate,
                 'amount' => $billPerMonth
@@ -35,6 +35,9 @@ class GenerateConnectionFeeAction
             if ($user->account_balance <= 0 && $monthToGenerate->lessThanOrEqualTo($currentMonth)){
                 $user->update([
                     'account_balance' => ($user->account_balance - $billPerMonth)
+                ]);
+                $connectionFee->update([
+                    'added_to_user_total_debt' => true
                 ]);
             }
             $monthToGenerate = $monthToGenerate->add(1, 'month');
