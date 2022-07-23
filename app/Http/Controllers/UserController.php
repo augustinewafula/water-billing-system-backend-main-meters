@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GenerateConnectionFee;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -34,7 +35,7 @@ use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge, GeneratesMonthlyConnectionFee, GetsUserConnectionFeeBalance, SendsSetPasswordEmail;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge, GetsUserConnectionFeeBalance, SendsSetPasswordEmail;
 
     public function __construct()
     {
@@ -133,7 +134,7 @@ class UserController extends Controller
      * @return Application|ResponseFactory|JsonResponse|Response
      * @throws Exception|Throwable
      */
-    public function store(CreateUserRequest $request)
+    public function store(CreateUserRequest $request, GenerateConnectionFee $generateConnectionFee)
     {
         try {
             DB::beginTransaction();
@@ -151,7 +152,7 @@ class UserController extends Controller
 //            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
             if ($user->should_pay_connection_fee){
-                $this->generateConnectionFee($user);
+                $generateConnectionFee->execute($user);
             }
             DB::commit();
         } catch (Throwable $th) {
@@ -233,12 +234,12 @@ class UserController extends Controller
      * @return JsonResponse
      * @throws Throwable
      */
-    public function update(UpdateUserRequest $request, User $user): JsonResponse
+    public function update(UpdateUserRequest $request, User $user, GenerateConnectionFee $generateConnectionFee): JsonResponse
     {
         $data = $this->getRequestData($request, 'update');
         $user->update($data);
         if ($user->should_pay_connection_fee){
-            $this->generateConnectionFee($user);
+            $generateConnectionFee->execute($user);
         }
         return response()->json($user);
     }
@@ -361,23 +362,6 @@ class UserController extends Controller
         return $users;
     }
 
-    /**
-     * @param $user
-     * @throws Throwable
-     */
-    private function generateConnectionFee($user): void
-    {
-        $user = User::where('id', $user->id)
-            ->with('meter')
-            ->firstOrFail();
-        $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
-            ->first();
-        $connection_fee = $connection_fee_charges->connection_fee;
-        if ($user->total_connection_fee_paid < $connection_fee) {
-            $monthly_connection_fee = $connection_fee_charges->connection_fee_monthly_installment;
-            $this->generateUserMonthlyConnectionFee($user, $monthly_connection_fee);
-        }
-    }
 
     /**
      * @param $request
