@@ -21,22 +21,18 @@ trait ProcessesPostPaidTransaction
     /**
      * @param $user
      * @param MpesaTransaction $mpesa_transaction
-     * @param $monthly_service_charge_deducted
-     * @param $connection_fee_deducted
-     * @param $unaccounted_debt_deducted
+     * @param $deductions
      * @return void
      * @throws Throwable
      */
-    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted): void
+    private function processPostPaidTransaction($user, MpesaTransaction $mpesa_transaction, $deductions): void
     {
         $request = new CreateMeterBillingRequest();
         $request->setMethod('POST');
         $request->request->add([
             'meter_id' => $user->meter_id,
             'amount_paid' => $mpesa_transaction->TransAmount,
-            'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
-            'connection_fee_deducted' => $connection_fee_deducted,
-            'unaccounted_debt_deducted' => $unaccounted_debt_deducted
+            'deductions' => $deductions,
         ]);
         $mpesa_transaction_amount_formatted = number_format($mpesa_transaction->TransAmount);
         $organization_name = env('APP_NAME');
@@ -56,10 +52,11 @@ trait ProcessesPostPaidTransaction
     public function store(CreateMeterBillingRequest $request, $mpesa_transaction_id): JsonResponse
     {
         $user = User::where('meter_id', $request->meter_id)->firstOrFail();
-
-        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->monthly_service_charge_deducted, $request->connection_fee_deducted, $request->unaccounted_debt_deducted);
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $request->amount_paid, $request->deductions);
         \Log::info('User total amount: '. $user_total_amount);
+        \Log::info('User account balance: '. $user->account_balance);
         if ($user_total_amount <= 0){
+            \Log::info('Amount exhausted');
             return response()->json('Amount exhausted', 422);
         }
         $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
@@ -72,10 +69,7 @@ trait ProcessesPostPaidTransaction
         \Log::info('Pending meter readings count: '. $pending_meter_readings->count());
 
         if ($pending_meter_readings->count() === 0) {
-            $user->update([
-                'account_balance' => $user_total_amount
-            ]);
-            if ($request->monthly_service_charge_deducted === 0 && $request->connection_fee_deducted === 0 && $request->unaccounted_debt_deducted === 0) {
+            if ($request->deductions->monthly_service_charge_deducted === 0 && $request->deductions->connection_fee_deducted === 0 && $request->deductions->unaccounted_debt_deducted === 0) {
                 CreditAccount::create([
                     'user_id' => $user->id,
                     'amount' => $request->amount_paid,

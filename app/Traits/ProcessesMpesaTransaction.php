@@ -6,6 +6,7 @@ use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use JsonException;
 use Log;
 use Throwable;
@@ -33,30 +34,34 @@ trait ProcessesMpesaTransaction
             ]);
             return;
         }
-        $unaccounted_debt_deducted = 0;
+        $deductions = new Collection();
+        $deductions->monthly_service_charge_deducted = 0;
+        $deductions->unaccounted_debt_deducted = 0;
+        $deductions->connection_fee_deducted = 0;
+
         if ($this->hasUnaccountedDebt($user->unaccounted_debt)){
             $unaccounted_debt_deducted = $this->processUnaccountedDebt($user->id, $mpesa_transaction);
+            $deductions->unaccounted_debt_deducted = $unaccounted_debt_deducted;
+            Log::info("Unaccounted debt deducted: {$unaccounted_debt_deducted}");
         }
-        Log::info("unaccounted_debt_deducted: $unaccounted_debt_deducted");
 
-        $monthly_service_charge_deducted = 0;
 //        if ($this->hasMonthlyServiceChargeDebt($user->id)) {
 //            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount);
+//                $deductions->monthly_service_charge = $monthly_service_charge_deducted;
 //        }
 
-        $connection_fee_deducted = 0;
-        if ($user->should_pay_connection_fee && (($unaccounted_debt_deducted + $monthly_service_charge_deducted) < $mpesa_transaction->TransAmount) && !$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id)) {
-            $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted, $unaccounted_debt_deducted);
+        if ($user->should_pay_connection_fee && (($deductions->unaccounted_debt_deducted + $deductions->monthly_service_charge_deducted) < $mpesa_transaction->TransAmount) && !$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id)) {
+            $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $deductions);
+            $deductions->connection_fee_deducted = $connection_fee_deducted;
+            Log::info("connection_fee_deducted: $connection_fee_deducted");
         }
-        Log::info("connection_fee_deducted: $connection_fee_deducted");
-        Log::info("meter_type_name: $user->meter_type_name");
 
         if ($user->meter_type_name === 'Prepaid') {
-            $this->processPrepaidTransaction($user->meter_id, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
+            $this->processPrepaidTransaction($user->meter_id, $mpesa_transaction, $deductions);
             return;
 
         }
 
-        $this->processPostPaidTransaction($user, $mpesa_transaction, $monthly_service_charge_deducted, $connection_fee_deducted, $unaccounted_debt_deducted);
+        $this->processPostPaidTransaction($user, $mpesa_transaction, $deductions);
     }
 }

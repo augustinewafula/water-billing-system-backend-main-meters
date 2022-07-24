@@ -61,11 +61,11 @@ trait ProcessConnectionFeeTransaction
     /**
      * @throws Throwable
      */
-    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $monthly_service_charge_deducted, $unaccounted_debt_deducted)
+    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $deductions)
     {
         $user = User::findOrFail($user_id);
         $amount_paid = $amount;
-        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $amount_paid, $monthly_service_charge_deducted, 0, $unaccounted_debt_deducted);
+        $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $amount_paid, $deductions);
         $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getMonthToBill($user);
         $total_connection_fee_paid = 0;
@@ -79,9 +79,9 @@ trait ProcessConnectionFeeTransaction
             if ($this->userHasFunds($user)) {
                 $credit = $user->account_balance;
             }
-            $deductions = $monthly_service_charge_deducted + $unaccounted_debt_deducted;
-            $credit_applied = $amount_paid - ($deductions + $credit);
-            if ($deductions > 0){
+            $deductions_sum = $deductions->monthly_service_charge_deducted + $deductions->unaccounted_debt_deducted;
+            if ($deductions_sum > 0){
+                $credit += $amount_paid - $deductions_sum;
                 $amount_paid = 0;
             }
             if ($user_total_amount <= 0 && $amount_paid === 0) {
@@ -121,10 +121,10 @@ trait ProcessConnectionFeeTransaction
                     'connection_fee_id' => $connection_fee->id,
                     'amount_paid' => $amount_paid,
                     'balance' => $balance,
-                    'credit' => abs($credit_applied),
+                    'credit' => abs($credit),
                     'amount_over_paid' => $amount_over_paid,
-                    'monthly_service_charge_deducted' => $monthly_service_charge_deducted,
-                    'unaccounted_debt_deducted' => $unaccounted_debt_deducted,
+                    'monthly_service_charge_deducted' => $deductions->monthly_service_charge_deducted,
+                    'unaccounted_debt_deducted' => $deductions->unaccounted_debt_deducted,
                     'mpesa_transaction_id' => $mpesa_transaction_id,
                 ]);
                 $connection_fee->update([
@@ -151,8 +151,8 @@ trait ProcessConnectionFeeTransaction
             if ($balance > 0) {
                 break;
             }
-            $monthly_service_charge_deducted = 0;
-            $unaccounted_debt_deducted = 0;
+            $deductions->monthly_service_charge_deducted = 0;
+            $deductions->unaccounted_debt_deducted = 0;
 
         }
         $user->update([
