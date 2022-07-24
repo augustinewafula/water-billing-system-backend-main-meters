@@ -77,6 +77,7 @@ class User extends Authenticatable
         'first_connection_fee_on',
         'last_mpesa_transaction_id',
         'should_pay_connection_fee',
+        'total_connection_fee_paid',
         'account_balance',
         'account_number',
         'use_custom_charges_for_cost_per_unit',
