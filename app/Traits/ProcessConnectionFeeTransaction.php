@@ -19,19 +19,14 @@ trait ProcessConnectionFeeTransaction
 
     public function hasMonthlyConnectionFeeDebt($user_id): bool
     {
-        $last_connection_fee = ConnectionFee::where('user_id', $user_id)
-            ->latest()
-            ->limit(1)
-            ->first();
-        $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
+        $connection_fees = ConnectionFee::where('user_id', $user_id)
+            ->currentAndPreviousMonth()
+            ->notPaid()
+            ->orWhere
+            ->hasBalance()
+            ->get();
 
-        if ($last_connection_fee) {
-            $last_connection_fee_month = Carbon::createFromFormat('Y-m', $last_connection_fee->month)->startOfMonth();
-            return ($last_connection_fee->status === PaymentStatus::NOT_PAID || $last_connection_fee->status === PaymentStatus::PARTIALLY_PAID) && $last_connection_fee_month->lessThanOrEqualTo($firstDayOfCurrentMonth);
-
-        }
-
-        return false;
+        return $connection_fees->count() > 0;
 
     }
 

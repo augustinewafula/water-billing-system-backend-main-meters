@@ -55,6 +55,11 @@ class ConnectionFee extends Model
         return $query->where('month', Carbon::now()->startOfMonth()->startOfDay());
     }
 
+    public function scopeCurrentAndPreviousMonth(Builder $query): Builder
+    {
+        return $query->where('month', '<=', Carbon::now()->startOfMonth()->startOfDay());
+    }
+
 
     /**
      * Get user that owns the user reading
