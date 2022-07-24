@@ -194,7 +194,7 @@ class UserController extends Controller
             ->where('id', $id)
             ->firstOrFail();
         if ($user->should_pay_connection_fee){
-            $user->connection_fee_balance = $this->getUserConnectionFeeBalance($user->meter->station_id, $user->total_connection_fee_paid);
+            $user->connection_fee_balance = $this->getUserConnectionFeeBalance($user);
         }
         return response()->json($user);
     }

@@ -25,12 +25,9 @@ class SettingController extends Controller
         $settings = Setting::all();
         $meter_settings = MeterCharge::with('service_charges')
             ->get();
-        $connection_fee_charges = ConnectionFeeCharge::with('station')
-            ->get();
         return response()->json([
             'settings' => $settings,
             'meter_settings' => $meter_settings,
-            'connection_fee_charges' => $connection_fee_charges,
         ]);
     }
 
@@ -84,9 +81,6 @@ class SettingController extends Controller
             }
             $this->updateServiceCharge($prepaid_meter_charges->id, $prepaid_meter_service_charges);
 
-            $connection_fee_charges = json_decode($request->connection_fee_charge, false, 512, JSON_THROW_ON_ERROR);
-            $this->updateConnectionFeeCharge($connection_fee_charges);
-
             $meter_reading_on_setting->update([
                 'value' => $request->meter_reading_on
             ]);
@@ -132,14 +126,4 @@ class SettingController extends Controller
         }
     }
 
-    public function updateConnectionFeeCharge($connection_fee_charges): void
-    {
-        foreach ($connection_fee_charges as $connection_fee_charge){
-            $connection_fee_charge_record = ConnectionFeeCharge::find($connection_fee_charge->id);
-            $connection_fee_charge_record->update([
-                'connection_fee' => $connection_fee_charge->connection_fee,
-                'connection_fee_monthly_installment' => $connection_fee_charge->connection_fee_monthly_installment
-            ]);
-        }
-    }
 }

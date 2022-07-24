@@ -70,7 +70,7 @@ class MeterReadingController extends Controller
             ->where('id', $id)
             ->firstOrFail();
         if ($meter_reading->user->should_pay_connection_fee){
-            $meter_reading->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_reading->meter->station_id, $meter_reading->user->total_connection_fee_paid);
+            $meter_reading->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_reading->user);
         }
         return response()->json($meter_reading);
     }

@@ -51,7 +51,7 @@ class ConnectionFeeController extends Controller
             ->where('id', $ConnectionFee)
             ->firstOrFail();
         if ($connection_fee->user->should_pay_connection_fee){
-            $connection_fee->user->connection_fee_balance = $this->getUserConnectionFeeBalance($connection_fee->user->meter->station_id, $connection_fee->user->total_connection_fee_paid);
+            $connection_fee->user->connection_fee_balance = $this->getUserConnectionFeeBalance($connection_fee->user);
         }
         return response()->json($connection_fee);
     }

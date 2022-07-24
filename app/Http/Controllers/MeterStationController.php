@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateMeterStationRequest;
 use App\Http\Requests\UpdateMeterStationRequest;
-use App\Models\ConnectionFeeCharge;
 use App\Models\MeterStation;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -58,16 +57,8 @@ class MeterStationController extends Controller
     public function store(CreateMeterStationRequest $request)
     {
         try {
-            DB::beginTransaction();
             $meter_station = MeterStation::create($request->validated());
-            ConnectionFeeCharge::create([
-                'connection_fee' => 0,
-                'connection_fee_monthly_installment' => 0,
-                'station_id' => $meter_station->id
-            ]);
-            DB::commit();
         } catch (Throwable $throwable) {
-            DB::rollBack();
             Log::error($throwable);
             $response = ['message' => 'Something went wrong, please contact website admin for help'];
             return response($response, 500);

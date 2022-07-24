@@ -166,7 +166,7 @@ class MeterTokenController extends Controller
             ->where('id', $id)
             ->firstOrFail();
         if ($meter_token->user->should_pay_connection_fee){
-            $meter_token->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_token->meter->station_id, $meter_token->user->total_connection_fee_paid);
+            $meter_token->user->connection_fee_balance = $this->getUserConnectionFeeBalance($meter_token->user);
         }
         return response()->json($meter_token);
     }

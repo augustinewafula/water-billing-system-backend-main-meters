@@ -5,7 +5,6 @@ namespace App\Traits;
 use App\Enums\PaymentStatus;
 use App\Jobs\SendSMS;
 use App\Models\ConnectionFee;
-use App\Models\ConnectionFeeCharge;
 use App\Models\ConnectionFeePayment;
 use App\Models\MpesaTransaction;
 use App\Models\User;
@@ -41,10 +40,17 @@ trait ProcessConnectionFeeTransaction
         $user = User::where('id', $user_id)
             ->with('meter')
             ->firstOrFail();
-        $connection_fee_charges = ConnectionFeeCharge::where('station_id', $user->meter->station_id)
-            ->first();
-        $connection_fee_per_month = $connection_fee_charges->connection_fee_monthly_installment;
-        return $user->total_connection_fee_paid === $connection_fee_per_month;
+
+        return $user->total_connection_fee_paid >= $user->connection_fee;
+    }
+
+    public function getUserMonthlyConnectionFeeBill($user_id): float
+    {
+        return ConnectionFee::where('user_id', $user_id)
+            ->latest()
+            ->limit(1)
+            ->firstOrFail()
+            ->amount;
     }
 
     public function userHasFunds($user): bool
