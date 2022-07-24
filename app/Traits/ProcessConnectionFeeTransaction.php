@@ -61,7 +61,7 @@ trait ProcessConnectionFeeTransaction
     /**
      * @throws Throwable
      */
-    public function storeConnectionFee($user_id, $mpesa_transaction, $amount, $monthly_service_charge_deducted, $unaccounted_debt_deducted)
+    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $monthly_service_charge_deducted, $unaccounted_debt_deducted)
     {
         $user = User::findOrFail($user_id);
         $amount_paid = $amount;

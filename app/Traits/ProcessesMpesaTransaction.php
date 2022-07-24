@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\UnresolvedMpesaTransactionReason;
+use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
 use JsonException;
@@ -45,7 +46,7 @@ trait ProcessesMpesaTransaction
 
         $connection_fee_deducted = 0;
         if ($user->should_pay_connection_fee && (($unaccounted_debt_deducted + $monthly_service_charge_deducted) < $mpesa_transaction->TransAmount) && !$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id)) {
-            $connection_fee_deducted = $this->storeConnectionFee($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted, $unaccounted_debt_deducted);
+            $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $monthly_service_charge_deducted, $unaccounted_debt_deducted);
         }
         Log::info("connection_fee_deducted: $connection_fee_deducted");
         Log::info("meter_type_name: $user->meter_type_name");
