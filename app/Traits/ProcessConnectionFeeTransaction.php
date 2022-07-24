@@ -156,7 +156,7 @@ trait ProcessConnectionFeeTransaction
 
         }
         $user->update([
-            'total_connection_fee_paid' => $user->account_balance + $total_connection_fee_paid,
+            'total_connection_fee_paid' => $user->total_connection_fee_paid + $total_connection_fee_paid,
         ]);
         $total_connection_fee_paid_formatted = number_format($total_connection_fee_paid);
 
