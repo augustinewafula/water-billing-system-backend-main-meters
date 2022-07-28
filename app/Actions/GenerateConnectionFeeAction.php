@@ -7,6 +7,7 @@ use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Traits\ProcessConnectionFeeTransaction;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class GenerateConnectionFeeAction
@@ -44,7 +45,13 @@ class GenerateConnectionFeeAction
         }
         if ($user->account_balance > 0 && (!$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id))) {
             $mpesa_transaction = MpesaTransaction::find($user->last_mpesa_transaction_id);
-            $this->storeConnectionFeeBill($user->id, $mpesa_transaction, 0, 0, 0);
+
+            $deductions = new Collection();
+            $deductions->monthly_service_charge_deducted = 0;
+            $deductions->unaccounted_debt_deducted = 0;
+            $deductions->connection_fee_deducted = 0;
+
+            $this->storeConnectionFeeBill($user->id, $mpesa_transaction, 0, $deductions);
         }
 
     }
