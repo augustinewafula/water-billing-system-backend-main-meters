@@ -44,8 +44,7 @@ class ConnectionFeeService
 
     public function hasConnectionFeeBeenUpdated($user, $connectionFee, $numberOfMonthsToPay): bool
     {
-
-        return $user->number_of_months_to_pay_connection_fee !== $numberOfMonthsToPay && $user->connection_fee !== $connectionFee;
+        return (int) $user->number_of_months_to_pay_connection_fee !== (int) $numberOfMonthsToPay || (int) $user->connection_fee !== (int) $connectionFee;
 
     }
 
@@ -78,34 +77,10 @@ class ConnectionFeeService
     private function removeConnectionFeeBillFromUserAccount($connectionFee): void
     {
         $user = User::findOrFail($connectionFee->user_id);
-        if ($connectionFee->status === PaymentStatus::NOT_PAID){
-            $user_total_amount = $user->account_balance + $connectionFee->amount;
-            \Log::info('account_balance: ' . $user->account_balance . 'Connection fee amount: ' . $connectionFee->amount . 'Total amount: ' . $user_total_amount);
-            $user->update(['account_balance' => $user_total_amount]);
+        $user_account_balance = $user->account_balance;
+        $user_account_balance += $connectionFee->amount;
 
-            return;
-        }
-
-        if ($connectionFee->status === PaymentStatus::PARTIALLY_PAID || $connectionFee->status === PaymentStatus::OVER_PAID || $connectionFee->status === PaymentStatus::PAID){
-            $connection_fee_payments = ConnectionFeePayment::where('meter_reading_id', $connectionFee->id)->get();
-            $user_total_amount = $user->account_balance;
-            foreach ($connection_fee_payments as $connection_fee_payment){
-                if ($connection_fee_payment->amount_paid > 0){
-                    $actual_meter_reading_amount_paid = $connection_fee_payment->amount_paid - ($connection_fee_payment->monthly_service_charge_deducted);
-                }else{
-                    $actual_meter_reading_amount_paid = $connection_fee_payment->credit - ($connection_fee_payment->monthly_service_charge_deducted);
-                }
-                if ($connectionFee->status === PaymentStatus::PARTIALLY_PAID || $connectionFee->status === PaymentStatus::PAID){
-                    $user_total_amount += $actual_meter_reading_amount_paid;
-
-                    continue;
-                }
-                if ($connectionFee->status === PaymentStatus::OVER_PAID){
-                    $user_total_amount += ($actual_meter_reading_amount_paid - $connection_fee_payment->amount_over_paid);
-                }
-            }
-            $user->update(['account_balance' => $user_total_amount]);
-        }
+        $user->update(['account_balance' => $user_account_balance]);
 
     }
 
