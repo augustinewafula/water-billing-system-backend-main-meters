@@ -184,31 +184,10 @@ class MeterReadingController extends Controller
     public function removeReadingsBillFromUserAccount($meterReading): void
     {
         $user = User::where('meter_id', $meterReading->meter_id)->firstOrFail();
-        if ($meterReading->status === PaymentStatus::NOT_PAID){
-            $user_total_amount = $user->account_balance + $meterReading->bill;
-            $user->update(['account_balance' => $user_total_amount]);
-            return;
-        }
+        $user_account_balance = $user->account_balance;
+        $user_account_balance += $meterReading->bill;
 
-        if ($meterReading->status === PaymentStatus::PARTIALLY_PAID || $meterReading->status === PaymentStatus::OVER_PAID || $meterReading->status === PaymentStatus::PAID){
-            $meter_reading_payments = MeterBilling::where('meter_reading_id', $meterReading->id)->get();
-            $user_total_amount = $user->account_balance;
-            foreach ($meter_reading_payments as $meter_reading_payment){
-                if ($meter_reading_payment->amount_paid > 0){
-                    $actual_meter_reading_amount_paid = $meter_reading_payment->amount_paid - ($meter_reading_payment->monthly_service_charge_deducted + $meter_reading_payment->connection_fee_deducted);
-                }else{
-                    $actual_meter_reading_amount_paid = $meter_reading_payment->credit - ($meter_reading_payment->monthly_service_charge_deducted + $meter_reading_payment->connection_fee_deducted);
-                }
-                if ($meterReading->status === PaymentStatus::PARTIALLY_PAID || $meterReading->status === PaymentStatus::PAID){
-                    $user_total_amount += $actual_meter_reading_amount_paid;
-                    continue;
-                }
-                if ($meterReading->status === PaymentStatus::OVER_PAID){
-                    $user_total_amount += ($actual_meter_reading_amount_paid - $meter_reading_payment->amount_over_paid);
-                }
-            }
-            $user->update(['account_balance' => $user_total_amount]);
-        }
+        $user->update(['account_balance' => $user_account_balance]);
 
     }
 
