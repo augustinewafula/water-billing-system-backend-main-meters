@@ -31,7 +31,7 @@ class MpesaTransactionRequest extends FormRequest
     public function messages()
     {
         return [
-            'TransID.unique' => 'Transaction already exists.'
+            'TransID.unique' => 'Invalid transaction.'
         ];
     }
 }
