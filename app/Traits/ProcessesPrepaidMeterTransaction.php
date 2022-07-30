@@ -60,6 +60,7 @@ trait ProcessesPrepaidMeterTransaction
             $this->notifyUser((object)['message' => $message, 'title' => 'Insufficient amount'], $user, 'general');
             return;
         }
+        Log::info('User total amount after deductions: '. $user_total_amount);
         $units = $this->calculateUnits($user_total_amount, $user);
         Log::info("$units: $units");
         if ($units < 0) {
