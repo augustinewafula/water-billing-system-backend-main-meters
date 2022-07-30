@@ -88,7 +88,12 @@ class ConnectionFeeController extends Controller
             $connection_fee = $connection_fee->whereBetween('connection_fees.created_at', [$formattedFromDate, $formattedToDate]);
         }
 
-        if ($request->has('month')) {
+        if ($request->has('year') && !empty($request->query('year')) && $request->query('year') !== 'undefined') {
+            $connection_fee = $connection_fee->whereYear('month', $request->query('year'));
+
+        }
+
+        if ($request->has('month') && !empty($request->query('month')) && $request->query('month') !== 'undefined') {
             $formattedFromDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->startOfDay();
             $connection_fee = $connection_fee->where('month', $formattedFromDate);
 
