@@ -241,7 +241,7 @@ class UserController extends Controller
 
         try {
             DB::beginTransaction();
-            $shouldUpdateConnectionFee = $user->should_pay_connection_fee && $connectionFeeService->hasConnectionFeeBeenUpdated($user, $request->connection_fee, $request->number_of_months_to_pay_connection_fee);
+            $shouldUpdateConnectionFee = $request->should_pay_connection_fee && $connectionFeeService->hasConnectionFeeBeenUpdated($user, $request->connection_fee, $request->number_of_months_to_pay_connection_fee);
             if ($shouldUpdateConnectionFee){
                 $connectionFeeService->destroyAll($user);
                 $user->refresh();
