@@ -71,21 +71,13 @@ trait ProcessConnectionFeeTransaction
         $total_connection_fee_paid = 0;
 
         if ($paidToMeterConnectionAccount){
-            $lastBill = ConnectionFee::where('user_id', $user_id)
-                ->latest()
-                ->limit(1)
-                ->first();
-            if ($lastBill){
-                $lastMonthToBill = Carbon::create($lastBill->month)->startOfMonth();
-            }
+            $lastMonthToBill = $this->getLastMonthToBill($user_id, $lastMonthToBill);
         }
         Log::info('Storing connection fee bill for user: ' . $user_id);
         Log::info('Last month to bill: ' . $lastMonthToBill->format('Y-m-d'));
         Log::info('user_total_amount: ' . $user_total_amount);
 
         while ($month_to_bill->lessThanOrEqualTo($lastMonthToBill)) {
-            Log::info('Month to bill: ' . $month_to_bill->format('Y-m-d'));
-            Log::info('user_total_amount: ' . $user_total_amount);
             $credit = 0;
             $user = $user->refresh();
             $connection_fee = ConnectionFee::where('user_id', $user->id)
@@ -188,6 +180,23 @@ trait ProcessConnectionFeeTransaction
             ->limit(1)
             ->first();
         return Carbon::createFromFormat('Y-m', $last_connection_fee->month)->startOfMonth();
+    }
+
+    /**
+     * @param $user_id
+     * @param bool|Carbon $lastMonthToBill
+     * @return Carbon
+     */
+    private function getLastMonthToBill($user_id, bool|Carbon $lastMonthToBill): Carbon
+    {
+        $lastBill = ConnectionFee::where('user_id', $user_id)
+            ->latest()
+            ->limit(1)
+            ->first();
+        if ($lastBill) {
+            $lastMonthToBill = Carbon::create($lastBill->month)->startOfMonth();
+        }
+        return $lastMonthToBill;
     }
 
 }
