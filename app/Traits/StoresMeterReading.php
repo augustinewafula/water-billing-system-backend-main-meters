@@ -18,6 +18,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Log;
 use Throwable;
 
@@ -116,20 +117,32 @@ trait StoresMeterReading
     public function processAvailableCredits($user, $meter_reading): void
     {
         throw_if($user === null, 'RuntimeException', 'Meter user not found');
+        $deductions = $this->initializeDeductions();
         if ($this->userHasAccountBalance($user)) {
             $request = new CreateMeterBillingRequest();
             $request->setMethod('POST');
             $request->request->add([
                 'meter_id' => $user->meter_id,
                 'amount_paid' => 0,
-                'monthly_service_charge_deducted' => 0,
-                'connection_fee_deducted' => 0,
-                'unaccounted_debt_deducted' => 0,
+                'deductions' => $deductions,
             ]);
-            $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, 0, 0, 0, 0);
+
+            $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, 0, $deductions);
 
             $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id, $user_total_amount);
         }
+    }
+
+    /**
+     * @return Collection
+     */
+    private function initializeDeductions(): Collection
+    {
+        $deductions = new Collection();
+        $deductions->monthly_service_charge_deducted = 0;
+        $deductions->unaccounted_debt_deducted = 0;
+        $deductions->connection_fee_deducted = 0;
+        return $deductions;
     }
 
     public function userHasAccountBalance($user): bool
