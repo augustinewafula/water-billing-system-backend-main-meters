@@ -61,16 +61,31 @@ trait ProcessConnectionFeeTransaction
     /**
      * @throws Throwable
      */
-    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $deductions)
+    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $deductions, $paidToMeterConnectionAccount = false)
     {
         $user = User::findOrFail($user_id);
         $amount_paid = $amount;
         $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $amount_paid, $deductions);
-        $firstDayOfCurrentMonth = Carbon::now()->startOfMonth();
+        $lastMonthToBill = Carbon::now()->startOfMonth();
         $month_to_bill = $this->getMonthToBill($user);
         $total_connection_fee_paid = 0;
 
-        while ($month_to_bill->lessThanOrEqualTo($firstDayOfCurrentMonth)) {
+        if ($paidToMeterConnectionAccount){
+            $lastBill = ConnectionFee::where('user_id', $user_id)
+                ->latest()
+                ->limit(1)
+                ->first();
+            if ($lastBill){
+                $lastMonthToBill = Carbon::create($lastBill->month)->startOfMonth();
+            }
+        }
+        Log::info('Storing connection fee bill for user: ' . $user_id);
+        Log::info('Last month to bill: ' . $lastMonthToBill->format('Y-m-d'));
+        Log::info('user_total_amount: ' . $user_total_amount);
+
+        while ($month_to_bill->lessThanOrEqualTo($lastMonthToBill)) {
+            Log::info('Month to bill: ' . $month_to_bill->format('Y-m-d'));
+            Log::info('user_total_amount: ' . $user_total_amount);
             $credit = 0;
             $user = $user->refresh();
             $connection_fee = ConnectionFee::where('user_id', $user->id)
@@ -146,13 +161,8 @@ trait ProcessConnectionFeeTransaction
                 Log::error($th);
             }
             $month_to_bill = $month_to_bill->add(1, 'month');
-            $user_total_amount = 0;
+            $user_total_amount -= $amount_to_deduct;
             $amount_paid = 0;
-            if ($balance > 0) {
-                break;
-            }
-            $deductions->monthly_service_charge_deducted = 0;
-            $deductions->unaccounted_debt_deducted = 0;
 
         }
         $user->update([
@@ -167,7 +177,7 @@ trait ProcessConnectionFeeTransaction
         return $total_connection_fee_paid;
     }
 
-    public function getMonthToBill($user)
+    public function getMonthToBill($user): Carbon
     {
         $last_connection_fee = ConnectionFee::where('user_id', $user->id)
             ->where(function ($users) {
