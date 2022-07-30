@@ -11,7 +11,7 @@ use DB;
 
 trait CalculatesUserAmount
 {
-    public function calculateUserTotalAmount($user_account_balance, $transaction_amount, $deductions, $ignore_account_balance = false)
+    public function calculateUserTotalAmount($user_account_balance, $transaction_amount, $deductions)
     {
         $user_total_amount = $transaction_amount;
         if ($deductions->monthly_service_charge_deducted > 0) {
@@ -23,7 +23,9 @@ trait CalculatesUserAmount
         if ($deductions->connection_fee_deducted > 0) {
             $user_total_amount -= $deductions->connection_fee_deducted;
         }
-        if ($user_account_balance > 0 && !$ignore_account_balance) {
+
+        $deductions_sum = $deductions->monthly_service_charge_deducted + $deductions->connection_fee_deducted + $deductions->unaccounted_debt_deducted;
+        if ($user_account_balance > 0 && $deductions_sum === 0) {
             $user_total_amount += $user_account_balance;
 
         }
