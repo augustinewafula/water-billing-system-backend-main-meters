@@ -30,7 +30,8 @@ class ConnectionFeeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $connection_fees = ConnectionFee::with('user');
-        $connection_fees = $this->filterQuery($request, $connection_fees);
+        $connection_fees = $this->filterQuery($request, $connection_fees)
+            ->withSum('connection_fee_payments', 'amount_paid');
 
         $perPage = 10;
         if ($request->has('perPage')){
@@ -49,6 +50,7 @@ class ConnectionFeeController extends Controller
     {
         $connection_fee = ConnectionFee::with('user.meter', 'connection_fee_payments')
             ->where('id', $ConnectionFee)
+            ->withSum('connection_fee_payments', 'amount_paid')
             ->firstOrFail();
         if ($connection_fee->user->should_pay_connection_fee){
             $connection_fee->user->connection_fee_balance = $this->getUserConnectionFeeBalance($connection_fee->user);
