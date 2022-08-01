@@ -73,6 +73,12 @@ trait ProcessConnectionFeeTransaction
         if ($paidToMeterConnectionAccount){
             $lastMonthToBill = $this->getLastMonthToBill($user_id, $lastMonthToBill);
         }
+
+        $mpesa_transaction_id = null;
+        if (is_object($mpesa_transaction)){
+            $mpesa_transaction_id = $mpesa_transaction->id;
+        }
+
         Log::info('Storing connection fee bill for user: ' . $user_id);
         Log::info('Last month to bill: ' . $lastMonthToBill->format('Y-m-d'));
         Log::info('user_total_amount: ' . $user_total_amount);
@@ -94,6 +100,9 @@ trait ProcessConnectionFeeTransaction
             if ($user_total_amount <= 0 && $amount_paid === 0) {
                 break;
             }
+            if ($amount_paid === 0 && $credit <= 0 ){
+                $credit = $user_total_amount;
+            }
             $expected_amount = $connection_fee->amount;
             if ($connection_fee->status === PaymentStatus::PARTIALLY_PAID) {
                 $connection_fee_payment = ConnectionFeePayment::where('connection_fee_id', $connection_fee->id)
@@ -111,6 +120,9 @@ trait ProcessConnectionFeeTransaction
                 if ($amount_over_paid > 0) {
                     $status = PaymentStatus::OVER_PAID;
                 }
+                if ($paidToMeterConnectionAccount && $month_to_bill->equalTo(Carbon::now()->startOfMonth()->startOfDay())){
+                    $user_account_balance = 0;
+                }
             } else {
                 $balance = $expected_amount - $user_total_amount;
                 $amount_over_paid = 0;
@@ -120,10 +132,6 @@ trait ProcessConnectionFeeTransaction
             }
             try {
                 DB::beginTransaction();
-                $mpesa_transaction_id = null;
-                if (is_object($mpesa_transaction)){
-                    $mpesa_transaction_id = $mpesa_transaction->id;
-                }
                     ConnectionFeePayment::create([
                     'connection_fee_id' => $connection_fee->id,
                     'amount_paid' => $amount_paid,
@@ -137,10 +145,12 @@ trait ProcessConnectionFeeTransaction
                 $connection_fee->update([
                     'status' => $status
                 ]);
-                $user->update([
-                    'account_balance' => $user_account_balance,
-                    'last_mpesa_transaction_id' => $mpesa_transaction_id
-                ]);
+
+                if ($month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
+                    $user->update([
+                        'account_balance' => $user_account_balance
+                    ]);
+                }
                 if (is_object($mpesa_transaction)) {
                     MpesaTransaction::find($mpesa_transaction_id)->update([
                         'Consumed' => true,
@@ -159,6 +169,7 @@ trait ProcessConnectionFeeTransaction
         }
         $user->update([
             'total_connection_fee_paid' => $user->total_connection_fee_paid + $total_connection_fee_paid,
+            'last_mpesa_transaction_id' => $mpesa_transaction_id
         ]);
         $total_connection_fee_paid_formatted = number_format($total_connection_fee_paid);
 
