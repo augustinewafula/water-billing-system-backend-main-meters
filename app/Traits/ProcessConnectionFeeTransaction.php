@@ -146,7 +146,7 @@ trait ProcessConnectionFeeTransaction
                     'status' => $status
                 ]);
 
-                if ($month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
+                if ($month_to_bill->equalTo($lastMonthToBill) || $month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
                     $user->update([
                         'account_balance' => $user_account_balance
                     ]);
