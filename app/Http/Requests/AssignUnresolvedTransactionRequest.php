@@ -25,7 +25,8 @@ class AssignUnresolvedTransactionRequest extends FormRequest
     {
         return [
             'id' => ['required', 'string', 'exists:unresolved_mpesa_transactions'],
-            'user_id' => ['required', 'string', 'exists:users,id']
+            'user_id' => ['required', 'string', 'exists:users,id'],
+            'account_type' => ['required', 'numeric', 'in:1,2'],
         ];
     }
 }

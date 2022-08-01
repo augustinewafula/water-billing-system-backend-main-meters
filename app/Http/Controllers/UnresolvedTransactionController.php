@@ -38,9 +38,14 @@ class UnresolvedTransactionController extends Controller
             $unresolved_mpesa_transaction = UnresolvedMpesaTransaction::find($request->id);
             $mpesa_transaction = MpesaTransaction::find($unresolved_mpesa_transaction->mpesa_transaction_id);
 
+            $account_number = $user->account_number;
+            if ($request->account_type === 2){
+                $account_number = $user->account_number.'-meter';
+            }
+
             DB::beginTransaction();
             $mpesa_transaction->update([
-                'BillRefNumber' => $user->account_number
+                'BillRefNumber' => $account_number
             ]);
             $this->processMpesaTransaction($mpesa_transaction);
             $unresolved_mpesa_transaction->forceDelete();

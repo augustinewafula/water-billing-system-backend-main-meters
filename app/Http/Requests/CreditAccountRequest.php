@@ -12,7 +12,7 @@ class CreditAccountRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -27,6 +27,7 @@ class CreditAccountRequest extends FormRequest
         return [
             'user_id' => ['required', 'string', 'exists:users,id', new canGenerateToken()],
             'amount' => ['required', 'numeric', 'min:1'],
+            'account_type' => ['required', 'numeric', 'in:1,2'],
             'mpesa_transaction_reference' => ['nullable', 'string'],
         ];
     }

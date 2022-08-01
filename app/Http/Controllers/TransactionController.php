@@ -126,6 +126,10 @@ class TransactionController extends Controller
         } else {
             $transaction_id = $request->mpesa_transaction_reference;
         }
+        $account_number = $user->account_number;
+        if ($request->account_type === 2){
+            $account_number = $user->account_number.'-meter';
+        }
 
         $mpesa_request = new MpesaTransactionRequest();
         $mpesa_request->setMethod('POST');
@@ -135,7 +139,7 @@ class TransactionController extends Controller
             'TransAmount' => $request->amount,
             'FirstName' => $user->name,
             'MSISDN' => $this->phoneNumberToInternationalFormat($user->phone),
-            'BillRefNumber' => $user->account_number,
+            'BillRefNumber' => $account_number,
         ]);
         try {
             $mpesa_request->validate((new MpesaTransactionRequest)->rules());
