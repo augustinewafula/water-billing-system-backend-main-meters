@@ -31,7 +31,7 @@ class UnresolvedTransactionController extends Controller
      * @throws Throwable
      * @throws JsonException
      */
-    public function assign(AssignUnresolvedTransactionRequest $request)
+    public function assign(AssignUnresolvedTransactionRequest $request): JsonResponse
     {
         try {
             $user = User::find($request->user_id);
@@ -54,7 +54,7 @@ class UnresolvedTransactionController extends Controller
             DB::rollBack();
             Log::error($throwable);
             $response = ['message' => 'Something went wrong.'];
-            return response($response, 422);
+            return response()->json($response, 422);
         }
         return response()->json('success');
 
