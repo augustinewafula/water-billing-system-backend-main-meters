@@ -11,6 +11,9 @@ use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
 use App\Models\User;
+use DB;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Throwable;
 
@@ -70,18 +73,36 @@ trait ProcessesPostPaidTransaction
 
         if ($pending_meter_readings->count() === 0) {
             if ($request->deductions->monthly_service_charge_deducted === 0 && $request->deductions->connection_fee_deducted === 0 && $request->deductions->unaccounted_debt_deducted === 0) {
-                CreditAccount::create([
-                    'user_id' => $user->id,
-                    'amount' => $request->amount_paid,
-                    'mpesa_transaction_id' => $mpesa_transaction_id,
-                ]);
+                $this->creditUserAccount($user, $request->amount_paid, $mpesa_transaction_id, $user_total_amount);
             }
             return response()->json('Meter reading not found', 422);
         }
 
-        $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount);
+        $this->processMeterBillings($request->amount_paid, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount);
         SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
         \Log::info("Switching on paid meter id: $request->meter_id");
         return response()->json('created', 201);
+    }
+
+    /**
+     * @param Model|Builder|User $user
+     * @param $amount_paid
+     * @param $mpesa_transaction_id
+     * @param mixed $user_total_amount
+     * @return void
+     * @throws Throwable
+     */
+    private function creditUserAccount(Model|Builder|User $user, $amount_paid, $mpesa_transaction_id, mixed $user_total_amount): void
+    {
+        DB::transaction(static function () use ($user, $amount_paid, $mpesa_transaction_id, $user_total_amount) {
+            CreditAccount::create([
+                'user_id' => $user->id,
+                'amount' => $amount_paid,
+                'mpesa_transaction_id' => $mpesa_transaction_id,
+            ]);
+            $user->update([
+                'account_balance' => $user_total_amount
+            ]);
+        });
     }
 }
