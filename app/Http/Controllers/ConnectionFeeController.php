@@ -31,7 +31,8 @@ class ConnectionFeeController extends Controller
     {
         $connection_fees = ConnectionFee::with('user');
         $connection_fees = $this->filterQuery($request, $connection_fees)
-            ->withSum('connection_fee_payments', 'amount_paid');
+            ->withSum('connection_fee_payments', 'amount_paid')
+            ->withSum('connection_fee_payments', 'credit');
 
         $perPage = 10;
         if ($request->has('perPage')){
