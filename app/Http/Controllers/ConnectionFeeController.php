@@ -52,6 +52,7 @@ class ConnectionFeeController extends Controller
         $connection_fee = ConnectionFee::with('user.meter', 'connection_fee_payments')
             ->where('id', $ConnectionFee)
             ->withSum('connection_fee_payments', 'amount_paid')
+            ->withSum('connection_fee_payments', 'credit')
             ->firstOrFail();
         if ($connection_fee->user->should_pay_connection_fee){
             $connection_fee->user->connection_fee_balance = $this->getUserConnectionFeeBalance($connection_fee->user);
