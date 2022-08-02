@@ -78,7 +78,7 @@ trait ProcessesPostPaidTransaction
             return response()->json('Meter reading not found', 422);
         }
 
-        $this->processMeterBillings($request->amount_paid, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount);
+        $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount);
         SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
         \Log::info("Switching on paid meter id: $request->meter_id");
         return response()->json('created', 201);
