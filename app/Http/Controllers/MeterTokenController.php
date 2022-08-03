@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\PrepaidMeterService;
 use App\Traits\ClearsMeterToken;
 use App\Traits\GetsUserConnectionFeeBalance;
+use App\Traits\NotifiesUser;
 use App\Traits\ProcessesPrepaidMeterTransaction;
 use Carbon\Carbon;
 use DB;
@@ -25,7 +26,7 @@ use Throwable;
 
 class MeterTokenController extends Controller
 {
-    use ProcessesPrepaidMeterTransaction, ClearsMeterToken, GetsUserConnectionFeeBalance;
+    use ProcessesPrepaidMeterTransaction, ClearsMeterToken, GetsUserConnectionFeeBalance, NotifiesUser;
 
     public function __construct()
     {
@@ -80,6 +81,10 @@ class MeterTokenController extends Controller
             $token = $this->clearMeterToken($meter_number);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
             $token = strtok($token, ',');
+
+            $user = User::where('meter_id', $request->meter_id)->firstOrFail();
+            $message = "Hello, $user->name. To clear the token for meter $meter_number, please input the following token: $token";
+            $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
 
         } catch (Throwable $throwable){
             $response = ['message' => 'Failed to reset token'];
