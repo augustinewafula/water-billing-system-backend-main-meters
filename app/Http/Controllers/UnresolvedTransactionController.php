@@ -13,18 +13,37 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JsonException;
 use Log;
+use Str;
 use Throwable;
 
 class UnresolvedTransactionController extends Controller
 {
     use ProcessesMpesaTransaction;
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(UnresolvedMpesaTransaction::select('unresolved_mpesa_transactions.reason', 'unresolved_mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.BillRefNumber as account_number', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'unresolved_mpesa_transactions.mpesa_transaction_id')
-            ->latest('transaction_time')
-            ->get());
+        $sortBy = $request->query('sortBy');
+        $sortOrder = $request->query('sortOrder');
+        $search = $request->query('search');
+
+        $unresolvedTransaction = UnresolvedMpesaTransaction::select('unresolved_mpesa_transactions.reason', 'unresolved_mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.BillRefNumber as account_number', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'unresolved_mpesa_transactions.mpesa_transaction_id');
+        if ($sortBy !== 'undefined') {
+            $unresolvedTransaction->orderBy($sortBy, $sortOrder);
+        }
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        if ($request->has('search') && Str::length($request->query('search')) > 0) {
+            $unresolvedTransaction = $unresolvedTransaction->where(function ($query) use ($search) {
+                $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%')
+                    ->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%')
+                    ->orWhere('mpesa_transactions.BillRefNumber', 'like', '%' . $search . '%');
+            });
+        }
+
+        return response()->json($unresolvedTransaction->paginate($perPage));
     }
 
     /**
