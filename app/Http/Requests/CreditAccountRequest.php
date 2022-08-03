@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\canGenerateToken;
+use App\Rules\canPayConnectionFee;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreditAccountRequest extends FormRequest
@@ -25,7 +26,7 @@ class CreditAccountRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => ['required', 'string', 'exists:users,id', new canGenerateToken()],
+            'user_id' => ['required', 'string', 'exists:users,id', new canGenerateToken(), new canPayConnectionFee()],
             'amount' => ['required', 'numeric', 'min:1'],
             'account_type' => ['required', 'numeric', 'in:1,2'],
             'mpesa_transaction_reference' => ['nullable', 'string'],
