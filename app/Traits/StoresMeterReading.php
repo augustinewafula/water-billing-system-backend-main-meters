@@ -51,11 +51,11 @@ trait StoresMeterReading
             ->first()
             ->value;
         $send_sms_at = Carbon::now()->toDateTimeString();
+        $minutes = random_int(0 , 60);
         if ($delay_meter_reading_sms) {
             $meter_reading_sms_delay_days = Setting::where('key', 'meter_reading_sms_delay_days')
                 ->first()
                 ->value;
-            $minutes = random_int(0 , 60);
             $send_sms_at = Carbon::now()
                 ->startOfDay()
                 ->add($meter_reading_sms_delay_days, 'day')
@@ -63,7 +63,7 @@ trait StoresMeterReading
                 ->toDateTimeString();
         }
 
-        $bill_due_on = Carbon::parse($bill_due_on . 'th ' . $next_month)->startOfDay()->toDateTimeString();
+        $bill_due_on = Carbon::parse($bill_due_on . 'th ' . $next_month)->startOfDay()->add($minutes, 'minute')->toDateTimeString();
         $tell_user_meter_disconnection_on = Carbon::parse($tell_user_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->toDateTimeString();
         $actual_meter_disconnection_on = Carbon::parse($actual_meter_disconnection_on . 'th ' . $next_month)->startOfDay()->toDateTimeString();
 
