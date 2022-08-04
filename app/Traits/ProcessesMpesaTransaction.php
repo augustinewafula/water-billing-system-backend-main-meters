@@ -16,7 +16,7 @@ use Throwable;
 
 trait ProcessesMpesaTransaction
 {
-    use ProcessesPrepaidMeterTransaction, ProcessesPostPaidTransaction, ProcessesMonthlyServiceChargeTransaction, ProcessConnectionFeeTransaction,ProcessUnaccountedDebt;
+    use ProcessesPrepaidMeterTransaction, ProcessesPostPaidTransaction, ProcessesMonthlyServiceChargeTransaction, ProcessConnectionFeeTransaction,ProcessUnaccountedDebt, initializesDeductionsAmount;
 
     /**
      * @throws JsonException
@@ -114,15 +114,4 @@ trait ProcessesMpesaTransaction
             ->first();
     }
 
-    /**
-     * @return Collection
-     */
-    private function initializeDeductions(): Collection
-    {
-        $deductions = new Collection();
-        $deductions->monthly_service_charge_deducted = 0;
-        $deductions->unaccounted_debt_deducted = 0;
-        $deductions->connection_fee_deducted = 0;
-        return $deductions;
-    }
 }
