@@ -48,10 +48,14 @@ class Meter extends Model
     }
 
     public function getCurrentReadingAttribute(){
-        return DailyMeterReading::where('meter_id', $this->attributes['id'])
+         $current_reading  = DailyMeterReading::where('meter_id', $this->attributes['id'])
             ->latest()
-            ->first()
-            ->reading;
+            ->first();
+         if($current_reading){
+            return $current_reading->reading;
+         }
+
+         return  null;
     }
 
 
