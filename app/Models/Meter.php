@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,9 @@ class Meter extends Model
 
     protected $fillable = ['number', 'valve_status', 'station_id', 'type_id', 'mode', 'last_reading', 'last_reading_date', 'last_billing_date', 'last_communication_date', 'battery_voltage', 'signal_intensity', 'main_meter', 'sim_card_number', 'valve_last_switched_off_by', 'can_generate_token'];
 
+    protected $appends = ['current_reading'];
+
+
     /**
      * The attributes that should be cast.
      *
@@ -42,6 +46,14 @@ class Meter extends Model
             ->logOnly($this->fillable);
         // Chain fluent methods for configuration options
     }
+
+    public function getCurrentReadingAttribute(){
+        return DailyMeterReading::where('meter_id', $this->attributes['id'])
+            ->latest()
+            ->first()
+            ->reading;
+    }
+
 
     /**
      * Get meter station that owns the meter
