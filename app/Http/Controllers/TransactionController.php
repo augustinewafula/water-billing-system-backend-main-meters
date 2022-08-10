@@ -147,7 +147,7 @@ class TransactionController extends Controller
             ProcessTransaction::dispatch($mpesa_transaction);
         }catch (Throwable $throwable){
             \Log::error($throwable);
-            $response = ['message' => 'Failed to credit account'];
+            $response = ['message' => 'Failed to credit account: '.$throwable->getMessage()];
             return response()->json($response, 422);
         }
         return response()->json('success', 201);
