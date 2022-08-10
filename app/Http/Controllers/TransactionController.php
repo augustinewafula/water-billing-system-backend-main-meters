@@ -229,6 +229,7 @@ class TransactionController extends Controller
             $query = $query->where(function ($query) use ($search) {
                 $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%')
                 ->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%')
+                    ->orWhere('mpesa_transactions.TransID', 'like', '%' . $search . '%')
                 ->orWhere('users.account_number', 'like', '%' . $search . '%')
                 ->orWhere('users.name', 'like', '%' . $search . '%');
             });
