@@ -56,7 +56,13 @@ class MeterReadingController extends Controller
         if ($request->has('perPage')){
             $perPage = $request->perPage;
         }
-        return response()->json($meter_readings->paginate($perPage));
+
+        $meter_readings_collection = $meter_readings->get();
+        return response()->json([
+            'meter_readings' => $meter_readings->paginate($perPage),
+            'total_bill' => $meter_readings->sum('bill'),
+            'total_amount_paid' => $meter_readings_collection->sum('meter_billings_sum_amount_paid') + $meter_readings_collection->sum('meter_billings_sum_credit'),
+        ]);
     }
 
 
