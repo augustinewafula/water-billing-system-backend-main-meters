@@ -219,7 +219,6 @@ class MeterReadingController extends Controller
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $meter_readings = $meter_readings->where(function ($meter_readings) use ($search) {
                 $meter_readings->where('meter_readings.current_reading', 'like', '%' . $search . '%')
-                    ->orWhere('meters.number', 'like', '%' . $search . '%')
                     ->orWhere('users.name', 'like', '%' . $search . '%')
                     ->orWhere('users.account_number', 'like', '%' . $search . '%')
                     ->orWhere('meter_readings.bill', 'like', '%' . $search . '%')
