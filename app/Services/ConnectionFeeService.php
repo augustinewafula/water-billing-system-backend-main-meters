@@ -42,9 +42,9 @@ class ConnectionFeeService
         $connectionFee->forceDelete();
     }
 
-    public function hasConnectionFeeBeenUpdated($user, $connectionFee, $numberOfMonthsToPay): bool
+    public function hasConnectionFeeBeenUpdated($user, $connectionFee, $numberOfMonthsToPay, $firstConnectionFeeOn): bool
     {
-        return (int) $user->number_of_months_to_pay_connection_fee !== (int) $numberOfMonthsToPay || (int) $user->connection_fee !== (int) $connectionFee;
+        return (int) $user->number_of_months_to_pay_connection_fee !== (int) $numberOfMonthsToPay || (int) $user->connection_fee !== (int) $connectionFee || (string) $user->first_connection_fee_on !== (string) $firstConnectionFeeOn;
 
     }
 
