@@ -24,7 +24,8 @@ use Throwable;
 
 trait StoresMeterReading
 {
-    use CalculatesBill, StoresMeterBillings, CalculatesUserAmount, initializesDeductionsAmount;
+    use CalculatesBill;
+    use ProcessMeterReadingsAvailableCredits;
 
     /**
      * Store a newly created resource in storage.
@@ -94,7 +95,7 @@ trait StoresMeterReading
                         'account_balance' => ($user->account_balance - ($bill + $service_fee))
                     ]);
                 }
-                $this->processAvailableCredits($user, $meter_reading);
+                $this->processAvailableCredits($user, [$meter_reading]);
             }
             DB::commit();
             $send_sms_at = Carbon::createFromFormat('Y-m-d H:i:s', $send_sms_at);
@@ -109,33 +110,6 @@ trait StoresMeterReading
         }
         return response()->json($bill, 201);
 
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function processAvailableCredits($user, $meter_reading): void
-    {
-        throw_if($user === null, 'RuntimeException', 'Meter user not found');
-        $deductions = $this->initializeDeductions();
-        if ($this->userHasAccountBalance($user)) {
-            $request = new CreateMeterBillingRequest();
-            $request->setMethod('POST');
-            $request->request->add([
-                'meter_id' => $user->meter_id,
-                'amount_paid' => 0,
-                'deductions' => $deductions,
-            ]);
-
-            $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, 0, $deductions);
-
-            $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id, $user_total_amount);
-        }
-    }
-
-    public function userHasAccountBalance($user): bool
-    {
-        return $user->account_balance > 0;
     }
 
 }

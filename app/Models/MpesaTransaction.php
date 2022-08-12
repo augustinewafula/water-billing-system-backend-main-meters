@@ -22,9 +22,18 @@ class MpesaTransaction extends Model
 
     protected $fillable = ['FirstName', 'MiddleName', 'LastName', 'TransactionType', 'TransID', 'TransTime', 'BusinessShortCode', 'BillRefNumber', 'InvoiceNumber', 'ThirdPartyTransID', 'MSISDN', 'TransAmount', 'OrgAccountBalance', 'Consumed'];
 
+    protected $appends = ['transferable'];
+
     protected $casts = [
         'created_at' => 'datetime',
     ];
+
+    public function getTransferableAttribute(): bool
+    {
+        return MeterToken::where('mpesa_transaction_id', $this->attributes['id'])
+                ->get()
+                ->count() === 0;
+    }
 
     /**
      * Get the prunable model query.

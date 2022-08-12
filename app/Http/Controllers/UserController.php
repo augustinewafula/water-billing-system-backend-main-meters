@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GenerateConnectionFeeAction;
+use App\Enums\PaymentStatus;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\MeterReading;
 use App\Models\MeterStation;
 use App\Models\MonthlyServiceChargeReport;
 use App\Models\User;
@@ -13,6 +15,7 @@ use App\Services\ConnectionFeeService;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use App\Traits\GetsUserConnectionFeeBalance;
+use App\Traits\ProcessMeterReadingsAvailableCredits;
 use App\Traits\SendsSetPasswordEmail;
 use Carbon\Carbon;
 use DB;
@@ -33,7 +36,7 @@ use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge, GetsUserConnectionFeeBalance, SendsSetPasswordEmail;
+    use GeneratesPassword, GeneratesMonthlyServiceCharge, GetsUserConnectionFeeBalance, SendsSetPasswordEmail, ProcessMeterReadingsAvailableCredits;
 
     public function __construct()
     {
@@ -241,7 +244,8 @@ class UserController extends Controller
 
         try {
             DB::beginTransaction();
-            $shouldUpdateConnectionFee = $request->should_pay_connection_fee && $connectionFeeService->hasConnectionFeeBeenUpdated($user, $request->connection_fee, $request->number_of_months_to_pay_connection_fee);
+            $shouldUpdateConnectionFee = $request->should_pay_connection_fee && $connectionFeeService->hasConnectionFeeBeenUpdated($user, $request->connection_fee, $request->number_of_months_to_pay_connection_fee, $request->first_connection_fee_on);
+
             if ($shouldUpdateConnectionFee){
                 $connectionFeeService->destroyAll($user);
                 $user->refresh();
@@ -251,6 +255,17 @@ class UserController extends Controller
 
             if (!$shouldUpdateConnectionFee){
                 $user->update($data);
+            }
+            if ($this->userHasFundsInAccount($user)){
+                $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
+                    ->where(function ($query) {
+                        $query->where('status', PaymentStatus::NOT_PAID);
+                        $query->orWhere('status', PaymentStatus::PARTIALLY_PAID);
+                    })
+                    ->orderBy('created_at', 'ASC')->get();
+                if ($pending_meter_readings->count() > 0){
+                    $this->processAvailableCredits($user, $pending_meter_readings);
+                }
             }
             DB::commit();
         } catch (Throwable $th) {
