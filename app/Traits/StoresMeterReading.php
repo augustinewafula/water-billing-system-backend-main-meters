@@ -25,8 +25,7 @@ use Throwable;
 trait StoresMeterReading
 {
     use CalculatesBill;
-    use StoresMeterBillings;
-    use  ProcessMeterReadingsAvailableCredits;
+    use ProcessMeterReadingsAvailableCredits;
 
     /**
      * Store a newly created resource in storage.
@@ -96,7 +95,7 @@ trait StoresMeterReading
                         'account_balance' => ($user->account_balance - ($bill + $service_fee))
                     ]);
                 }
-                $this->processAvailableCredits($user, $meter_reading);
+                $this->processAvailableCredits($user, [$meter_reading]);
             }
             DB::commit();
             $send_sms_at = Carbon::createFromFormat('Y-m-d H:i:s', $send_sms_at);

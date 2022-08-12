@@ -9,11 +9,12 @@ trait ProcessMeterReadingsAvailableCredits
 {
     use initializesDeductionsAmount;
     use CalculatesUserAmount;
+    use StoresMeterBillings;
     /**
      * @throws Throwable
      * @throws Throwable
      */
-    public function processAvailableCredits($user, $meter_reading): void
+    public function processAvailableCredits($user, $meter_readings): void
     {
         throw_if($user === null, 'RuntimeException', 'Meter user not found');
         $deductions = $this->initializeDeductions();
@@ -28,7 +29,7 @@ trait ProcessMeterReadingsAvailableCredits
 
             $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, 0, $deductions);
 
-            $this->processMeterBillings($request, [$meter_reading], $user, $user->last_mpesa_transaction_id, $user_total_amount);
+            $this->processMeterBillings($request, $meter_readings, $user, $user->last_mpesa_transaction_id, $user_total_amount);
         }
     }
 
