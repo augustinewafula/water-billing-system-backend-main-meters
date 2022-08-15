@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreditAccountRequest;
 use App\Http\Requests\MpesaTransactionRequest;
+use App\Http\Requests\TransferTransactionRequest;
 use App\Jobs\ProcessTransaction;
 use App\Models\CreditAccount;
 use App\Models\MeterBilling;
@@ -157,6 +158,11 @@ class TransactionController extends Controller
     {
         $phoneNumber = substr($phoneNumber, 1);
         return '254'.$phoneNumber;
+    }
+
+    public function transfer(TransferTransactionRequest $request): JsonResponse
+    {
+        return response()->json('success', 201);
     }
 
     /**
