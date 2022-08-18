@@ -75,17 +75,21 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 if ($total_debt <= 200){
                     continue;
                 }
+
+                $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. Please pay your total debt of Ksh $total_debt_formatted. \nPay via paybill number $paybill_number, account number $account_number";
+                if ($unpaid_meter->meter->mode === MeterMode::MANUAL) {
+                    $message = "Hello $first_name, you have not paid your debt of Ksh $total_debt_formatted. Your water meter is going to be disconnected effective immediately.\nPay via paybill number $paybill_number, account number $account_number";
+                }
+                if ($meter->valve_status === ValveStatus::CLOSED) {
+                    $message = "Please pay your total debt of Ksh $total_debt_formatted for your water meter to be reconnected. \nPay via paybill number $paybill_number, account number $account_number";
+                }
+
                 $meter->update([
                     'valve_status' => ValveStatus::CLOSED,
                 ]);
                 if ($unpaid_meter->meter->mode !== MeterMode::MANUAL) {
                     Log::info("disconnecting user {$meter->user->account_number}. Total debt is {$total_debt_formatted}");
                     $this->toggleValve($meter, ValveStatus::CLOSED);
-                }
-
-                $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. Please pay your total debt of Ksh $total_debt_formatted. \nPay via paybill number $paybill_number, account number $account_number";
-                if ($unpaid_meter->meter->mode === MeterMode::MANUAL) {
-                    $message = "Hello $first_name, you have not paid your debt of Ksh $total_debt_formatted. Your water meter is going to be disconnected effective immediately.\nPay via paybill number $paybill_number, account number $account_number";
                 }
                 $this->notifyUser((object)['message' => $message, 'title' => 'Water disconnection'], $meter->user, 'general');
             } catch (Throwable $th) {
