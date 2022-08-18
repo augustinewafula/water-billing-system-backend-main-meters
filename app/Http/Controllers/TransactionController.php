@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreditAccountRequest;
 use App\Http\Requests\MpesaTransactionRequest;
+use App\Http\Requests\TransferTransactionRequest;
 use App\Jobs\ProcessTransaction;
 use App\Models\CreditAccount;
 use App\Models\MeterBilling;
@@ -13,6 +14,7 @@ use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use App\Models\User;
 use App\Services\MpesaService;
+use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -157,6 +159,18 @@ class TransactionController extends Controller
     {
         $phoneNumber = substr($phoneNumber, 1);
         return '254'.$phoneNumber;
+    }
+
+    public function transfer(TransferTransactionRequest $request, TransactionService $transactionService): JsonResponse
+    {
+        try {
+            $transactionService->transfer($request->from_account_number, $request->to_account_number, $request->transaction_id);
+            return response()->json('success', 201);
+        } catch (Throwable $throwable) {
+            \Log::error($throwable);
+            $response = ['message' => 'Failed to transfer: '.$throwable->getMessage()];
+            return response()->json($response, 422);
+        }
     }
 
     /**

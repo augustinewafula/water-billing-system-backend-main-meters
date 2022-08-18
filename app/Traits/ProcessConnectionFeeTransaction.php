@@ -115,18 +115,14 @@ trait ProcessConnectionFeeTransaction
                 $status = PaymentStatus::PAID;
                 $amount_over_paid = $user_total_amount - $expected_amount;
                 $balance = 0;
-                $user_account_balance = $amount_over_paid;
                 $amount_to_deduct = $expected_amount;
                 if ($amount_over_paid > 0) {
                     $status = PaymentStatus::OVER_PAID;
                 }
-                if ($paidToMeterConnectionAccount && $month_to_bill->equalTo(Carbon::now()->startOfMonth()->startOfDay())){
-                    $user_account_balance = 0;
-                }
+
             } else {
                 $balance = $expected_amount - $user_total_amount;
                 $amount_over_paid = 0;
-                $user_account_balance = -$balance;
                 $status = PaymentStatus::PARTIALLY_PAID;
                 $amount_to_deduct = $user_total_amount;
             }
@@ -147,8 +143,9 @@ trait ProcessConnectionFeeTransaction
                 ]);
 
                 if ($month_to_bill->equalTo($lastMonthToBill) || $month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
+                    $user_account_balance = abs($user->account_balance) - $amount_paid;
                     $user->update([
-                        'account_balance' => $user_account_balance
+                        'account_balance' => $user_account_balance === -0 ? 0 : -$user_account_balance
                     ]);
                 }
                 if (is_object($mpesa_transaction)) {
