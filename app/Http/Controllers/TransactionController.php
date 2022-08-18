@@ -14,6 +14,7 @@ use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use App\Models\User;
 use App\Services\MpesaService;
+use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -160,9 +161,16 @@ class TransactionController extends Controller
         return '254'.$phoneNumber;
     }
 
-    public function transfer(TransferTransactionRequest $request): JsonResponse
+    public function transfer(TransferTransactionRequest $request, TransactionService $transactionService): JsonResponse
     {
-        return response()->json('success', 201);
+        try {
+            $transactionService->transfer($request->from_account_number, $request->to_account_number, $request->transaction_id);
+            return response()->json('success', 201);
+        } catch (Throwable $throwable) {
+            \Log::error($throwable);
+            $response = ['message' => 'Failed to transfer: '.$throwable->getMessage()];
+            return response()->json($response, 422);
+        }
     }
 
     /**
