@@ -24,6 +24,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('meters:confirm-valve-status')->everyThirtyMinutes()->withoutOverlapping();
         $schedule->command('meters:check-faulty')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('meters:send-disconnection-remainder')->everyFiveMinutes();
+        $schedule->command('meters:get-last-communication-date')->everyFifteenMinutes();
         $schedule->command('meter-readings:send')->everyMinute();
         $schedule->command('meter-readings:get --type=daily')->daily();
         $schedule->command('meter-readings:get --type=monthly')->monthlyOn($this->meterReadingOn());
