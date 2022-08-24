@@ -26,8 +26,8 @@ class SwitchOffUnpaidMeters implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TogglesValveStatus, NotifiesOnJobFailure, CalculatesUserAmount, NotifiesUser;
 
-    public $tries = 2;
-    public $failOnTimeout = true;
+    public int $tries = 2;
+    public bool $failOnTimeout = true;
 
     /**
      * Create a new job instance.
@@ -75,6 +75,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 if ($total_debt <= 200){
                     continue;
                 }
+                Log::info('Auto switching off unpaid meter id: '. $unpaid_meter->meter->id);
 
                 $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. Please pay your total debt of Ksh $total_debt_formatted. \nPay via paybill number $paybill_number, account number $account_number";
                 if ($unpaid_meter->meter->mode === MeterMode::MANUAL) {
