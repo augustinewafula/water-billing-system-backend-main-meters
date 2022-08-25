@@ -6,6 +6,7 @@ use App\Http\Requests\CreditAccountRequest;
 use App\Http\Requests\MpesaTransactionRequest;
 use App\Http\Requests\TransferTransactionRequest;
 use App\Jobs\ProcessTransaction;
+use App\Models\ConnectionFeePayment;
 use App\Models\CreditAccount;
 use App\Models\MeterBilling;
 use App\Models\MeterToken;
@@ -192,45 +193,53 @@ class TransactionController extends Controller
 
     public function getUser($transaction_id)
     {
-        try {
-            $user = MeterBilling::select('users.*')
-                ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
-                ->join('users', 'meter_readings.meter_id', 'users.meter_id')
-                ->where('mpesa_transaction_id', $transaction_id)
-                ->first();
-            throw_if($user === null);
-        } catch (Throwable) {
-            try {
-                $user = MeterToken::select('users.*')
-                    ->join('users', 'meter_tokens.meter_id', 'users.meter_id')
-                    ->where('mpesa_transaction_id', $transaction_id)
-                    ->first();
-                throw_if($user === null);
-            } catch (Throwable){
-                try {
-                    $user = UnaccountedDebt::select('users.*')
-                        ->join('users', 'unaccounted_debts.user_id', 'users.id')
-                        ->where('mpesa_transaction_id', $transaction_id)
-                        ->first();
-                    throw_if($user === null);
-                } catch (Throwable){
-                    try {
-                        $user = MonthlyServiceChargePayment::select('users.*')
-                            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
-                            ->join('users', 'monthly_service_charges.user_id', 'users.id')
-                            ->where('mpesa_transaction_id', $transaction_id)
-                            ->first();
-                        throw_if($user === null);
-                    } catch (Throwable){
-                        $user = CreditAccount::select('users.*')
-                            ->join('users', 'credit_accounts.user_id', 'users.id')
-                            ->where('mpesa_transaction_id', $transaction_id)
-                            ->first();
-                    }
-                }
-            }
+        $user = MeterToken::select('users.*')
+            ->join('users', 'meter_tokens.meter_id', 'users.meter_id')
+            ->where('mpesa_transaction_id', $transaction_id)
+            ->first();
+        if ($user){
+            return $user;
         }
-        return $user;
+
+        $user = MeterBilling::select('users.*')
+            ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+            ->join('users', 'meter_readings.meter_id', 'users.meter_id')
+            ->where('mpesa_transaction_id', $transaction_id)
+            ->first();
+        if ($user){
+            return $user;
+        }
+
+        $user = UnaccountedDebt::select('users.*')
+            ->join('users', 'unaccounted_debts.user_id', 'users.id')
+            ->where('mpesa_transaction_id', $transaction_id)
+            ->first();
+        if ($user){
+            return $user;
+        }
+
+        $user = MonthlyServiceChargePayment::select('users.*')
+            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+            ->join('users', 'monthly_service_charges.user_id', 'users.id')
+            ->where('mpesa_transaction_id', $transaction_id)
+            ->first();
+        if ($user){
+            return $user;
+        }
+
+        $user = CreditAccount::select('users.*')
+            ->join('users', 'credit_accounts.user_id', 'users.id')
+            ->where('mpesa_transaction_id', $transaction_id)
+            ->first();
+        if ($user){
+            return $user;
+        }
+
+        return ConnectionFeePayment::select('users.*')
+            ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
+            ->join('users', 'connection_fees.user_id', 'users.id')
+            ->where('mpesa_transaction_id', $transaction_id)
+            ->first();
     }
 
     private function filterQuery(Builder $query, Request $request): Builder
