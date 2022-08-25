@@ -36,6 +36,7 @@ class TransactionService
             $mpesa_transaction = MpesaTransaction::findOrFail($transaction_id);
             $this->debitSenderAccount($from_account_number, $mpesa_transaction->TransAmount);
             $this->creditReceiverAccount($mpesa_transaction, $to_account_number);
+            $this->updateSenderLastMpesaTransactionId($from_account_number);
         });
 
     }
@@ -167,6 +168,20 @@ class TransactionService
         Log::info('Crediting account ' . $account_number . ' amount ' . $mpesa_transaction->TransAmount);
         $mpesa_transaction->update(['BillRefNumber' => $account_number]);
         $this->processMpesaTransaction($mpesa_transaction);
+    }
+
+    private function updateSenderLastMpesaTransactionId(string $from_account_number): void
+    {
+        $user_last_mpesa_transaction = MpesaTransaction::where('BillRefNumber', $from_account_number)
+            ->latest()
+            ->first();
+        $last_mpesa_transaction_id = null;
+        if ($user_last_mpesa_transaction) {
+            $last_mpesa_transaction_id = $user_last_mpesa_transaction->id;
+        }
+        $user = User::where('account_number', $from_account_number)->firstOrFail();
+        $user->update(['last_mpesa_transaction_id' => $last_mpesa_transaction_id]);
+
     }
 
 
