@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\accountNumberCanGenerateToken;
+use App\Rules\accountNumberCanPayConnectionFee;
 use App\Rules\notPrepaidMeterUser;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +28,7 @@ class TransferTransactionRequest extends FormRequest
     {
         return [
             'transaction_id' => ['required', 'string', 'exists:mpesa_transactions,id', 'max:255'],
-            'to_account_number' => ['required', 'string', 'different:from_account_number', 'exists:users,account_number', 'max:50'],
+            'to_account_number' => ['required', 'string', 'different:from_account_number', 'exists:users,account_number', 'max:50', new accountNumberCanGenerateToken(), new accountNumberCanPayConnectionFee()],
             'from_account_number' => ['required', 'string', 'exists:users,account_number', 'max:50', new notPrepaidMeterUser()],
         ];
     }
