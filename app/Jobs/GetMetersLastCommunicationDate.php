@@ -45,7 +45,11 @@ class GetMetersLastCommunicationDate implements ShouldQueue
                         'signal_intensity' => (int)$meter->rssi,
                         'last_communication_date' => $last_communication_date
                     ];
-                    $this->saveMeterLastCommunicationDate($meter_details);
+                    try {
+                        $this->saveMeterLastCommunicationDate($meter_details);
+                    } catch (\Throwable $e) {
+                        Log::error($e->getMessage());
+                    }
                 }
             }
         }  catch (\Throwable $e) {
@@ -62,7 +66,11 @@ class GetMetersLastCommunicationDate implements ShouldQueue
                         'signal_intensity' => (int)$meter->SignalIntensity,
                         'last_communication_date' => $last_communication_date
                     ];
-                    $this->saveMeterLastCommunicationDate($meter_details);
+                    try {
+                        $this->saveMeterLastCommunicationDate($meter_details);
+                    } catch (\Throwable $e) {
+                        Log::error($e->getMessage());
+                    }
                 }
             }
         }  catch (\Throwable $e) {
@@ -78,5 +86,6 @@ class GetMetersLastCommunicationDate implements ShouldQueue
             'last_communication_date' => $meter_details->last_communication_date,
             'signal_intensity' => $meter_details->signal_intensity
         ]);
+        Log::info('Saved meter last communication date for meter number: ' . $meter_details->meter_number);
     }
 }
