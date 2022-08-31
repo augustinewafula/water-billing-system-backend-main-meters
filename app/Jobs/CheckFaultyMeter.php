@@ -48,6 +48,8 @@ class CheckFaultyMeter implements ShouldQueue
 
     private function checkMetersWithDelayedCommunication(): void
     {
+        \Log::info('Checking meters with delayed communication');
+        \Log::info('Maximum meter communication delay time: ' . $this->maximum_meter_communication_delay_time);
         $meters_with_delayed_communication = Meter::with('station')
             ->where('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
             ->get();
