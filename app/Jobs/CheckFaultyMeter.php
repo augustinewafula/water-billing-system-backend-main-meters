@@ -121,7 +121,8 @@ class CheckFaultyMeter implements ShouldQueue
 
     private function isDelayedCommunicationFixed($faulty_meter): bool
     {
-        return $faulty_meter->meter->last_communication_date > $this->maximum_meter_communication_delay_time;
+        $formatted_last_communication_date = Carbon::parse($faulty_meter->meter->last_communication_date);
+        return $formatted_last_communication_date->greaterThan($this->maximum_meter_communication_delay_time);
 
     }
 }
