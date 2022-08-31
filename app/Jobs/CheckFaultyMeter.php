@@ -17,10 +17,10 @@ use Validator;
 class CheckFaultyMeter implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $maximum_meter_communication_delay_time;
-    protected $minimum_battery_voltage;
+    protected Carbon $maximum_meter_communication_delay_time;
+    protected float $minimum_battery_voltage;
 
-    public $tries = 1;
+    public int $tries = 1;
 
     /**
      * Create a new job instance.
@@ -51,7 +51,7 @@ class CheckFaultyMeter implements ShouldQueue
         \Log::info('Checking meters with delayed communication');
         \Log::info('Maximum meter communication delay time: ' . $this->maximum_meter_communication_delay_time);
         $meters_with_delayed_communication = Meter::with('station')
-            ->where('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
+            ->whereDate('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
             ->get();
 
 //        $this->saveAndNotify($meters_with_delayed_communication, FaultyMeterFaultType::LOST_COMMUNICATION);
