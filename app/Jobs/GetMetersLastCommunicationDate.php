@@ -86,6 +86,5 @@ class GetMetersLastCommunicationDate implements ShouldQueue
             'last_communication_date' => $meter_details->last_communication_date,
             'signal_intensity' => $meter_details->signal_intensity
         ]);
-        Log::info('Saved meter last communication date for meter number: ' . $meter_details->meter_number);
     }
 }
