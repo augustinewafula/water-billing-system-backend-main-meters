@@ -27,6 +27,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Spatie\Permission\Middlewares\PermissionMiddleware;
 use Spatie\Permission\Middlewares\RoleMiddleware;
 use Spatie\Permission\Middlewares\RoleOrPermissionMiddleware;
+use Vinkla\Shield\ShieldMiddleware;
 
 class Kernel extends HttpKernel
 {
@@ -90,5 +91,6 @@ class Kernel extends HttpKernel
         'permission' => PermissionMiddleware::class,
         'role' => RoleMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
+        'shield' => ShieldMiddleware::class,
     ];
 }
