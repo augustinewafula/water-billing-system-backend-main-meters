@@ -7,6 +7,7 @@ use App\Enums\ValveStatus;
 use App\Http\Requests\CreateMainMeterRequest;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
+use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterType;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -75,6 +76,16 @@ class MeterController extends Controller
             $meters = $meters->where('number', 'like', '%' . $search . '%');
         }
         return response()->json($meters->paginate(10));
+    }
+
+    public function faultyIndex(Request $request): JsonResponse
+    {
+        $meters = FaultyMeter::with('meter', 'meter.user', 'meter.type');
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+        return response()->json($meters->paginate($perPage));
     }
 
     /**

@@ -90,6 +90,7 @@ Route::prefix('v1')->group(function () {
         Route::get('available-meters', [MeterController::class, 'availableIndex']);
         Route::get('meter-types', [MeterController::class, 'typeIndex']);
         Route::get('meter-types/{name}', [MeterController::class, 'showMeterTypeByNameIndex']);
+        Route::get('faulty-meters', [MeterController::class, 'faultyIndex']);
         Route::get('unresolved-transactions', [UnresolvedTransactionController::class, 'index']);
         Route::get('sms', [SmsController::class, 'index']);
         Route::get('sms-credit-balance', [SmsController::class, 'getCreditBalance']);
