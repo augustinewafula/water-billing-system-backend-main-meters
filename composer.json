@@ -19,6 +19,7 @@
         "laravel/sanctum": "^2.15.1",
         "laravel/scout": "^9.4.9",
         "laravel/tinker": "^2.7.2",
+        "opcodesio/log-viewer": "^1.2",
         "predis/predis": "^1.1.10",
         "sentry/sentry-laravel": "^2.12.1",
         "spatie/flysystem-dropbox": "^2.0.6",
