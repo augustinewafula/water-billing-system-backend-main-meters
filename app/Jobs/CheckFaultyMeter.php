@@ -54,7 +54,7 @@ class CheckFaultyMeter implements ShouldQueue
             ->whereDate('last_communication_date', '<', $this->maximum_meter_communication_delay_time)
             ->get();
 
-//        $this->saveAndNotify($meters_with_delayed_communication, FaultyMeterFaultType::LOST_COMMUNICATION);
+        $this->saveAndNotify($meters_with_delayed_communication, FaultyMeterFaultType::LOST_COMMUNICATION);
     }
 
     private function checkMetersWithLowBattery(): void
