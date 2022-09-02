@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConnectionFeePayment;
 use App\Models\DailyMeterReading;
+use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterReading;
@@ -36,6 +37,7 @@ class StatisticsController extends Controller
                 ->count();
             $meters = Meter::where('main_meter', false)
                 ->count();
+            $faultyMeters = FaultyMeter::count();
 
         } catch (Throwable $throwable) {
             Log::error($throwable);
@@ -47,6 +49,7 @@ class StatisticsController extends Controller
             'users' => $users,
             'main_meters' => $mainMeters,
             'meters' => $meters,
+            'faulty_meters' => $faultyMeters,
             'revenue' => $this->calculateRevenue(null, null)
         ]);
     }
