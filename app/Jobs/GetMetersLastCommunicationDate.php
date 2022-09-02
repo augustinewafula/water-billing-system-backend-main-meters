@@ -47,8 +47,8 @@ class GetMetersLastCommunicationDate implements ShouldQueue
                     ];
                     try {
                         $this->saveMeterLastCommunicationDate($meter_details);
-                    } catch (\Throwable $e) {
-                        Log::error($e->getMessage());
+                    } catch (\Throwable) {
+                        continue;
                     }
                 }
             }
@@ -68,8 +68,8 @@ class GetMetersLastCommunicationDate implements ShouldQueue
                     ];
                     try {
                         $this->saveMeterLastCommunicationDate($meter_details);
-                    } catch (\Throwable $e) {
-                        Log::error($e->getMessage());
+                    } catch (\Throwable) {
+                        continue;
                     }
                 }
             }
