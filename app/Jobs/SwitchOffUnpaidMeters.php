@@ -69,7 +69,12 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 $paybill_number = $meter->station->paybill_number;
                 $account_number = $meter->user->account_number;
                 $first_name = explode(' ', trim($meter->user->name))[0];
-                $total_debt = $this->calculateUserMeterReadingDebt($unpaid_meter->meter->id);
+                $meter_reading_debt = $this->calculateUserMeterReadingDebt($unpaid_meter->meter->id);
+                $connection_fee_debt = $this->calculateUserConnectionFeeDebt($unpaid_meter->meter->user->id);
+                $total_debt = $meter_reading_debt + $connection_fee_debt;
+
+                $meter_reading_debt_formatted = number_format($meter_reading_debt);
+                $connection_fee_debt_formatted = number_format($connection_fee_debt);
                 $total_debt_formatted = number_format($total_debt);
 
                 if ($total_debt <= 200){
@@ -77,13 +82,12 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 }
                 Log::info('Auto switching off unpaid meter id: '. $unpaid_meter->meter->id);
 
-                $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. Please pay your total debt of Ksh $total_debt_formatted. \nPay via paybill number $paybill_number, account number $account_number";
-                if ($unpaid_meter->meter->mode === MeterMode::MANUAL) {
-                    $message = "Hello $first_name, you have not paid your debt of Ksh $total_debt_formatted. Your water meter is going to be disconnected effective immediately.\nPay via paybill number $paybill_number, account number $account_number";
+                $debt_breakdown = '';
+                if ($connection_fee_debt > 0) {
+                    $debt_breakdown .= "\nMeter Reading Debt: Ksh {$meter_reading_debt_formatted} \nConnection Fee Debt: Ksh $connection_fee_debt_formatted.";
                 }
-                if ($meter->valve_status === ValveStatus::CLOSED) {
-                    $message = "Please pay your total debt of Ksh $total_debt_formatted for your water meter to be reconnected. \nPay via paybill number $paybill_number, account number $account_number";
-                }
+
+                $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. $debt_breakdown \nTotal outstanding Debt: Ksh $total_debt_formatted \nPay via paybill number $paybill_number, account number $account_number";
 
                 $meter->update([
                     'valve_status' => ValveStatus::CLOSED,
