@@ -3,8 +3,10 @@
 namespace App\Traits;
 
 use App\Enums\PaymentStatus;
+use App\Models\ConnectionFee;
 use App\Models\MeterCharge;
 use App\Models\MeterReading;
+use App\Models\MonthlyServiceCharge;
 use App\Models\ServiceCharge;
 use App\Models\User;
 use DB;
@@ -56,5 +58,29 @@ trait CalculatesUserAmount
         }
 
         return $unpaid_bills + $balance_bills + $user_unaccounted_debt;
+    }
+
+    public function calculateUserConnectionFeeDebt($user_id)
+    {
+        $unpaid_connection_fees = DB::table('connection_fees')
+            ->where('user_id', $user_id)
+            ->whereDate('month', '<=', now())
+            ->whereStatus(PaymentStatus::NOT_PAID)
+            ->sum('amount');
+        $connection_fees_with_balance = ConnectionFee::where('user_id', $user_id)
+            ->whereStatus(PaymentStatus::PARTIALLY_PAID)
+            ->get();
+
+        $balance_bills = 0;
+        foreach ($connection_fees_with_balance as $connection_fee) {
+            $balance = DB::table('connection_fee_payments')
+                ->where('connection_fee_id', $connection_fee->id)
+                ->latest()
+                ->first()
+                ->balance;
+            $balance_bills += $balance;
+        }
+
+        return $unpaid_connection_fees + $balance_bills;
     }
 }
