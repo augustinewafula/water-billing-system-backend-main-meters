@@ -84,7 +84,7 @@ class SwitchOffUnpaidMeters implements ShouldQueue
 
                 $debt_breakdown = '';
                 if ($connection_fee_debt > 0) {
-                    $debt_breakdown .= "\nMeter Reading Debt: Ksh {$meter_reading_debt_formatted} \nConnection Fee Debt: Ksh $connection_fee_debt_formatted.";
+                    $debt_breakdown .= "\nMeter Billing Debt: Ksh {$meter_reading_debt_formatted} \nConnection Fee Debt: Ksh $connection_fee_debt_formatted.";
                 }
 
                 $message = "Hello $first_name, your water meter is going to be disconnected effective immediately. $debt_breakdown \nTotal outstanding Debt: Ksh $total_debt_formatted \nPay via paybill number $paybill_number, account number $account_number";
