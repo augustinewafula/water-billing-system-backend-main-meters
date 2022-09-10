@@ -79,8 +79,12 @@ trait ProcessesPostPaidTransaction
         }
 
         $this->processMeterBillings($request, $pending_meter_readings, $user, $mpesa_transaction_id, $user_total_amount);
-        SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
-        \Log::info("Switching on paid meter id: $request->meter_id");
+
+        $user->refresh();
+        if ($user->account_balance >= 0) {
+            SwitchOnPaidMeter::dispatch(Meter::find($request->meter_id));
+            \Log::info("Switching on paid meter id: $request->meter_id");
+        }
         return response()->json('created', 201);
     }
 
