@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CreditAccountRequest extends FormRequest
 {
+    protected $stopOnFirstFailure = true;
     /**
      * Determine if the user is authorized to make this request.
      *
