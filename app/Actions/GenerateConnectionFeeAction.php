@@ -43,6 +43,7 @@ class GenerateConnectionFeeAction
             }
             $monthToGenerate = $monthToGenerate->add(1, 'month');
         }
+        $user->refresh();
         if ($user->account_balance > 0 && (!$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id))) {
             $mpesa_transaction = MpesaTransaction::find($user->last_mpesa_transaction_id);
 
