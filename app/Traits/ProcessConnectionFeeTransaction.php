@@ -143,10 +143,17 @@ trait ProcessConnectionFeeTransaction
                 ]);
 
                 if ($month_to_bill->equalTo($lastMonthToBill) || $month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
-                    $user_account_balance = abs($user->account_balance) - $amount_paid;
-                    $user->update([
-                        'account_balance' => $user_account_balance === -0 ? 0 : -$user_account_balance
-                    ]);
+                    if ($amount_paid === 0){
+                        $user_account_balance = $user->account_balance - $amount_to_deduct;
+                        $user->update([
+                            'account_balance' => $user_account_balance
+                        ]);
+                    } else{
+                        $user_account_balance = abs($user->account_balance) - $amount_paid;
+                        $user->update([
+                            'account_balance' => $user_account_balance === -0 ? 0 : -$user_account_balance
+                        ]);
+                    }
                 }
                 if (is_object($mpesa_transaction)) {
                     MpesaTransaction::find($mpesa_transaction_id)->update([
@@ -173,6 +180,8 @@ trait ProcessConnectionFeeTransaction
         $organization_name = env('APP_NAME');
         $message = "Your connection fee of Ksh $total_connection_fee_paid_formatted has been received by $organization_name";
         SendSMS::dispatch($user->phone, $message, $user->id);
+
+        Log::info('Total connection fee paid: ' . $total_connection_fee_paid);
 
         return $total_connection_fee_paid;
     }
