@@ -34,12 +34,17 @@ class SmsController extends Controller
     {
         $sms = Sms::select('sms.*')->with('user:id,name,account_number');
         $sms = $this->filterQuery($request, $sms);
+        $sms_cost = $sms->sum('cost');
 
         $perPage = 10;
         if ($request->has('perPage')){
             $perPage = $request->perPage;
         }
-        return response()->json($sms->paginate($perPage));
+        $sms = $sms->paginate($perPage);
+        return response()->json([
+            'sms' => $sms,
+            'sms_cost' => $sms_cost
+        ]);
     }
 
     /**
