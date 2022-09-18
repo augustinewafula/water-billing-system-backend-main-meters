@@ -186,9 +186,11 @@ trait ProcessConnectionFeeTransaction
         ]);
         $total_connection_fee_paid_formatted = number_format($total_connection_fee_paid);
 
-        $organization_name = env('APP_NAME');
-        $message = "Your connection fee of Ksh $total_connection_fee_paid_formatted has been received by $organization_name";
-        SendSMS::dispatch($user->phone, $message, $user->id);
+        if (!$processingConnectionFeeOnly){
+            $organization_name = env('APP_NAME');
+            $message = "Your connection fee of Ksh $total_connection_fee_paid_formatted has been received by $organization_name";
+            $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
+        }
 
         Log::info('Total connection fee paid: ' . $total_connection_fee_paid);
 
