@@ -61,7 +61,7 @@ trait ProcessConnectionFeeTransaction
     /**
      * @throws Throwable
      */
-    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $deductions, $paidToMeterConnectionAccount = false)
+    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $deductions, $paidToMeterConnectionAccount = false, $processingConnectionFeeOnly = false)
     {
         $user = User::findOrFail($user_id);
         $amount_paid = $amount;
@@ -84,11 +84,15 @@ trait ProcessConnectionFeeTransaction
         Log::info('user_total_amount: ' . $user_total_amount);
 
         while ($month_to_bill->lessThanOrEqualTo($lastMonthToBill)) {
+            Log::info('Month to bill: ' . $month_to_bill->format('Y-m-d'));
             $credit = 0;
             $user = $user->refresh();
             $connection_fee = ConnectionFee::where('user_id', $user->id)
                 ->where('month', $month_to_bill)
                 ->first();
+            if (is_null($connection_fee)) {
+                break;
+            }
             if ($this->userHasFunds($user)) {
                 $credit = $user->account_balance;
             }
@@ -142,9 +146,13 @@ trait ProcessConnectionFeeTransaction
                     'status' => $status
                 ]);
 
-                if ($month_to_bill->equalTo($lastMonthToBill) || $month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
+                if ($processingConnectionFeeOnly || $month_to_bill->equalTo($lastMonthToBill) || $month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
+                    Log::info('User account balance before deduction: ' . $user->account_balance);
+                    Log::info('Amount paid: ' . $amount_paid);
+                    Log::info('Expected amount: ' . $expected_amount);
+
                     if ($amount_paid === 0){
-                        $user_account_balance = $user->account_balance - $amount_to_deduct;
+                        $user_account_balance = $user->account_balance - $expected_amount;
                         $user->update([
                             'account_balance' => $user_account_balance
                         ]);
@@ -154,6 +162,7 @@ trait ProcessConnectionFeeTransaction
                             'account_balance' => $user_account_balance === -0 ? 0 : -$user_account_balance
                         ]);
                     }
+                    Log::info('User account balance after deduction: ' . $user->account_balance);
                 }
                 if (is_object($mpesa_transaction)) {
                     MpesaTransaction::find($mpesa_transaction_id)->update([

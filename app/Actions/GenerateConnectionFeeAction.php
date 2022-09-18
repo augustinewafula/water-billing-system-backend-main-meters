@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Traits\ProcessConnectionFeeTransaction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Log;
 use Throwable;
 
 class GenerateConnectionFeeAction
@@ -26,6 +27,7 @@ class GenerateConnectionFeeAction
         $monthToGenerate = Carbon::createFromFormat('Y-m', $user->first_connection_fee_on)->startOfMonth()->startOfDay();
 
         for ($i = 0; $i < $numberOfMonthsToBill; $i++) {
+            $user->refresh();
             $currentMonth = Carbon::now()->startOfMonth()->startOfDay();
             $connectionFee = ConnectionFee::create([
                 'user_id' => $user->id,
@@ -42,17 +44,17 @@ class GenerateConnectionFeeAction
                 ]);
             }
             $monthToGenerate = $monthToGenerate->add(1, 'month');
-        }
-        $user->refresh();
-        if ($user->account_balance > 0 && (!$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id))) {
-            $mpesa_transaction = MpesaTransaction::find($user->last_mpesa_transaction_id);
 
-            $deductions = new Collection();
-            $deductions->monthly_service_charge_deducted = 0;
-            $deductions->unaccounted_debt_deducted = 0;
-            $deductions->connection_fee_deducted = 0;
+            if ($user->account_balance > 0 && (!$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id))) {
+                $mpesa_transaction = MpesaTransaction::find($user->last_mpesa_transaction_id);
 
-            $this->storeConnectionFeeBill($user->id, $mpesa_transaction, 0, $deductions);
+                $deductions = new Collection();
+                $deductions->monthly_service_charge_deducted = 0;
+                $deductions->unaccounted_debt_deducted = 0;
+                $deductions->connection_fee_deducted = 0;
+
+                $this->storeConnectionFeeBill($user->id, $mpesa_transaction, 0, $deductions, false, true);
+            }
         }
 
     }

@@ -6,8 +6,10 @@ use App\Actions\GenerateConnectionFeeAction;
 use App\Enums\PaymentStatus;
 use App\Models\ConnectionFee;
 use App\Models\ConnectionFeePayment;
+use App\Models\CreditAccount;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class ConnectionFeeService
@@ -27,6 +29,7 @@ class ConnectionFeeService
         foreach ($connection_fees as $connection_fee) {
             $this->destroy($connection_fee);
         }
+        $user->update(['total_connection_fee_paid' => 0]);
     }
 
     public function destroy(ConnectionFee $connectionFee): void
@@ -38,6 +41,8 @@ class ConnectionFeeService
             \Log::info('Removing connection fee amount for user: ' . $connectionFee->user_id . ' for month: ' . $connectionFee->month);
             $this->removeConnectionFeeBillFromUserAccount($connectionFee);
         }
+        $connectionFeeMpesaTransactions = $this->getMpesaTransactions($connectionFee);
+        $this->creditConnectionFeePaymentToUserAccount($connectionFee, $connectionFeeMpesaTransactions);
 
         $connectionFee->forceDelete();
     }
@@ -81,6 +86,28 @@ class ConnectionFeeService
         $user_account_balance += $connectionFee->amount;
 
         $user->update(['account_balance' => $user_account_balance]);
+
+    }
+
+    private function getMpesaTransactions($connectionFee): Collection
+    {
+        return ConnectionFeePayment::select('mpesa_transaction_id', 'amount_paid')
+            ->where('connection_fee_id', $connectionFee->id)
+            ->get();
+    }
+
+    private function creditConnectionFeePaymentToUserAccount($connectionFee, $connectionFeeMpesaTransactions): void
+    {
+        foreach ($connectionFeeMpesaTransactions as $connectionFeeMpesaTransaction) {
+            if ($connectionFeeMpesaTransaction->amount_paid === 0.00) {
+                continue;
+            }
+            CreditAccount::create([
+                'user_id' => $connectionFee->user_id,
+                'amount' => $connectionFeeMpesaTransaction->amount_paid,
+                'mpesa_transaction_id' => $connectionFeeMpesaTransaction->mpesa_transaction_id,
+            ]);
+        }
 
     }
 

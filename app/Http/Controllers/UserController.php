@@ -24,6 +24,7 @@ use Hash;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -247,22 +248,27 @@ class UserController extends Controller
             $shouldUpdateConnectionFee = $request->should_pay_connection_fee && $connectionFeeService->hasConnectionFeeBeenUpdated($user, $request->connection_fee, $request->number_of_months_to_pay_connection_fee, $request->first_connection_fee_on);
 
             if ($shouldUpdateConnectionFee){
+                Log::info('User account balance before connection fee generation: ' . $user->account_balance);
                 $connectionFeeService->destroyAll($user);
                 $user->refresh();
                 $user->update($data);
+                Log::info('User account balance after connection fee deletion: ' . $user->account_balance);
+                $user = $this->creditUserPendingMeterReadingBills($user);
+                Log::info('User account balance after crediting meter readings bills: ' . $user->account_balance);
                 $connectionFeeService->generate($user);
             }
 
             if (!$shouldUpdateConnectionFee){
                 $user->update($data);
             }
-            if ($this->userHasFundsInAccount($user)){
-                $pending_meter_readings = MeterReading::where('meter_id', $request->meter_id)
-                    ->where(function ($query) {
-                        $query->where('status', PaymentStatus::NOT_PAID);
-                        $query->orWhere('status', PaymentStatus::PARTIALLY_PAID);
-                    })
-                    ->orderBy('created_at', 'ASC')->get();
+            $user->refresh();
+            if ($shouldUpdateConnectionFee && !$this->userHasFundsInAccount($user)){
+                \Log::info('User account balance after generating connection fee: ' . $user->account_balance);
+                $user = $this->debitUserPendingMeterReadingBills($user);
+                \Log::info('User account balance after debit meter readings bills: ' . $user->account_balance);
+            }
+            if ($shouldUpdateConnectionFee && $this->userHasFundsInAccount($user)){
+                $pending_meter_readings = $this->getPendingMeterReadings($user->meter_id);
                 if ($pending_meter_readings->count() > 0){
                     $this->processAvailableCredits($user, $pending_meter_readings);
                 }
@@ -275,6 +281,55 @@ class UserController extends Controller
             return response()->json($response, 422);
         }
         return response()->json($user);
+    }
+
+    public function  creditUserPendingMeterReadingBills(User $user): User
+    {
+        return $this->debitOrCreditPendingMeterReadingBills($user, 'credit');
+    }
+
+    public function debitUserPendingMeterReadingBills(User $user): User
+    {
+        return $this->debitOrCreditPendingMeterReadingBills($user, 'debit');
+    }
+
+    public function debitOrCreditPendingMeterReadingBills(User $user, String $action): User
+    {
+        $pending_meter_readings = $this->getPendingMeterReadings($user->meter_id);
+        if ($pending_meter_readings->count() > 0){
+            foreach ($pending_meter_readings as $pending_meter_reading){
+                if ($pending_meter_reading->status === PaymentStatus::NOT_PAID){
+                    $amount  = $pending_meter_reading->bill;
+                }else{
+                    $amount = $pending_meter_reading->meter_billings->sum('balance');
+                }
+
+                if ($action === 'debit'){
+                    $user->update([
+                        'account_balance' => $user->account_balance - $amount
+                    ]);
+                }else{
+                    $user->update([
+                        'account_balance' => $user->account_balance + $amount
+                    ]);
+                }
+            }
+
+        }
+
+        return $user;
+    }
+
+    public function getPendingMeterReadings($meter_id): array|Collection
+    {
+        return MeterReading::with('meter_billings')
+            ->where('meter_id', $meter_id)
+            ->where(function ($query) {
+                $query->where('status', PaymentStatus::NOT_PAID);
+                $query->orWhere('status', PaymentStatus::PARTIALLY_PAID);
+            })
+            ->orderBy('created_at', 'ASC')
+            ->get();
     }
 
     /**
