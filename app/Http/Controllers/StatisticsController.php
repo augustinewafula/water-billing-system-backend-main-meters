@@ -17,8 +17,10 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use JsonException;
 use Log;
+use PhpParser\Node\Expr\Cast\Double;
 use Throwable;
 
 class StatisticsController extends Controller
@@ -105,7 +107,7 @@ class StatisticsController extends Controller
         return $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum);
     }
 
-    public function calculateRevenue(?string $from, ?string $to)
+    public function calculateRevenue(?string $from, ?string $to): Float
     {
         $serviceChargeSum = $this->calculateMonthlyServiceChargeSum($from, $to);
         $billingsSum = $this->calculateMeterBillingsSum($from, $to);
@@ -193,7 +195,7 @@ class StatisticsController extends Controller
         return response()->json([]);
     }
 
-    public function dayWiseMeterReadings($meter_id)
+    public function dayWiseMeterReadings($meter_id): Collection
     {
         return DailyMeterReading::select('reading', DB::raw('DAYNAME(created_at) as label'))
             ->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
@@ -204,7 +206,7 @@ class StatisticsController extends Controller
             ->get();
     }
 
-    public function monthWiseMeterReadings($meter_id)
+    public function monthWiseMeterReadings($meter_id): Collection
     {
         return MeterReading::select('current_reading as reading', DB::raw('MONTHNAME(month) as label'))
             ->whereYear('month', date('Y'))
@@ -218,9 +220,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Float
      */
-    private function calculateMonthlyServiceChargeSum(?string $from, ?string $to)
+    private function calculateMonthlyServiceChargeSum(?string $from, ?string $to): Float
     {
         $serviceChargeSum = MonthlyServiceChargePayment::select('monthly_service_charge_payments.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
@@ -235,9 +237,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Float
      */
-    private function calculateMeterBillingsSum(?string $from, ?string $to)
+    private function calculateMeterBillingsSum(?string $from, ?string $to): Float
     {
         $billingsSum = MeterBilling::select('meter_billings.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
@@ -252,9 +254,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Float
      */
-    private function calculateMeterTokensSum(?string $from, ?string $to)
+    private function calculateMeterTokensSum(?string $from, ?string $to): Float
     {
         $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
@@ -268,9 +270,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Float
      */
-    private function calculateConnectionFeesSum(?string $from, ?string $to)
+    private function calculateConnectionFeesSum(?string $from, ?string $to): Float
     {
         $connectionFeeSum = ConnectionFeePayment::select('connection_fee_payments.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
@@ -285,9 +287,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Float
      */
-    private function calculateUnaccountedDebtsSum(?string $from, ?string $to)
+    private function calculateUnaccountedDebtsSum(?string $from, ?string $to): Float
     {
         $unaccountedDebtSum = UnaccountedDebt::select('unaccounted_debts.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id');
@@ -301,9 +303,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Collection
      */
-    private function calculateMonthlyServiceChargeSumPerStation(?string $from, ?string $to)
+    private function calculateMonthlyServiceChargeSumPerStation(?string $from, ?string $to): Collection
     {
         $monthlyServiceCharge = MonthlyServiceChargePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
             ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
@@ -323,9 +325,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Collection
      */
-    private function calculateMeterBillingSumPerStation(?string $from, ?string $to)
+    private function calculateMeterBillingSumPerStation(?string $from, ?string $to): Collection
     {
         $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
@@ -344,9 +346,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Collection
      */
-    private function calculateMeterTokenSumPerStation(?string $from, ?string $to)
+    private function calculateMeterTokenSumPerStation(?string $from, ?string $to): Collection
     {
         $tokenSum = MeterToken::join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
@@ -363,9 +365,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Collection
      */
-    private function calculateConnectionFeeSumPerStation(?string $from, ?string $to)
+    private function calculateConnectionFeeSumPerStation(?string $from, ?string $to): Collection
     {
         $tokenSum = ConnectionFeePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
             ->join('connection_fees', 'connection_fees.id', 'connection_fee_id')
@@ -385,9 +387,9 @@ class StatisticsController extends Controller
     /**
      * @param string|null $from
      * @param string|null $to
-     * @return mixed
+     * @return Collection
      */
-    private function calculateUnaccountedDebtSumPerStation(?string $from, ?string $to)
+    private function calculateUnaccountedDebtSumPerStation(?string $from, ?string $to): Collection
     {
         $tokenSum = UnaccountedDebt::join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
             ->join('users', 'users.id', 'unaccounted_debts.user_id')
@@ -458,11 +460,11 @@ class StatisticsController extends Controller
                 'reading' => $value
             ];
         }
-        Log::info('end');
+
         return $stationsRevenue;
     }
 
-    public function sortRevenueMonths($revenue)
+    public function sortRevenueMonths($revenue): array
     {
         usort( $revenue , static function($a, $b){
             $a = strtotime($a['name']);
@@ -474,9 +476,9 @@ class StatisticsController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Collection
      */
-    private function getMonthlyServiceChargeMonthWiseRevenue()
+    private function getMonthlyServiceChargeMonthWiseRevenue(): Collection
     {
         return MonthlyServiceChargePayment::select('monthly_service_charge_payments.amount_paid as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
@@ -488,9 +490,9 @@ class StatisticsController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Collection
      */
-    private function getMeterBillingMonthWiseRevenue()
+    private function getMeterBillingMonthWiseRevenue(): Collection
     {
         return MeterBilling::select('meter_billings.amount_paid as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
@@ -502,9 +504,9 @@ class StatisticsController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Collection
      */
-    private function getMeterTokenMonthWiseRevenue()
+    private function getMeterTokenMonthWiseRevenue(): Collection
     {
         return MeterToken::select(DB::raw('mpesa_transactions.TransAmount - (meter_tokens.unaccounted_debt_deducted + meter_tokens.connection_fee_deducted) as total'), DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
@@ -515,9 +517,9 @@ class StatisticsController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Collection
      */
-    private function getConnectionFeeMonthWiseRevenue()
+    private function getConnectionFeeMonthWiseRevenue(): Collection
     {
         return ConnectionFeePayment::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
@@ -529,9 +531,9 @@ class StatisticsController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Collection
      */
-    private function getUnaccountedDebtMonthWiseRevenue()
+    private function getUnaccountedDebtMonthWiseRevenue(): Collection
     {
         return UnaccountedDebt::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
