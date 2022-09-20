@@ -151,7 +151,7 @@ trait ProcessConnectionFeeTransaction
                     Log::info('Amount paid: ' . $amount_paid);
                     Log::info('Expected amount: ' . $expected_amount);
 
-                    if ($amount_paid === 0){
+                    if ($amount_paid === 0 && $processingConnectionFeeOnly){
                         $user_account_balance = $user->account_balance - $expected_amount;
                         $user->update([
                             'account_balance' => $user_account_balance
