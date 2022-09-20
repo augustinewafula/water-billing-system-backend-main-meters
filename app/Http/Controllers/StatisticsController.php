@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConnectionFeePayment;
+use App\Models\CreditAccount;
 use App\Models\DailyMeterReading;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
@@ -88,8 +89,9 @@ class StatisticsController extends Controller
         $meterTokenMonthWiseRevenue = $this->getMeterTokenMonthWiseRevenue();
         $unaccountedDebtMonthWiseRevenue = $this->getUnaccountedDebtMonthWiseRevenue();
         $connectionFeeMonthWiseRevenue = $this->getConnectionFeeMonthWiseRevenue();
+        $creditAccountMonthWiseRevenue = $this->getCreditAccountMonthWiseRevenue();
 
-        $revenueSum = $this->calculateRevenueSum($meterBillingMonthWiseRevenue, $meterTokenMonthWiseRevenue, $monthlyServiceChargeMonthWiseRevenue, $unaccountedDebtMonthWiseRevenue, $connectionFeeMonthWiseRevenue);
+        $revenueSum = $this->calculateRevenueSum($meterBillingMonthWiseRevenue, $meterTokenMonthWiseRevenue, $monthlyServiceChargeMonthWiseRevenue, $unaccountedDebtMonthWiseRevenue, $connectionFeeMonthWiseRevenue, $creditAccountMonthWiseRevenue);
         $sortedRevenueSum = $this->sortRevenueMonths($revenueSum);
         return response()->json($sortedRevenueSum);
 
@@ -102,9 +104,10 @@ class StatisticsController extends Controller
         $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
         $unaccountedDebtSum = $this->calculateUnaccountedDebtSumPerStation($from, $to);
         $connectionFeeSum = $this->calculateConnectionFeeSumPerStation($from, $to);
+        $creditAccountSum = $this->calculateCreditAccountSumPerStation($from, $to);
         Log::info($tokenSum);
 
-        return $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum);
+        return $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum, $creditAccountSum);
     }
 
     public function calculateRevenue(?string $from, ?string $to): Float
@@ -369,17 +372,37 @@ class StatisticsController extends Controller
      */
     private function calculateConnectionFeeSumPerStation(?string $from, ?string $to): Collection
     {
-        $tokenSum = ConnectionFeePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
-            ->join('connection_fees', 'connection_fees.id', 'connection_fee_id')
+        $connectionFeeSum = ConnectionFeePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
+            ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
             ->join('users', 'users.id', 'connection_fees.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id')
             ->where('connection_fee_payments.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
+            $connectionFeeSum = $connectionFeeSum->where('mpesa_transactions.created_at', '>', $from)
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
-        return $tokenSum->groupBy('name')
+        return $connectionFeeSum->groupBy('name')
+            ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
+            ->get();
+    }
+
+    /**
+     * @param string|null $from
+     * @param string|null $to
+     * @return Collection
+     */
+    private function calculateCreditAccountSumPerStation(?string $from, ?string $to): Collection
+    {
+        $creditAccountSum = CreditAccount::join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
+            ->join('users', 'users.id', 'credit_accounts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
+        if ($from !== null && $to !== null) {
+            $creditAccountSum = $creditAccountSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        return $creditAccountSum->groupBy('name')
             ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
             ->get();
     }
@@ -410,14 +433,16 @@ class StatisticsController extends Controller
      * @param $monthlyServiceChargeSum
      * @param $unaccountedDebtSum
      * @param $connectionFeeSum
+     * @param $creditAccountMonthWiseRevenue
      * @return array
      */
-    private function calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum): array
+    private function calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum, $creditAccountMonthWiseRevenue): array
     {
         $all = $billingsSum->concat($tokenSum)
             ->concat($monthlyServiceChargeSum)
             ->concat($unaccountedDebtSum)
             ->concat($connectionFeeSum)
+            ->concat($creditAccountMonthWiseRevenue)
             ->toArray();
 
         $all = array_reduce($all, static function ($accumulator, $item) {
@@ -525,6 +550,19 @@ class StatisticsController extends Controller
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
             ->whereYear('mpesa_transactions.created_at', date('Y'))
             ->where('connection_fee_payments.amount_paid', '!=', 0.00)
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+    }
+
+    /**
+     * @return Collection
+     */
+    private function getCreditAccountMonthWiseRevenue(): Collection
+    {
+        return CreditAccount::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
             ->distinct('name')
             ->groupBy('name', 'total')
             ->get();
