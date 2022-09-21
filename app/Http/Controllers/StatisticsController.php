@@ -231,8 +231,8 @@ class StatisticsController extends Controller
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
             ->where('monthly_service_charge_payments.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $serviceChargeSum = $serviceChargeSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $serviceChargeSum = $serviceChargeSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $serviceChargeSum->sum('amount_paid');
     }
@@ -248,8 +248,8 @@ class StatisticsController extends Controller
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->where('meter_billings.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $billingsSum = $billingsSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $billingsSum->sum('amount_paid');
     }
@@ -264,8 +264,8 @@ class StatisticsController extends Controller
         $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
         if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $tokenSum = $tokenSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $tokenSum->sum('TransAmount');
     }
@@ -281,8 +281,8 @@ class StatisticsController extends Controller
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
             ->where('connection_fee_payments.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $connectionFeeSum = $connectionFeeSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $connectionFeeSum = $connectionFeeSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $connectionFeeSum->sum('TransAmount');
     }
@@ -292,8 +292,8 @@ class StatisticsController extends Controller
         $creditAccountSum = CreditAccount::select('credit_accounts.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id');
         if ($from !== null && $to !== null) {
-            $creditAccountSum = $creditAccountSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $creditAccountSum = $creditAccountSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $creditAccountSum->sum('TransAmount');
     }
@@ -308,8 +308,8 @@ class StatisticsController extends Controller
         $unaccountedDebtSum = UnaccountedDebt::select('unaccounted_debts.*', 'mpesa_transactions.TransAmount')
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id');
         if ($from !== null && $to !== null) {
-            $unaccountedDebtSum = $unaccountedDebtSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $unaccountedDebtSum = $unaccountedDebtSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $unaccountedDebtSum->sum('TransAmount');
     }
@@ -328,8 +328,8 @@ class StatisticsController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
             ->where('monthly_service_charge_payments.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $monthlyServiceCharge = $monthlyServiceCharge->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $monthlyServiceCharge = $monthlyServiceCharge->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $monthlyServiceCharge->groupBy('name')
             ->selectRaw('sum(monthly_service_charge_payments.amount_paid) as total, meter_stations.name')
@@ -349,8 +349,8 @@ class StatisticsController extends Controller
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->where('meter_billings.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $billingsSum = $billingsSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $billingsSum->groupBy('name')
             ->selectRaw('sum(meter_billings.amount_paid) as total, meter_stations.name')
@@ -368,8 +368,8 @@ class StatisticsController extends Controller
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
         if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $tokenSum = $tokenSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $tokenSum->groupBy('name')
             ->select(DB::raw('sum(mpesa_transactions.TransAmount) as total'), 'meter_stations.name')
@@ -390,8 +390,8 @@ class StatisticsController extends Controller
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id')
             ->where('connection_fee_payments.amount_paid', '!=', 0.00);
         if ($from !== null && $to !== null) {
-            $connectionFeeSum = $connectionFeeSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $connectionFeeSum = $connectionFeeSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $connectionFeeSum->groupBy('name')
             ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
@@ -410,8 +410,8 @@ class StatisticsController extends Controller
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
         if ($from !== null && $to !== null) {
-            $creditAccountSum = $creditAccountSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $creditAccountSum = $creditAccountSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $creditAccountSum->groupBy('name')
             ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
@@ -430,8 +430,8 @@ class StatisticsController extends Controller
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
         if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->where('mpesa_transactions.created_at', '>', $from)
-                ->where('mpesa_transactions.created_at', '<', $to);
+            $tokenSum = $tokenSum->whereDate('mpesa_transactions.created_at', '>', $from)
+                ->whereDate('mpesa_transactions.created_at', '<', $to);
         }
         return $tokenSum->groupBy('name')
             ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
