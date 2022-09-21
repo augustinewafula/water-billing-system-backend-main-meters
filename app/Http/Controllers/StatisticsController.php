@@ -105,7 +105,6 @@ class StatisticsController extends Controller
         $unaccountedDebtSum = $this->calculateUnaccountedDebtSumPerStation($from, $to);
         $connectionFeeSum = $this->calculateConnectionFeeSumPerStation($from, $to);
         $creditAccountSum = $this->calculateCreditAccountSumPerStation($from, $to);
-        Log::info($tokenSum);
 
         return $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum, $creditAccountSum);
     }
@@ -117,8 +116,9 @@ class StatisticsController extends Controller
         $tokenSum = $this->calculateMeterTokensSum($from, $to);
         $unaccountedDebtRevenue = $this->calculateUnaccountedDebtsSum($from, $to);
         $connectionFeeSum = $this->calculateConnectionFeesSum($from, $to);
+        $creditAccountSum = $this->calculateCreditAccountSum($from, $to);
 
-        return $billingsSum + $tokenSum + $serviceChargeSum + $unaccountedDebtRevenue + $connectionFeeSum;
+        return $billingsSum + $tokenSum + $serviceChargeSum + $unaccountedDebtRevenue + $connectionFeeSum + $creditAccountSum;
     }
 
     /**
@@ -285,6 +285,17 @@ class StatisticsController extends Controller
                 ->where('mpesa_transactions.created_at', '<', $to);
         }
         return $connectionFeeSum->sum('TransAmount');
+    }
+
+    public function calculateCreditAccountSum(?string $from, ?string $to): Float
+    {
+        $creditAccountSum = CreditAccount::select('credit_accounts.*', 'mpesa_transactions.TransAmount')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id');
+        if ($from !== null && $to !== null) {
+            $creditAccountSum = $creditAccountSum->where('mpesa_transactions.created_at', '>', $from)
+                ->where('mpesa_transactions.created_at', '<', $to);
+        }
+        return $creditAccountSum->sum('TransAmount');
     }
 
     /**
