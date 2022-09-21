@@ -52,8 +52,7 @@ class StatisticsController extends Controller
             'users' => $users,
             'main_meters' => $mainMeters,
             'meters' => $meters,
-            'faulty_meters' => $faultyMeters,
-            'revenue' => $this->calculateRevenue(null, null)
+            'faulty_meters' => $faultyMeters
         ]);
     }
 
