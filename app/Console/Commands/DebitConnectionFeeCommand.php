@@ -31,7 +31,7 @@ class DebitConnectionFeeCommand extends Command
     public function handle(ConnectionFeeService $connectionFeeService): int
     {
         $connectionFees = ConnectionFee::notAddedToUserTotalDebt()
-            ->currentMonth()
+            ->whereDate('month', '<=', now())
             ->notPaid()
             ->orWhere
             ->hasBalance()

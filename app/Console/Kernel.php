@@ -28,7 +28,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('meter-readings:send')->everyMinute();
         $schedule->command('meter-readings:get --type=daily')->daily();
         $schedule->command('meter-readings:get --type=monthly')->monthlyOn($this->meterReadingOn());
-        $schedule->command('users:debit-connection-fee')->monthly();
+        $schedule->command('users:debit-connection-fee')->daily();
 //        $schedule->command('monthly-service-charge:generate')->monthly();
         $schedule->command('backup:clean')->twiceDaily(0, 12);
         $schedule->command('backup:run --only-db')->twiceDaily();

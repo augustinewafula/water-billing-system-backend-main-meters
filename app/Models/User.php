@@ -51,7 +51,7 @@ class User extends Authenticatable
     {
         $this->attributes['first_connection_fee_on'] = null;
         if ($value){
-            $this->attributes['first_connection_fee_on'] = Carbon::parse($value)->format('Y-m-d');
+            $this->attributes['first_connection_fee_on'] = Carbon::parse($value)->format('Y-m-d H:i:s');
         }
 
     }
@@ -59,7 +59,7 @@ class User extends Authenticatable
 
     public function getFirstConnectionFeeOnAttribute($value)
     {
-        return $value ? Carbon::parse($value)->format('Y-m') : null;
+        return $value ? Carbon::parse($value)->format('Y-m-d') : null;
     }
 
     /**
@@ -107,7 +107,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'first_monthly_service_fee_on' => 'datetime',
-        'communication_channels' => 'array',
+        'communication_channels' => 'array'
     ];
 
     /**
@@ -122,6 +122,16 @@ class User extends Authenticatable
     public function unaccounted_debts(): HasMany
     {
         return $this->hasMany(UnaccountedDebt::class);
+    }
+
+    public function hasFundsInAccount(): bool
+    {
+        return $this->account_balance > 0;
+    }
+
+    public function hasNoFundsInAccount(): bool
+    {
+        return $this->account_balance <= 0;
     }
 
     /**
