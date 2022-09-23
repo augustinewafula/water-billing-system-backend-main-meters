@@ -36,7 +36,7 @@ class GenerateConnectionFeeAction
             ]);
 
             if ($user->hasNoFundsInAccount() && $monthToGenerate->lessThanOrEqualTo(now())){
-//                $this->debitConnectionFeeBillToUserAccount($user, $connectionFee, $billPerMonth);
+                $this->debitConnectionFeeBillToUserAccount($user, $connectionFee, $billPerMonth);
             }
             $monthToGenerate = $monthToGenerate->add(1, 'month');
 
