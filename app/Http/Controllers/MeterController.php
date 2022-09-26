@@ -141,21 +141,33 @@ class MeterController extends Controller
             if (MeterType::find($request->type_id)->name === 'Prepaid') {
                 $this->registerPrepaidMeter($request->number);
             }
+            $validated = $request->validated();
+            if ($request->has_location) {
+                $validated['lat'] = $request->location['lat'];
+                $validated['lng'] = $request->location['lng'];
+            }
 
-            $meter = Meter::create($request->validated());
+            $meter = Meter::create($validated);
             return ['message' => $meter, 'status_code' => 201];
         }
         $main_meter = $request->main_meter;
         if (!$main_meter) {
             $main_meter = false;
         }
-        $meter = Meter::create([
+        $data = [
             'number' => $request->number,
             'station_id' => $request->station_id,
             'last_reading' => $request->last_reading,
             'mode' => $request->mode,
             'main_meter' => $main_meter,
-        ]);
+            'has_location' => $request->has_location,
+        ];
+        if ($request->has_location) {
+            $data['lat'] = $request->location['lat'];
+            $data['lng'] = $request->location['lng'];
+        }
+        $meter = Meter::create($data);
+
         return ['message' => $meter, 'status_code' => 201];
 
     }
@@ -186,12 +198,17 @@ class MeterController extends Controller
      */
     public function update(UpdateMeterRequest $request, Meter $meter): JsonResponse
     {
-        $meter->update([
+        $data = [
             'number' => $request->number,
             'station_id' => $request->station_id,
-            'type_id' => $request->type_id,
-            'mode' => $request->mode
-        ]);
+            'mode' => $request->mode,
+            'has_location' => $request->has_location,
+        ];
+        if ($request->has_location) {
+            $data['lat'] = $request->location['lat'];
+            $data['lng'] = $request->location['lng'];
+        }
+        $meter->update($data);
         try {
             if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid') {
                 $this->registerPrepaidMeter($meter->number);
@@ -199,6 +216,7 @@ class MeterController extends Controller
         } catch (Throwable $exception) {
             Log::error('Failed to register prepaid meter id: ' . $meter->id);
         }
+
         return response()->json($meter);
     }
 

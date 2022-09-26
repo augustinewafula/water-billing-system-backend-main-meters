@@ -31,15 +31,20 @@ class UpdateMeterRequest extends FormRequest
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
             'mode' => ['required', new EnumValue(MeterMode::class, false)],
             'sim_card_number' => ['nullable', 'numeric'],
-            'main_meter' => ['nullable', 'boolean']
+            'main_meter' => ['nullable', 'boolean'],
+            'has_location' => ['required', 'boolean'],
+            'location.lat' => ['required_if:has_location,1', 'nullable', 'between:-90,90'],
+            'location.lng' => ['required_if:has_location,1', 'nullable', 'between:-180,180'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'required_if' => 'The type field is required when mode is automatic',
-            'unique' => 'The :attribute already exists'
+            'type_id.required_if' => 'The type field is required when mode is automatic',
+            'unique' => 'The :attribute already exists',
+            'location.lat.between' => 'The latitude must be between -90 and 90',
+            'location.lng.between' => 'The longitude must be between -180 and 180',
         ];
     }
 }
