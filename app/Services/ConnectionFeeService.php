@@ -66,6 +66,7 @@ class ConnectionFeeService
             foreach ($partialPayments as $partialPayment) {
                 $partialPaymentAmount += $partialPayment->amount_paid;
             }
+            \Log::info('Adding connection fee debt amount Ksh ' . $partialPaymentAmount . 'for user: ' . $connectionFee->user_id . ' for month: ' . $connectionFee->month);
 
             $user_total_amount = $user->account_balance - $partialPaymentAmount;
             $user->update(['account_balance' => $user_total_amount]);
