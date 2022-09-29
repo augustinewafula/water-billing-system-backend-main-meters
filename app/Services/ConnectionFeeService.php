@@ -8,6 +8,7 @@ use App\Models\ConnectionFee;
 use App\Models\ConnectionFeePayment;
 use App\Models\CreditAccount;
 use App\Models\User;
+use DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -53,8 +54,12 @@ class ConnectionFeeService
 
     }
 
-    public function addConnectionFeeBillToUserAccount($connectionFee): void
+    /**
+     * @throws Throwable
+     */
+    public function addConnectionFeeBillToUserAccount($connectionFeeID): void
     {
+        $connectionFee = ConnectionFee::findOrFail($connectionFeeID);
         if ($connectionFee->status === PaymentStatus::PAID || $connectionFee->status === PaymentStatus::OVER_PAID) {
             return;
         }
@@ -67,16 +72,12 @@ class ConnectionFeeService
                 $partialPaymentAmount += $partialPayment->amount_paid;
             }
             \Log::info('Adding connection fee debt amount Ksh ' . $partialPaymentAmount . ' for user: ' . $connectionFee->user_id . ' for month: ' . $connectionFee->month);
-
-            $user_total_amount = $user->account_balance - $partialPaymentAmount;
-            $user->update(['account_balance' => $user_total_amount]);
+            $this->debitConnectionFeePaymentToUserAccount($user, $connectionFee, $partialPaymentAmount);
 
             return;
         }
 
-
-        $user_total_amount = $user->account_balance - $connectionFee->amount;
-        $user->update(['account_balance' => $user_total_amount]);
+        $this->debitConnectionFeePaymentToUserAccount($user, $connectionFee, $connectionFee->amount);
 
     }
 
@@ -109,6 +110,16 @@ class ConnectionFeeService
                 'mpesa_transaction_id' => $connectionFeeMpesaTransaction->mpesa_transaction_id,
             ]);
         }
+
+    }
+
+    private function debitConnectionFeePaymentToUserAccount($user, $connectionFee, $amountToDebit): void
+    {
+        $userTotalAmount = $user->account_balance - $amountToDebit;
+        DB::transaction(static function () use ($user, $userTotalAmount, $connectionFee) {
+            $user->update(['account_balance' => $userTotalAmount]);
+            $connectionFee->update(['added_to_user_total_debt' => true]);
+        });
 
     }
 

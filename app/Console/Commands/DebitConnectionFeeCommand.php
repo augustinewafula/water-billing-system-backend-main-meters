@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\ConnectionFee;
 use App\Services\ConnectionFeeService;
 use Illuminate\Console\Command;
+use Throwable;
 
 class DebitConnectionFeeCommand extends Command
 {
@@ -27,6 +28,7 @@ class DebitConnectionFeeCommand extends Command
      *
      * @param ConnectionFeeService $connectionFeeService
      * @return int
+     * @throws Throwable
      */
     public function handle(ConnectionFeeService $connectionFeeService): int
     {
@@ -38,7 +40,7 @@ class DebitConnectionFeeCommand extends Command
             ->get();
         \Log::info('Found ' . $connectionFees->count() . ' connection fees to debit.');
         foreach ($connectionFees as $connectionFee) {
-            $connectionFeeService->addConnectionFeeBillToUserAccount($connectionFee);
+            $connectionFeeService->addConnectionFeeBillToUserAccount($connectionFee->id);
         }
         return 0;
     }
