@@ -6,6 +6,7 @@ use App\Models\ConnectionFee;
 use App\Services\ConnectionFeeService;
 use Illuminate\Console\Command;
 use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class DebitConnectionFeeCommand extends Command
 {
@@ -34,11 +35,13 @@ class DebitConnectionFeeCommand extends Command
     {
         $connectionFees = ConnectionFee::notAddedToUserTotalDebt()
             ->whereDate('month', '<=', now())
-            ->notPaid()
-            ->orWhere
-            ->hasBalance()
+            ->where(function ($query) {
+                $query->notPaid()
+                    ->orWhere
+                    ->hasBalance();
+            })
             ->get();
-        \Log::info('Found ' . $connectionFees->count() . ' connection fees to debit.');
+        Log::info('Found ' . $connectionFees->count() . ' connection fees to debit.');
         foreach ($connectionFees as $connectionFee) {
             $connectionFeeService->addConnectionFeeBillToUserAccount($connectionFee->id);
         }
