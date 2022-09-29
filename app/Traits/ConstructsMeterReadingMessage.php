@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 trait ConstructsMeterReadingMessage
 {
+    use CalculatesUserAmount;
     /**
      * @param $meter_reading
      * @param $user
@@ -22,6 +23,7 @@ trait ConstructsMeterReadingMessage
         $bill_month = Carbon::parse($meter_reading->month)->isoFormat('MMMM YYYY');
         $units_consumed = $meter_reading->current_reading - $meter_reading->previous_reading;
         $bill = round($meter_reading->bill - $meter_reading->service_fee);
+        $connection_fee_debt = $this->calculateUserConnectionFeeDebt($user->id);
         $carry_forward_balance = 0;
         $credit = 0;
 
@@ -41,6 +43,10 @@ trait ConstructsMeterReadingMessage
 //        $user_total_debt -= $carry_forward_balance;
         $user_total_debt_formatted = number_format($user_total_debt);
         $carry_forward_balance += $user->unaccounted_debt;
+
+        if ($connection_fee_debt > 0) {
+            $carry_forward_balance -= $connection_fee_debt;
+        }
         $carry_forward_balance_formatted = number_format($carry_forward_balance);
         $credit_formatted = number_format($credit);
 
@@ -51,8 +57,9 @@ trait ConstructsMeterReadingMessage
         $user_account_balance = max($user->account_balance, 0);
         $user_account_balance_formatted = number_format($user_account_balance);
         $user_account_balance_text = $user_account_balance > 0 ? "\nCredit balance: Ksh $user_account_balance_formatted" : '';
+        $user_connection_fee_debt_text = $connection_fee_debt > 0 ? "\nConnection fee debt: Ksh $connection_fee_debt" : '';
 
-        return "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance_formatted\nCredit applied: Ksh $credit_formatted\nStanding charge: Ksh $service_fee_formatted\nTotal outstanding: Ksh $user_total_debt_formatted $user_account_balance_text\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
+        return "Hello $user_name, your water billing for $bill_month is as follows:\nCurrent reading: $meter_reading->current_reading\nPrevious reading: $meter_reading->previous_reading\nUnits consumed: $units_consumed\nBalance brought forward: Ksh $carry_forward_balance_formatted $user_connection_fee_debt_text\nCredit applied: Ksh $credit_formatted\nStanding charge: Ksh $service_fee_formatted\nTotal outstanding: Ksh $user_total_debt_formatted $user_account_balance_text\nDue date: $due_date\nPay via paybill number $paybill_number, account number $account_number";
     }
 
 }
