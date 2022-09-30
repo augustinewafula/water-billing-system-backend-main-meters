@@ -9,9 +9,9 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use JsonException;
-use Log;
 use Throwable;
 
 trait ProcessesMpesaTransaction
@@ -27,6 +27,7 @@ trait ProcessesMpesaTransaction
         $user = $this->getUser($mpesa_transaction->BillRefNumber);
 
         $deductions = $this->initializeDeductions();
+        \Log::info('isPaymentForMeterConnectionAccount: ' . $this->isPaymentForMeterConnectionAccount($mpesa_transaction));
 
         if (!$user && $account_number = $this->isPaymentForMeterConnectionAccount($mpesa_transaction)) {
             $user = $this->getUser($account_number);
@@ -91,8 +92,9 @@ trait ProcessesMpesaTransaction
             }
             $new_account_number = Str::before($account_number, $separator);
             $constant_word = Str::after($account_number, $separator);
-            $constant_word = Str::of($constant_word)->lower()->toString();
-            if ($constant_word === 'meter' || $constant_word === 'mita') {
+            $constant_word = Str::of($constant_word)->lower();
+
+            if ($constant_word == 'meter' || $constant_word == 'mita') {
                 return $new_account_number;
             }
         }
