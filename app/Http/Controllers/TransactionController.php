@@ -13,6 +13,7 @@ use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use App\Services\MpesaService;
 use App\Services\TransactionService;
+use App\Traits\ConvertsPhoneNumberToInternationalFormat;
 use App\Traits\CreditsUserAccount;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,7 +24,8 @@ use Throwable;
 
 class TransactionController extends Controller
 {
-    use CreditsUserAccount;
+    use CreditsUserAccount,
+        ConvertsPhoneNumberToInternationalFormat;
 
     public function __construct()
     {
@@ -130,12 +132,6 @@ class TransactionController extends Controller
             return response()->json($response, 422);
         }
         return response()->json('success', 201);
-    }
-
-    public function phoneNumberToInternationalFormat(string $phoneNumber): string
-    {
-        $phoneNumber = substr($phoneNumber, 1);
-        return '254'.$phoneNumber;
     }
 
     public function transfer(TransferTransactionRequest $request, TransactionService $transactionService): JsonResponse
