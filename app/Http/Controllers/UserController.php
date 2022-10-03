@@ -11,6 +11,8 @@ use App\Models\MeterReading;
 use App\Models\MeterStation;
 use App\Models\User;
 use App\Services\ConnectionFeeService;
+use App\Services\MpesaService;
+use App\Traits\CreditsUserAccount;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -37,6 +39,7 @@ class UserController extends Controller
         GeneratesMonthlyServiceCharge,
         GetsUserConnectionFeeBalance,
         SendsSetPasswordEmail,
+        CreditsUserAccount,
         ProcessMeterReadingsAvailableCredits;
 
     public function __construct()
@@ -135,10 +138,15 @@ class UserController extends Controller
      *
      * @param CreateUserRequest $request
      * @param ConnectionFeeService $connectionFeeService
+     * @param MpesaService $mpesaService
      * @return JsonResponse
      * @throws Throwable
      */
-    public function store(CreateUserRequest $request, ConnectionFeeService $connectionFeeService): JsonResponse
+    public function store(
+        CreateUserRequest $request,
+        ConnectionFeeService $connectionFeeService,
+        MpesaService $mpesaService
+    ): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -151,7 +159,7 @@ class UserController extends Controller
             }
 
             if (!empty($request->credit) && $request->credit > 0) {
-                $this->creditAmountToUserAccount($user, $request->credit);
+                $this->creditAmountToUserAccount($user, $request->credit, $mpesaService);
             }
             DB::commit();
         } catch (Throwable $th) {
@@ -164,7 +172,7 @@ class UserController extends Controller
         return response()->json($user, 201);
     }
 
-    private function creditAmountToUserAccount(User $user, float $amount): void
+    private function creditAmountToUserAccount(User $user, float $amount, MpesaService $mpesaService): void
     {
         $credit_account_request = new CreditAccountRequest();
         $credit_account_request->setMethod('POST');
@@ -175,7 +183,7 @@ class UserController extends Controller
         ]);
         try {
             $credit_account_request->validate((new CreditAccountRequest())->rules());
-            $this->creditAccount($credit_account_request);
+            $this->creditUserAccount($credit_account_request, $mpesaService);
         } catch (Throwable $th) {
             Log::error($th);
         }
