@@ -10,6 +10,8 @@ use App\Services\MpesaService;
 
 trait CreditsUserAccount
 {
+    use ConvertsPhoneNumberToInternationalFormat;
+
     public function creditUserAccount(CreditAccountRequest $request, MpesaService $mpesaService): void
     {
         $user = User::findOrFail($request->user_id);
@@ -19,7 +21,7 @@ trait CreditsUserAccount
             $transaction_id = $request->mpesa_transaction_reference;
         }
         $account_number = $user->account_number;
-        if ($request->account_type === 2){
+        if ($request->account_type === 2) {
             $account_number = $user->account_number.'-meter';
         }
 
