@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreditAccountRequest;
-use App\Http\Requests\MpesaTransactionRequest;
 use App\Http\Requests\TransferTransactionRequest;
-use App\Jobs\ProcessTransaction;
 use App\Models\ConnectionFeePayment;
 use App\Models\CreditAccount;
 use App\Models\MeterBilling;
@@ -13,9 +11,9 @@ use App\Models\MeterToken;
 use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
-use App\Models\User;
 use App\Services\MpesaService;
 use App\Services\TransactionService;
+use App\Traits\CreditsUserAccount;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -25,6 +23,7 @@ use Throwable;
 
 class TransactionController extends Controller
 {
+    use CreditsUserAccount;
 
     public function __construct()
     {
@@ -123,32 +122,9 @@ class TransactionController extends Controller
 
     public function creditAccount(CreditAccountRequest $request, MpesaService $mpesaService): JsonResponse
     {
-        $user = User::findOrFail($request->user_id);
-        if (empty($request->mpesa_transaction_reference)) {
-            $transaction_id = 'ST_'.now()->timestamp;
-        } else {
-            $transaction_id = $request->mpesa_transaction_reference;
-        }
-        $account_number = $user->account_number;
-        if ($request->account_type === 2){
-            $account_number = $user->account_number.'-meter';
-        }
-
-        $mpesa_request = new MpesaTransactionRequest();
-        $mpesa_request->setMethod('POST');
-        $mpesa_request->request->add([
-            'TransID' => $transaction_id,
-            'TransTime' => now()->timestamp,
-            'TransAmount' => $request->amount,
-            'FirstName' => $user->name,
-            'MSISDN' => $this->phoneNumberToInternationalFormat($user->phone),
-            'BillRefNumber' => $account_number,
-        ]);
         try {
-            $mpesa_request->validate((new MpesaTransactionRequest)->rules());
-            $mpesa_transaction = $mpesaService->store($mpesa_request);
-            ProcessTransaction::dispatch($mpesa_transaction);
-        }catch (Throwable $throwable){
+            $this->creditUserAccount($request, $mpesaService);
+        }catch (Throwable $throwable) {
             \Log::error($throwable);
             $response = ['message' => 'Failed to credit account: '.$throwable->getMessage()];
             return response()->json($response, 422);
