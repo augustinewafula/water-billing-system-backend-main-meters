@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\GenerateConnectionFeeAction;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\CreditAccountRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\MeterReading;
 use App\Models\MeterStation;
-use App\Models\MonthlyServiceChargeReport;
 use App\Models\User;
 use App\Services\ConnectionFeeService;
 use App\Traits\GeneratesMonthlyServiceCharge;
@@ -21,13 +20,10 @@ use Carbon\Carbon;
 use DB;
 use Exception;
 use Hash;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use JsonException;
 use Log;
 use Spatie\Permission\Models\Role;
@@ -37,7 +33,11 @@ use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
-    use GeneratesPassword, GeneratesMonthlyServiceCharge, GetsUserConnectionFeeBalance, SendsSetPasswordEmail, ProcessMeterReadingsAvailableCredits;
+    use GeneratesPassword,
+        GeneratesMonthlyServiceCharge,
+        GetsUserConnectionFeeBalance,
+        SendsSetPasswordEmail,
+        ProcessMeterReadingsAvailableCredits;
 
     public function __construct()
     {
@@ -45,7 +45,8 @@ class UserController extends Controller
         $this->middleware('permission:user-create', ['only' => ['store']]);
         $this->middleware('permission:user-edit', ['only' => ['update']]);
         $this->middleware('permission:user-delete', ['only' => ['destroy']]);
-        $this->middleware('permission:meter-billing-report-list', ['only' => ['billing_report', 'billing_report_years']]);
+        $this->middleware('permission:meter-billing-report-list', ['only' =>
+            ['billing_report', 'billing_report_years']]);
     }
 
     /**
@@ -134,38 +135,51 @@ class UserController extends Controller
      *
      * @param CreateUserRequest $request
      * @param ConnectionFeeService $connectionFeeService
-     * @return Application|ResponseFactory|JsonResponse|Response
+     * @return JsonResponse
      * @throws Throwable
      */
-    public function store(CreateUserRequest $request, ConnectionFeeService $connectionFeeService)
+    public function store(CreateUserRequest $request, ConnectionFeeService $connectionFeeService): JsonResponse
     {
         try {
             DB::beginTransaction();
             $data = $this->getRequestData($request, 'save');
             $user = User::create($data);
             $user->assignRole(Role::findByName('user'));
-            MonthlyServiceChargeReport::create([
-                'user_id' => $user->id,
-                'year' => now()->year,
-            ]);
-
-//            $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
-//                ->first()
-//                ->value;
-//            $this->generateUserMonthlyServiceCharge($user, $monthly_service_charge);
 
             if ($user->should_pay_connection_fee) {
                 $connectionFeeService->generate($user);
+            }
+
+            if (!empty($request->credit) && $request->credit > 0) {
+                $this->creditAmountToUserAccount($user, $request->credit);
             }
             DB::commit();
         } catch (Throwable $th) {
             DB::rollBack();
             Log::error($th);
             $response = ['message' => 'Something went wrong, please try again later'];
-            return response($response, 422);
+            return response()->json($response, 422);
         }
 
         return response()->json($user, 201);
+    }
+
+    private function creditAmountToUserAccount(User $user, float $amount): void
+    {
+        $credit_account_request = new CreditAccountRequest();
+        $credit_account_request->setMethod('POST');
+        $credit_account_request->request->add([
+            'amount' => $amount,
+            'user_id' => $user->id,
+            'account_type' => 1,
+        ]);
+        try {
+            $credit_account_request->validate((new CreditAccountRequest())->rules());
+            $this->creditAccount($credit_account_request);
+        } catch (Throwable $th) {
+            Log::error($th);
+        }
+
     }
 
     /**
@@ -478,11 +492,6 @@ class UserController extends Controller
         if ($action === 'save'){
             $password = $this->generatePassword(10);
             $data = Arr::add($data, 'password', Hash::make($password));
-            $credit = $request->credit;
-            if (empty($credit)){
-                $credit = 0;
-            }
-            $data = Arr::add($data, 'account_balance', $credit);
 
             $debt = $request->debt;
             if (empty($debt)){
