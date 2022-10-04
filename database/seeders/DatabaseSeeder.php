@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             MeterStationSeeder::class,
             MeterChargeSeeder::class,
             SettingSeeder::class,
+            SettingSeeder2::class,
             AlertContactSeeder::class,
         ]);
     }
