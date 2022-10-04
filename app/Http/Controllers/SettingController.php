@@ -54,6 +54,10 @@ class SettingController extends Controller
             ->first();
         $monthly_service_charge = Setting::where('key', 'monthly_service_charge')
             ->first();
+        $send_connection_fee_bill_remainder_sms = Setting::where('key', 'send_connection_fee_bill_remainder_sms')
+            ->first();
+        $days_before_sending_connection_fee_bill_remainder_sms = Setting::where('key', 'days_before_sending_connection_fee_bill_remainder_sms')
+            ->first();
 
         try {
             DB::beginTransaction();
@@ -102,6 +106,13 @@ class SettingController extends Controller
             $monthly_service_charge->update([
                 'value' => $request->monthly_service_charge
             ]);
+            $send_connection_fee_bill_remainder_sms->update([
+                'value' => $request->send_connection_fee_bill_remainder_sms
+            ]);
+            $days_before_sending_connection_fee_bill_remainder_sms->update([
+                'value' => $request->days_before_sending_connection_fee_bill_remainder_sms
+            ]);
+
             DB::commit();
             return response()->json('updated');
         } catch (Throwable $throwable) {
