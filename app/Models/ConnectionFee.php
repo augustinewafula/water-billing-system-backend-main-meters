@@ -23,7 +23,14 @@ class ConnectionFee extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['user_id', 'amount', 'status', 'month', 'added_to_user_total_debt'];
+    protected $fillable = [
+        'user_id',
+        'amount',
+        'status',
+        'month',
+        'added_to_user_total_debt',
+        'bill_remainder_sms_sent'
+    ];
 
     public function setMonthAttribute(string $value): void
     {
