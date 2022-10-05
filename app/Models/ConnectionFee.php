@@ -47,6 +47,11 @@ class ConnectionFee extends Model
         return $query->where('added_to_user_total_debt', false);
     }
 
+    public function scopeBillRemainderSmsNotSent(Builder $query): Builder
+    {
+        return $query->where('bill_remainder_sms_sent', false);
+    }
+
     public function scopeNotPaid(Builder $query): Builder
     {
         return $query->where('status', PaymentStatus::NOT_PAID);
