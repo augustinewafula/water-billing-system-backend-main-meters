@@ -32,16 +32,6 @@ class ConnectionFee extends Model
         'bill_remainder_sms_sent'
     ];
 
-    public function setMonthAttribute(string $value): void
-    {
-        $this->attributes['month'] = Carbon::parse($value)->format('Y-m-d');
-    }
-
-    public function getMonthAttribute(string $value): string
-    {
-        return Carbon::parse($value)->format('Y-m');
-    }
-
     public function scopeNotAddedToUserTotalDebt(Builder $query): Builder
     {
         return $query->where('added_to_user_total_debt', false);
