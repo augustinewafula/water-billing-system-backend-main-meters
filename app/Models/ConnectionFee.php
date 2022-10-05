@@ -32,6 +32,10 @@ class ConnectionFee extends Model
         'bill_remainder_sms_sent'
     ];
 
+    protected $casts = [
+        'month' => 'datetime:Y-m-d',
+    ];
+
     public function scopeNotAddedToUserTotalDebt(Builder $query): Builder
     {
         return $query->where('added_to_user_total_debt', false);
