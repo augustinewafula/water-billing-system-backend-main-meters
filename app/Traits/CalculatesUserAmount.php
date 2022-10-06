@@ -60,7 +60,7 @@ trait CalculatesUserAmount
         return $unpaid_bills + $balance_bills + $user_unaccounted_debt;
     }
 
-    public function calculateUserConnectionFeeDebt($user_id)
+    public function calculateUserConnectionFeeDebt($user_id): float
     {
         $unpaid_connection_fees = DB::table('connection_fees')
             ->where('user_id', $user_id)
@@ -69,6 +69,7 @@ trait CalculatesUserAmount
             ->sum('amount');
         $connection_fees_with_balance = ConnectionFee::where('user_id', $user_id)
             ->whereStatus(PaymentStatus::PARTIALLY_PAID)
+            ->whereDate('month', '<=', now())
             ->get();
 
         $balance_bills = 0;
