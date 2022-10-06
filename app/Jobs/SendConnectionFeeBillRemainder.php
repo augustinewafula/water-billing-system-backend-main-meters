@@ -57,18 +57,18 @@ class SendConnectionFeeBillRemainder implements ShouldQueue
                 })->get();
             \Log::info('Found ' . $connection_fees->count() . ' connection fees to send remainder sms.');
             foreach ($connection_fees as $connection_fee) {
-                $this->sendBillRemainderSms($connection_fee->id);
+                $this->sendBillRemainderSms($connection_fee->id, $remainder_date);
             }
         }
     }
 
-    private function sendBillRemainderSms($connection_fee_id): void
+    private function sendBillRemainderSms(String $connection_fee_id, Carbon $remainder_date): void
     {
         \Log::info('Sending bill remainder sms for connection fee id: ' . $connection_fee_id);
         $connection_fee = ConnectionFee::findOrfail($connection_fee_id);
         $user = User::findOrfail($connection_fee->user_id);
 
-        $connection_fee_debt = $this->calculateUserConnectionFeeDebt($user->id);
+        $connection_fee_debt = $this->calculateUpcomingUserConnectionFeeDebt($user->id, $remainder_date);
         $bill_due_on = Carbon::createFromFormat('Y-m-d H:i:s', $connection_fee->month)
             ->toFormattedDateString();
         $connection_fee->update(['bill_remainder_sms_sent' => true]);
