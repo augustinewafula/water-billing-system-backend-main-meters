@@ -9,6 +9,7 @@ use App\Models\MeterReading;
 use App\Models\MonthlyServiceCharge;
 use App\Models\ServiceCharge;
 use App\Models\User;
+use Carbon\Carbon;
 use DB;
 
 trait CalculatesUserAmount
@@ -70,6 +71,31 @@ trait CalculatesUserAmount
         $connection_fees_with_balance = ConnectionFee::where('user_id', $user_id)
             ->whereStatus(PaymentStatus::PARTIALLY_PAID)
             ->whereDate('month', '<=', now())
+            ->get();
+
+        $balance_bills = 0;
+        foreach ($connection_fees_with_balance as $connection_fee) {
+            $balance = DB::table('connection_fee_payments')
+                ->where('connection_fee_id', $connection_fee->id)
+                ->latest()
+                ->first()
+                ->balance;
+            $balance_bills += $balance;
+        }
+
+        return $unpaid_connection_fees + $balance_bills;
+    }
+
+    public function calculateUpcomingUserConnectionFeeDebt(String $user_id, Carbon $remainder_date): float
+    {
+        $unpaid_connection_fees = DB::table('connection_fees')
+            ->where('user_id', $user_id)
+            ->whereDate('month', '<=', $remainder_date)
+            ->whereStatus(PaymentStatus::NOT_PAID)
+            ->sum('amount');
+        $connection_fees_with_balance = ConnectionFee::where('user_id', $user_id)
+            ->whereStatus(PaymentStatus::PARTIALLY_PAID)
+            ->whereDate('month', '<=', $remainder_date)
             ->get();
 
         $balance_bills = 0;
