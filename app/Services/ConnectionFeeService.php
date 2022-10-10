@@ -36,7 +36,8 @@ class ConnectionFeeService
     public function destroy(ConnectionFee $connectionFee): void
     {
         $currentMonth = Carbon::now()->startOfMonth()->startOfDay();
-        $connectionFeeMonth = Carbon::createFromFormat('Y-m', $connectionFee->month)->startOfMonth()->startOfDay();
+        \Log::info($connectionFee->month);
+        $connectionFeeMonth = Carbon::createFromFormat('Y-m-d H:i:s', $connectionFee->month)->startOfMonth()->startOfDay();
 
         if ($connectionFeeMonth->lessThanOrEqualTo($currentMonth)){
             \Log::info('Removing connection fee amount for user: ' . $connectionFee->user_id . ' for month: ' . $connectionFee->month);

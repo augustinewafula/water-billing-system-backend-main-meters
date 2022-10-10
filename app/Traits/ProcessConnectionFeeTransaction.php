@@ -88,7 +88,7 @@ trait ProcessConnectionFeeTransaction
             $credit = 0;
             $user = $user->refresh();
             $connection_fee = ConnectionFee::where('user_id', $user->id)
-                ->where('month', $month_to_bill)
+                ->whereDate('month', $month_to_bill)
                 ->first();
             if (is_null($connection_fee)) {
                 break;
@@ -207,7 +207,7 @@ trait ProcessConnectionFeeTransaction
             ->oldest()
             ->limit(1)
             ->first();
-        return Carbon::createFromFormat('Y-m', $last_connection_fee->month)->startOfMonth();
+        return Carbon::createFromFormat('Y-m-d H:i:s', $last_connection_fee->month)->startOfDay();
     }
 
     /**
