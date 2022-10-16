@@ -20,7 +20,21 @@ class MpesaTransaction extends Model
 
     protected $keyType = 'uuid';
 
-    protected $fillable = ['FirstName', 'MiddleName', 'LastName', 'TransactionType', 'TransID', 'TransTime', 'BusinessShortCode', 'BillRefNumber', 'InvoiceNumber', 'ThirdPartyTransID', 'MSISDN', 'TransAmount', 'OrgAccountBalance', 'Consumed'];
+    protected $fillable = [
+        'FirstName',
+        'MiddleName',
+        'LastName',
+        'TransactionType',
+        'TransID',
+        'TransTime',
+        'BusinessShortCode',
+        'BillRefNumber',
+        'InvoiceNumber',
+        'ThirdPartyTransID',
+        'MSISDN',
+        'TransAmount',
+        'OrgAccountBalance',
+        'Consumed'];
 
     protected $appends = ['transferable'];
 
@@ -30,6 +44,9 @@ class MpesaTransaction extends Model
 
     public function getTransferableAttribute(): bool
     {
+        if (!array_key_exists('id', $this->attributes)) {
+            return false;
+        }
         return MeterToken::where('mpesa_transaction_id', $this->attributes['id'])
                 ->get()
                 ->count() === 0;
