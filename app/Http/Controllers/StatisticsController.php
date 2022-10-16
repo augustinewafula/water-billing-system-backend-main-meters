@@ -12,16 +12,19 @@ use App\Models\MeterReading;
 use App\Models\MeterStation;
 use App\Models\MeterToken;
 use App\Models\MonthlyServiceChargePayment;
+use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use JsonException;
 use Log;
 use PhpParser\Node\Expr\Cast\Double;
+use Str;
 use Throwable;
 
 class StatisticsController extends Controller
@@ -83,14 +86,21 @@ class StatisticsController extends Controller
 
     public function monthlyRevenueStatistics(): JsonResponse
     {
-        $monthlyServiceChargeMonthWiseRevenue = $this->getMonthlyServiceChargeMonthWiseRevenue();
-        $meterBillingMonthWiseRevenue = $this->getMeterBillingMonthWiseRevenue();
-        $meterTokenMonthWiseRevenue = $this->getMeterTokenMonthWiseRevenue();
-        $unaccountedDebtMonthWiseRevenue = $this->getUnaccountedDebtMonthWiseRevenue();
-        $connectionFeeMonthWiseRevenue = $this->getConnectionFeeMonthWiseRevenue();
-        $creditAccountMonthWiseRevenue = $this->getCreditAccountMonthWiseRevenue();
-
-        $revenueSum = $this->calculateRevenueSum($meterBillingMonthWiseRevenue, $meterTokenMonthWiseRevenue, $monthlyServiceChargeMonthWiseRevenue, $unaccountedDebtMonthWiseRevenue, $connectionFeeMonthWiseRevenue, $creditAccountMonthWiseRevenue);
+        $mpesaTransactions = $this->getMpesaTransactions();
+        $monthWiseRevenue = new Collection();
+        foreach ($mpesaTransactions as $mpesaTransaction) {
+            $related_table_name = $this->getTransactionRelatedTableName($mpesaTransaction->id);
+            if ($related_table_name !== '') {
+                $revenue = MpesaTransaction::select('TransAmount as total', DB::raw('MONTHNAME(created_at) as name'))
+                    ->where('TransID', $mpesaTransaction->TransID)
+                    ->whereYear('created_at', date('Y'))
+                    ->distinct('name')
+                    ->groupBy('name', 'total')
+                    ->get();
+                $monthWiseRevenue = $monthWiseRevenue->merge($revenue);
+            }
+        }
+        $revenueSum = $this->calculateRevenueSum($monthWiseRevenue);
         $sortedRevenueSum = $this->sortRevenueMonths($revenueSum);
         return response()->json($sortedRevenueSum);
 
@@ -98,26 +108,96 @@ class StatisticsController extends Controller
 
     public function calculateStationRevenue(?string $from, ?string $to): array
     {
-        $monthlyServiceChargeSum = $this->calculateMonthlyServiceChargeSumPerStation($from, $to);
-        $billingsSum = $this->calculateMeterBillingSumPerStation($from, $to);
-        $tokenSum = $this->calculateMeterTokenSumPerStation($from, $to);
-        $unaccountedDebtSum = $this->calculateUnaccountedDebtSumPerStation($from, $to);
-        $connectionFeeSum = $this->calculateConnectionFeeSumPerStation($from, $to);
-        $creditAccountSum = $this->calculateCreditAccountSumPerStation($from, $to);
+        $stations = MeterStation::select('id', 'name')->get();
+        $stationsRevenue = [];
 
-        return $this->calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum, $creditAccountSum);
+        foreach ($stations as $station) {
+            Log::info($station->name);
+            $revenue = $this->calculateRevenue($from, $to, $station);
+            Log::info($station->name . ' revenue: ' . $revenue);
+            $stationsRevenue[] = [
+                'name' => $station->name,
+                'value' => $revenue
+            ];
+        }
+
+        return $stationsRevenue;
     }
 
-    public function calculateRevenue(?string $from, ?string $to): Float
+    public function calculateRevenue(?string $from, ?string $to, MeterStation $meterStation = null): Float
     {
-        $serviceChargeSum = $this->calculateMonthlyServiceChargeSum($from, $to);
-        $billingsSum = $this->calculateMeterBillingsSum($from, $to);
-        $tokenSum = $this->calculateMeterTokensSum($from, $to);
-        $unaccountedDebtRevenue = $this->calculateUnaccountedDebtsSum($from, $to);
-        $connectionFeeSum = $this->calculateConnectionFeesSum($from, $to);
-        $creditAccountSum = $this->calculateCreditAccountSum($from, $to);
+        $mpesaTransactions = $this->getMpesaTransactions($from, $to);
 
-        return $billingsSum + $tokenSum + $serviceChargeSum + $unaccountedDebtRevenue + $connectionFeeSum + $creditAccountSum;
+        $sum = 0.00;
+        foreach ($mpesaTransactions as $mpesaTransaction) {
+            $relatedTableName = $this->getTransactionRelatedTableName($mpesaTransaction->id);
+            if ($relatedTableName !== ''){
+                if ($meterStation) {
+                    $modelName = Str::studly(Str::singular($relatedTableName));
+                    $mpesaTransactionMeterStationId = $this->getMpesaTransactionMeterStationId($modelName, $mpesaTransaction->id);
+                    Log::info('mpesaTransactionMeterStationId: ' . $mpesaTransactionMeterStationId);
+                    if ($mpesaTransactionMeterStationId !== $meterStation->id) {
+                        continue;
+                    }
+                }
+                $sum += $mpesaTransaction->TransAmount;
+            }
+        }
+
+        return $sum;
+    }
+
+    public function getTransactionRelatedTableName(string $transactionId): String
+    {
+        $meterBillingsCount = MeterBilling::where('mpesa_transaction_id', $transactionId)->count();
+        if ($meterBillingsCount > 0) {
+            return 'meter_billings';
+        }
+        $meterTokensCount = MeterToken::where('mpesa_transaction_id', $transactionId)->count();
+        if ($meterTokensCount > 0) {
+            return 'meter_tokens';
+        }
+        $connectionFeePaymentsCount = ConnectionFeePayment::where('mpesa_transaction_id', $transactionId)->count();
+        if ($connectionFeePaymentsCount > 0) {
+            return 'connection_fee_payments';
+        }
+        $creditAccountsCount = CreditAccount::where('mpesa_transaction_id', $transactionId)->count();
+        if ($creditAccountsCount > 0) {
+            return 'credit_accounts';
+        }
+        $unaccountedDebtsCount = UnaccountedDebt::where('mpesa_transaction_id', $transactionId)->count();
+        if ($unaccountedDebtsCount > 0) {
+            return 'unaccounted_debts';
+        }
+        return '';
+    }
+
+    private function getMpesaTransactionMeterStationId(string $modelName, string $transactionId): string
+    {
+        $className = "App\\Models\\$modelName";
+        $model = $className::where('mpesa_transaction_id', $transactionId)->first();
+
+        if ($modelName === 'ConnectionFeePayment') {
+            $model->user_id = $model->with('connection_fee')
+                ->first()
+                ->connection_fee
+                ->user_id;
+        }
+        if ($modelName === 'MeterBilling') {
+            $model->meter_id = $model->with('meter_reading')
+                ->first()
+                ->meter_reading
+                ->meter_id;
+        }
+        if ($model->user_id) {
+            $model->meter_id = $className::where('mpesa_transaction_id', $transactionId)
+                ->with('user')
+                ->first()
+                ->user
+                ->meter_id;
+        }
+        return Meter::findOrFail($model->meter_id)
+            ->station_id;
     }
 
     /**
@@ -220,252 +300,23 @@ class StatisticsController extends Controller
     }
 
     /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Float
-     */
-    private function calculateMonthlyServiceChargeSum(?string $from, ?string $to): Float
-    {
-        $serviceChargeSum = MonthlyServiceChargePayment::select('monthly_service_charge_payments.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
-            ->where('monthly_service_charge_payments.amount_paid', '!=', 0.00);
-        if ($from !== null && $to !== null) {
-            $serviceChargeSum = $serviceChargeSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $serviceChargeSum->sum('amount_paid');
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Float
-     */
-    private function calculateMeterBillingsSum(?string $from, ?string $to): Float
-    {
-        $billingsSum = MeterBilling::select('meter_billings.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
-            ->where('meter_billings.amount_paid', '!=', 0.00);
-        if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $billingsSum->sum('amount_paid');
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Float
-     */
-    private function calculateMeterTokensSum(?string $from, ?string $to): Float
-    {
-        $tokenSum = MeterToken::select('meter_tokens.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id');
-        if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $tokenSum->sum('TransAmount');
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Float
-     */
-    private function calculateConnectionFeesSum(?string $from, ?string $to): Float
-    {
-        $connectionFeeSum = ConnectionFeePayment::select('connection_fee_payments.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
-            ->where('connection_fee_payments.amount_paid', '!=', 0.00);
-        if ($from !== null && $to !== null) {
-            $connectionFeeSum = $connectionFeeSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $connectionFeeSum->sum('TransAmount');
-    }
-
-    public function calculateCreditAccountSum(?string $from, ?string $to): Float
-    {
-        $creditAccountSum = CreditAccount::select('credit_accounts.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id');
-        if ($from !== null && $to !== null) {
-            $creditAccountSum = $creditAccountSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $creditAccountSum->sum('TransAmount');
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Float
-     */
-    private function calculateUnaccountedDebtsSum(?string $from, ?string $to): Float
-    {
-        $unaccountedDebtSum = UnaccountedDebt::select('unaccounted_debts.*', 'mpesa_transactions.TransAmount')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id');
-        if ($from !== null && $to !== null) {
-            $unaccountedDebtSum = $unaccountedDebtSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $unaccountedDebtSum->sum('TransAmount');
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Collection
-     */
-    private function calculateMonthlyServiceChargeSumPerStation(?string $from, ?string $to): Collection
-    {
-        $monthlyServiceCharge = MonthlyServiceChargePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
-            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
-            ->join('users', 'users.id', 'monthly_service_charges.user_id')
-            ->join('meters', 'meters.id', 'users.meter_id')
-            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->where('monthly_service_charge_payments.amount_paid', '!=', 0.00);
-        if ($from !== null && $to !== null) {
-            $monthlyServiceCharge = $monthlyServiceCharge->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $monthlyServiceCharge->groupBy('name')
-            ->selectRaw('sum(monthly_service_charge_payments.amount_paid) as total, meter_stations.name')
-            ->get();
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Collection
-     */
-    private function calculateMeterBillingSumPerStation(?string $from, ?string $to): Collection
-    {
-        $billingsSum = MeterBilling::join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
-            ->join('meters', 'meters.id', 'meter_readings.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id')
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
-            ->where('meter_billings.amount_paid', '!=', 0.00);
-        if ($from !== null && $to !== null) {
-            $billingsSum = $billingsSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $billingsSum->groupBy('name')
-            ->selectRaw('sum(meter_billings.amount_paid) as total, meter_stations.name')
-            ->get();
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Collection
-     */
-    private function calculateMeterTokenSumPerStation(?string $from, ?string $to): Collection
-    {
-        $tokenSum = MeterToken::join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
-            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
-        if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $tokenSum->groupBy('name')
-            ->select(DB::raw('sum(mpesa_transactions.TransAmount) as total'), 'meter_stations.name')
-            ->get();
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Collection
-     */
-    private function calculateConnectionFeeSumPerStation(?string $from, ?string $to): Collection
-    {
-        $connectionFeeSum = ConnectionFeePayment::join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
-            ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
-            ->join('users', 'users.id', 'connection_fees.user_id')
-            ->join('meters', 'meters.id', 'users.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id')
-            ->where('connection_fee_payments.amount_paid', '!=', 0.00);
-        if ($from !== null && $to !== null) {
-            $connectionFeeSum = $connectionFeeSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $connectionFeeSum->groupBy('name')
-            ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
-            ->get();
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Collection
-     */
-    private function calculateCreditAccountSumPerStation(?string $from, ?string $to): Collection
-    {
-        $creditAccountSum = CreditAccount::join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
-            ->join('users', 'users.id', 'credit_accounts.user_id')
-            ->join('meters', 'meters.id', 'users.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
-        if ($from !== null && $to !== null) {
-            $creditAccountSum = $creditAccountSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $creditAccountSum->groupBy('name')
-            ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
-            ->get();
-    }
-
-    /**
-     * @param string|null $from
-     * @param string|null $to
-     * @return Collection
-     */
-    private function calculateUnaccountedDebtSumPerStation(?string $from, ?string $to): Collection
-    {
-        $tokenSum = UnaccountedDebt::join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
-            ->join('users', 'users.id', 'unaccounted_debts.user_id')
-            ->join('meters', 'meters.id', 'users.meter_id')
-            ->join('meter_stations', 'meters.station_id', 'meter_stations.id');
-        if ($from !== null && $to !== null) {
-            $tokenSum = $tokenSum->whereDate('mpesa_transactions.created_at', '>', $from)
-                ->whereDate('mpesa_transactions.created_at', '<', $to);
-        }
-        return $tokenSum->groupBy('name')
-            ->selectRaw('sum(mpesa_transactions.TransAmount) as total, meter_stations.name')
-            ->get();
-    }
-
-    /**
-     * @param $billingsSum
-     * @param $tokenSum
-     * @param $monthlyServiceChargeSum
-     * @param $unaccountedDebtSum
-     * @param $connectionFeeSum
-     * @param $creditAccountMonthWiseRevenue
+     * @param $monthWiseRevenue
      * @return array
      */
-    private function calculateRevenueSum($billingsSum, $tokenSum, $monthlyServiceChargeSum, $unaccountedDebtSum, $connectionFeeSum, $creditAccountMonthWiseRevenue): array
+    private function calculateRevenueSum($monthWiseRevenue): array
     {
-        $all = $billingsSum->concat($tokenSum)
-            ->concat($monthlyServiceChargeSum)
-            ->concat($unaccountedDebtSum)
-            ->concat($connectionFeeSum)
-            ->concat($creditAccountMonthWiseRevenue)
-            ->toArray();
-
-        $all = array_reduce($all, static function ($accumulator, $item) {
+        $monthWiseRevenue = $monthWiseRevenue->toArray();
+        $monthWiseRevenue = array_reduce($monthWiseRevenue, static function ($accumulator, $item) {
             $accumulator[$item['name']] = $accumulator[$item['name']] ?? 0;
             $accumulator[$item['name']] += $item['total'];
             return $accumulator;
         });
 
-        if ($all === null) {
+        if ($monthWiseRevenue === null) {
             return [];
         }
         $stationsRevenue = [];
-        foreach ($all as $key => $value) {
+        foreach ($monthWiseRevenue as $key => $value) {
             $stationsRevenue[] = [
                 'name' => $key,
                 'value' => $value
@@ -501,7 +352,7 @@ class StatisticsController extends Controller
 
     public function sortRevenueMonths($revenue): array
     {
-        usort( $revenue , static function($a, $b){
+        usort($revenue, static function($a, $b) {
             $a = strtotime($a['name']);
             $b = strtotime($b['name']);
             return $a - $b;
@@ -511,83 +362,18 @@ class StatisticsController extends Controller
     }
 
     /**
+     * @param string|null $from
+     * @param string|null $to
      * @return Collection
      */
-    private function getMonthlyServiceChargeMonthWiseRevenue(): Collection
+    private function getMpesaTransactions(string $from=null, string $to=null): Collection
     {
-        return MonthlyServiceChargePayment::select('monthly_service_charge_payments.amount_paid as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
-            ->whereYear('mpesa_transactions.created_at', date('Y'))
-            ->where('monthly_service_charge_payments.amount_paid', '!=', 0.00)
-            ->distinct('name')
-            ->groupBy('name', 'total')
-            ->get();
+        $mpesaTransactions = MpesaTransaction::query();
+        if ($from !== null && $to !== null) {
+            $mpesaTransactions = $mpesaTransactions->whereDate('created_at', '>', $from)
+                ->whereDate('created_at', '<', $to);
+        }
+        return $mpesaTransactions->get();
     }
 
-    /**
-     * @return Collection
-     */
-    private function getMeterBillingMonthWiseRevenue(): Collection
-    {
-        return MeterBilling::select('meter_billings.amount_paid as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
-            ->whereYear('mpesa_transactions.created_at', date('Y'))
-            ->where('meter_billings.amount_paid', '!=', 0.00)
-            ->distinct('name')
-            ->groupBy('name', 'total')
-            ->get();
-    }
-
-    /**
-     * @return Collection
-     */
-    private function getMeterTokenMonthWiseRevenue(): Collection
-    {
-        return MeterToken::select(DB::raw('mpesa_transactions.TransAmount - (meter_tokens.unaccounted_debt_deducted + meter_tokens.connection_fee_deducted) as total'), DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
-            ->whereYear('mpesa_transactions.created_at', date('Y'))
-            ->distinct('name')
-            ->groupBy('name', 'total')
-            ->get();
-    }
-
-    /**
-     * @return Collection
-     */
-    private function getConnectionFeeMonthWiseRevenue(): Collection
-    {
-        return ConnectionFeePayment::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
-            ->whereYear('mpesa_transactions.created_at', date('Y'))
-            ->where('connection_fee_payments.amount_paid', '!=', 0.00)
-            ->distinct('name')
-            ->groupBy('name', 'total')
-            ->get();
-    }
-
-    /**
-     * @return Collection
-     */
-    private function getCreditAccountMonthWiseRevenue(): Collection
-    {
-        return CreditAccount::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
-            ->whereYear('mpesa_transactions.created_at', date('Y'))
-            ->distinct('name')
-            ->groupBy('name', 'total')
-            ->get();
-    }
-
-    /**
-     * @return Collection
-     */
-    private function getUnaccountedDebtMonthWiseRevenue(): Collection
-    {
-        return UnaccountedDebt::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
-            ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
-            ->whereYear('mpesa_transactions.created_at', date('Y'))
-            ->distinct('name')
-            ->groupBy('name', 'total')
-            ->get();
-    }
 }
