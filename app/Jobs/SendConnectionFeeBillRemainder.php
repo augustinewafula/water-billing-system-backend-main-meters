@@ -76,6 +76,7 @@ class SendConnectionFeeBillRemainder implements ShouldQueue
         if ($connection_fee_debt === 0) {
             return;
         }
+        $connection_fee_debt = number_format($connection_fee_debt);
         $message = "Hello {$user->name}, your connection fee debt of Ksh {$connection_fee_debt} is due on $bill_due_on. Please pay your bill on time.";
         $this->notifyUser((object)['message' => $message, 'title' => 'Connection fee debt.'], $user, 'general');
 
