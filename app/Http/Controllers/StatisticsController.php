@@ -113,9 +113,7 @@ class StatisticsController extends Controller
         $stationsRevenue = [];
 
         foreach ($stations as $station) {
-            Log::info($station->name);
             $revenue = $this->calculateRevenue($from, $to, $station);
-            Log::info($station->name . ' revenue: ' . $revenue);
             $stationsRevenue[] = [
                 'name' => $station->name,
                 'value' => $revenue
