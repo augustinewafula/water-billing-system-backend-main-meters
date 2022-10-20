@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Throwable;
+use Illuminate\Support\Str;
 
 trait ProcessesPostPaidTransaction
 {
@@ -39,8 +40,14 @@ trait ProcessesPostPaidTransaction
         ]);
         $mpesa_transaction_amount_formatted = number_format($mpesa_transaction->TransAmount);
         $organization_name = env('APP_NAME');
-        $message = "Dear $mpesa_transaction->FirstName, your payment of Ksh $mpesa_transaction_amount_formatted to $organization_name has been received. Thank you for being our esteemed customer.";
-        $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
+        $name = Str::title($mpesa_transaction->FirstName);
+        $message = "Hello $name, your payment of Ksh $mpesa_transaction_amount_formatted to $organization_name has been received. Thank you for being our esteemed customer.";
+        $this->notifyUser(
+            (object)['message' => $message, 'title' => 'Payment received'],
+            $user,
+            'general',
+            $mpesa_transaction->MSISDN
+        );
         $this->store($request, $mpesa_transaction->id);
     }
 
