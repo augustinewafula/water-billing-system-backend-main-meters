@@ -49,40 +49,36 @@ trait ProcessesPrepaidMeterTransaction
     private function processPrepaidTransaction($meter_id, $mpesa_transaction, $deductions): void
     {
         $user = User::where('meter_id', $meter_id)->first();
-        $mpesa_transaction_id =
+        $mpesa_transaction_id = $mpesa_transaction->id;
         throw_if($user === null, RuntimeException::class, "Meter $meter_id has no user assigned");
 
         $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $deductions);
 
 
         if ($user_total_amount <= 0) {
+            $this->updateUserAccountBalance($user, $user_total_amount, $deductions, $mpesa_transaction_id);
             $message = $this->constructNotEnoughAmountMessage($this->userTotalDebt($user), $deductions);
-            $this->notifyUser((object)['message' => $message, 'title' => 'Insufficient amount'], $user, 'general');
+            $this->notifyUser(
+                (object)['message' => $message, 'title' => 'Insufficient amount'],
+                $user,
+                'general',
+                $mpesa_transaction->MSISDN
+            );
+
             return;
         }
         Log::info('User total amount after deductions: '. $user_total_amount);
         $units = $this->calculateUnits($user_total_amount, $user);
         Log::info("$units: $units");
         if ($units < 0) {
+            $user = $this->updateUserAccountBalance($user, $user_total_amount, $deductions, $mpesa_transaction_id);
             $message = $this->constructNotEnoughAmountMessage($this->userTotalDebt($user), $deductions);
-            try {
-                DB::beginTransaction();
-                $user->update([
-                    'account_balance' => $user_total_amount,
-                    'last_mpesa_transaction_id' => $mpesa_transaction->id
-                ]);
-
-                if ($mpesa_transaction_id){
-                    MpesaTransaction::find($mpesa_transaction->id)->update([
-                        'Consumed' => true,
-                    ]);
-                }
-                DB::commit();
-            } catch (Throwable $throwable) {
-                DB::rollBack();
-                Log::error($throwable);
-            }
-            $this->notifyUser((object)['message' => $message, 'title' => 'Insufficient amount'], $user, 'general');
+            $this->notifyUser(
+                (object)['message' => $message, 'title' => 'Insufficient amount'],
+                $user,
+                'general',
+                $mpesa_transaction->MSISDN
+            );
             return;
         }
 
@@ -102,24 +98,64 @@ trait ProcessesPrepaidMeterTransaction
                 'unaccounted_debt_deducted' => $deductions->unaccounted_debt_deducted,
                 'meter_id' => $user->meter_id,
             ]);
-            $user->update([
-                'account_balance' => 0
-            ]);
-            if ($mpesa_transaction_id){
-                MpesaTransaction::find($mpesa_transaction->id)->update([
-                    'Consumed' => true,
-                ]);
-            }
-            $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $meter_number\nToken: $token\nUnits: $units\nAmount: $user_total_amount\nAccount: $user->account_number\nDate: $date\nRef: $mpesa_transaction->TransID";
+            $this->updateUserAccountBalance($user, $user_total_amount, $deductions, $mpesa_transaction_id, true);
 
-            $this->notifyUser((object)['message' => $message], $user, 'meter tokens');
+            $date = Carbon::now()->toDateTimeString();
+            $message = "
+            Meter: $meter_number\n
+            Token: $token\n
+            Units: $units\n
+            Amount: $user_total_amount\n
+            Account: $user->account_number\n
+            Date: $date\n
+            Ref: $mpesa_transaction->TransID";
+
+            $this->notifyUser(
+                (object)['message' => $message, 'title' => 'Water Meter Tokens'],
+                $user,
+                'meter tokens',
+                $mpesa_transaction->MSISDN
+            );
             DB::commit();
 
         } catch (Throwable $throwable) {
             DB::rollBack();
             Log::error($throwable);
         }
+    }
+
+    private function updateUserAccountBalance(
+        User $user,
+        $user_total_amount,
+        $deductions,
+        $mpesa_transaction_id=null,
+        $token_consumed=false): User
+    {
+        $deductions_sum = $deductions->monthly_service_charge_deducted +
+            $deductions->connection_fee_deducted +
+            $deductions->unaccounted_debt_deducted;
+
+        try {
+            DB::beginTransaction();
+            if ($token_consumed) {
+                $user->account_balance = 0;
+            }else {
+                $user->account_balance = ($user->account_balance + $user_total_amount) + $deductions_sum;
+            }
+            $user->last_mpesa_transaction_id = $mpesa_transaction_id;
+            $user->save();
+            if ($mpesa_transaction_id){
+                MpesaTransaction::find($mpesa_transaction_id)->update([
+                    'Consumed' => true,
+                ]);
+            }
+            DB::commit();
+        } catch (Throwable $throwable) {
+            DB::rollBack();
+            Log::error($throwable);
+        }
+
+        return $user;
     }
 
     /**
@@ -143,7 +179,7 @@ trait ProcessesPrepaidMeterTransaction
         }
         if ($deductions->connection_fee_deducted > 0) {
             $connection_fee_deducted_formatted = number_format($deductions->connection_fee_deducted);
-            $message .= "Ksh $connection_fee_deducted_formatted was deducted for connection fee balance.";
+            $message .= "Ksh $connection_fee_deducted_formatted was deducted for connection fee balance. ";
         }
         $total_debt_formatted = number_format($totalDebt);
         $message .= "Your current pending debt is Ksh $total_debt_formatted.";
