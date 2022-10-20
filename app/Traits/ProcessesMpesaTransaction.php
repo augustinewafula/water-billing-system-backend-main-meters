@@ -27,8 +27,6 @@ trait ProcessesMpesaTransaction
         $user = $this->getUser($mpesa_transaction->BillRefNumber);
 
         $deductions = $this->initializeDeductions();
-        \Log::info('isPaymentForMeterConnectionAccount: ' . $this->isPaymentForMeterConnectionAccount($mpesa_transaction));
-
         if (!$user && $account_number = $this->isPaymentForMeterConnectionAccount($mpesa_transaction)) {
             $user = $this->getUser($account_number);
             if ($user && !$this->hasCompletedConnectionFeePayment($user->id)){
@@ -61,7 +59,7 @@ trait ProcessesMpesaTransaction
 //                $deductions->monthly_service_charge = $monthly_service_charge_deducted;
 //        }
 
-        if ($user->should_pay_connection_fee && (($deductions->unaccounted_debt_deducted + $deductions->monthly_service_charge_deducted) < $mpesa_transaction->TransAmount) && !$this->hasCompletedConnectionFeePayment($user->id) && $this->hasMonthlyConnectionFeeDebt($user->id)) {
+        if ($user->should_pay_connection_fee && (($deductions->unaccounted_debt_deducted + $deductions->monthly_service_charge_deducted) < $mpesa_transaction->TransAmount) && $this->hasMonthlyConnectionFeeDebt($user->id)) {
             $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $deductions);
             $deductions->connection_fee_deducted = $connection_fee_deducted;
             Log::info("connection_fee_deducted: $connection_fee_deducted");
