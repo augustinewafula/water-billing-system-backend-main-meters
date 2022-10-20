@@ -11,10 +11,14 @@ use Mail;
 
 trait NotifiesUser
 {
-    public function notifyUser($info, $user, $message_type): void
+    public function notifyUser($info, $user, $message_type, $phone_number = null): void
     {
-        if ($this->shouldNotifyViaSms($user->communication_channels)){
-            SendSMS::dispatch($user->phone, $info->message, $user->id);
+        if ($this->shouldNotifyViaSms($user->communication_channels)) {
+            $user_phone_number =
+                ($phone_number && $this->isValidPhoneNumber($phone_number)) ?
+                    $phone_number :
+                    $user->phone;
+            SendSMS::dispatch($user_phone_number, $info->message, $user->id);
         }
 
         if (($message_type === 'meter readings') && $this->shouldNotifyViaEmail($user->communication_channels)) {
@@ -37,6 +41,11 @@ trait NotifiesUser
                 ->queue(new GeneralMessage($info->title, $message));
         }
 
+    }
+
+    private function isValidPhoneNumber($phone_number): bool
+    {
+        return preg_match('/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/', $phone_number);
     }
 
     public function shouldNotifyViaSms($user_communication_channels): bool
