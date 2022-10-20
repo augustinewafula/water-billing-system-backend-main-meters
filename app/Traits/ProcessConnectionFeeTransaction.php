@@ -20,10 +20,12 @@ trait ProcessConnectionFeeTransaction
     public function hasMonthlyConnectionFeeDebt($user_id): bool
     {
         $connection_fees = ConnectionFee::where('user_id', $user_id)
-            ->currentAndPreviousMonth()
-            ->notPaid()
-            ->orWhere
-            ->hasBalance()
+            ->whereDate('month', '<=', Carbon::now()->startOfDay())
+            ->where(function ($query) {
+                $query->notPaid()
+                    ->orWhere
+                    ->hasBalance();
+            })
             ->get();
 
         return $connection_fees->count() > 0;
@@ -61,30 +63,37 @@ trait ProcessConnectionFeeTransaction
     /**
      * @throws Throwable
      */
-    public function storeConnectionFeeBill($user_id, $mpesa_transaction, $amount, $deductions, $paidToMeterConnectionAccount = false, $processingConnectionFeeOnly = false)
+    public function storeConnectionFeeBill(
+        $user_id,
+        $mpesa_transaction,
+        $amount,
+        $deductions,
+        $paidToMeterConnectionAccount = false,
+        $processingConnectionFeeOnly = false)
     {
         $user = User::findOrFail($user_id);
         $amount_paid = $amount;
         $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $amount_paid, $deductions);
-        $lastMonthToBill = Carbon::now()->startOfMonth();
+        $lastMonthToBill = Carbon::now()->startOfDay();
         $month_to_bill = $this->getMonthToBill($user);
         $total_connection_fee_paid = 0;
 
-        if ($paidToMeterConnectionAccount){
+        if ($paidToMeterConnectionAccount) {
             $lastMonthToBill = $this->getLastMonthToBill($user_id, $lastMonthToBill);
         }
 
         $mpesa_transaction_id = null;
-        if (is_object($mpesa_transaction)){
+        if (is_object($mpesa_transaction)) {
             $mpesa_transaction_id = $mpesa_transaction->id;
         }
 
         Log::info('Storing connection fee bill for user: ' . $user_id);
+        Log::info('Month to bill: ' . $month_to_bill->format('Y-m-d'));
         Log::info('Last month to bill: ' . $lastMonthToBill->format('Y-m-d'));
         Log::info('user_total_amount: ' . $user_total_amount);
 
         while ($month_to_bill->lessThanOrEqualTo($lastMonthToBill)) {
-            Log::info('Month to bill: ' . $month_to_bill->format('Y-m-d'));
+            Log::info('Billing: ' . $month_to_bill->format('Y-m-d'));
             $credit = 0;
             $user = $user->refresh();
             $connection_fee = ConnectionFee::where('user_id', $user->id)
@@ -186,10 +195,15 @@ trait ProcessConnectionFeeTransaction
         ]);
         $total_connection_fee_paid_formatted = number_format($total_connection_fee_paid);
 
-        if (!$processingConnectionFeeOnly){
+        if (!$processingConnectionFeeOnly && $total_connection_fee_paid > 0) {
             $organization_name = env('APP_NAME');
             $message = "Your connection fee of Ksh $total_connection_fee_paid_formatted has been received by $organization_name";
-            $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
+            $this->notifyUser(
+                (object)['message' => $message, 'title' => 'Payment received'],
+                $user,
+                'general',
+                $mpesa_transaction->MSISDN
+            );
         }
 
         Log::info('Total connection fee paid: ' . $total_connection_fee_paid);
@@ -222,7 +236,7 @@ trait ProcessConnectionFeeTransaction
             ->limit(1)
             ->first();
         if ($lastBill) {
-            $lastMonthToBill = Carbon::create($lastBill->month)->startOfMonth();
+            $lastMonthToBill = Carbon::create($lastBill->month);
         }
         return $lastMonthToBill;
     }
