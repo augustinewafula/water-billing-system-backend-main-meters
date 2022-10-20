@@ -66,7 +66,9 @@ class SendConnectionFeeBillRemainder implements ShouldQueue
     {
         \Log::info('Sending bill remainder sms for connection fee id: ' . $connection_fee_id);
         $connection_fee = ConnectionFee::findOrfail($connection_fee_id);
-        $user = User::findOrfail($connection_fee->user_id);
+        $user = User::with('meter.station')
+            ->where('id', $connection_fee->user_id)
+            ->firstOrFail();
 
         $connection_fee_debt = $this->calculateUpcomingUserConnectionFeeDebt($user->id, $remainder_date);
         $bill_due_on = Carbon::createFromFormat('Y-m-d H:i:s', $connection_fee->month)
@@ -77,7 +79,10 @@ class SendConnectionFeeBillRemainder implements ShouldQueue
             return;
         }
         $connection_fee_debt = number_format($connection_fee_debt);
-        $message = "Hello {$user->name}, your connection fee debt of Ksh {$connection_fee_debt} is due on $bill_due_on. Please pay your bill on time.";
+        $paybill_number = $user->meter->station->paybill_number;
+        $account_number = $user->account_number . '-meter';
+
+        $message = "Hello {$user->name}, your connection fee debt of Ksh {$connection_fee_debt} is due on $bill_due_on. Pay via paybill number $paybill_number, account number $account_number";
         $this->notifyUser((object)['message' => $message, 'title' => 'Connection fee debt.'], $user, 'general');
 
 
