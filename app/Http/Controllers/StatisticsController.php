@@ -134,7 +134,6 @@ class StatisticsController extends Controller
                 if ($meterStation) {
                     $modelName = Str::studly(Str::singular($relatedTableName));
                     $mpesaTransactionMeterStationId = $this->getMpesaTransactionMeterStationId($modelName, $mpesaTransaction->id);
-                    Log::info('mpesaTransactionMeterStationId: ' . $mpesaTransactionMeterStationId);
                     if ($mpesaTransactionMeterStationId !== $meterStation->id) {
                         continue;
                     }
