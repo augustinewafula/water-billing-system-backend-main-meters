@@ -104,7 +104,11 @@ trait ProcessesPostPaidTransaction
      * @return void
      * @throws Throwable
      */
-    private function creditUserAccount(Model|Builder|User $user, $amount_paid, $mpesa_transaction_id, mixed $user_total_amount): void
+    private function creditUserAccount(
+        Model|Builder|User $user,
+                           $amount_paid,
+                           $mpesa_transaction_id,
+        mixed $user_total_amount): void
     {
         DB::transaction(static function () use ($user, $amount_paid, $mpesa_transaction_id, $user_total_amount) {
             CreditAccount::create([
@@ -113,7 +117,8 @@ trait ProcessesPostPaidTransaction
                 'mpesa_transaction_id' => $mpesa_transaction_id,
             ]);
             $user->update([
-                'account_balance' => $user_total_amount
+                'account_balance' => $user_total_amount,
+                'last_mpesa_transaction_id' => $mpesa_transaction_id,
             ]);
         });
     }
