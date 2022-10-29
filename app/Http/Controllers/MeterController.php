@@ -7,6 +7,7 @@ use App\Enums\ValveStatus;
 use App\Http\Requests\CreateMainMeterRequest;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
+use App\Jobs\GetMeterReadings;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterType;
@@ -138,7 +139,7 @@ class MeterController extends Controller
     public function save($request): array
     {
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
-            if (MeterType::find($request->type_id)->name === 'Prepaid') {
+            if ($this->isPrepaidMeter($request->type_id)) {
                 $this->registerPrepaidMeter($request->number);
             }
             $validated = $request->validated();
@@ -148,6 +149,9 @@ class MeterController extends Controller
             }
 
             $meter = Meter::create($validated);
+            if (!$this->isPrepaidMeter($request->type_id)) {
+                GetMeterReadings::dispatch('daily');
+            }
             return ['message' => $meter, 'status_code' => 201];
         }
         $main_meter = $request->main_meter;
@@ -170,6 +174,11 @@ class MeterController extends Controller
 
         return ['message' => $meter, 'status_code' => 201];
 
+    }
+
+    private function isPrepaidMeter($type_id): bool
+    {
+        return MeterType::find($type_id)->name === 'Prepaid';
     }
 
     /**
