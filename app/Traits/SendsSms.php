@@ -49,7 +49,9 @@ trait SendsSms
                 } catch (Throwable $throwable) {
                     $cost = $recipient->cost;
                 }
-                $this->storeSms($recipient->number, $message, $recipient->messageId, $status, $cost, $user_id);
+                if ($user_id !== null) {
+                    $this->storeSms($recipient->number, $message, $recipient->messageId, $status, $cost, $user_id);
+                }
             }
             return $response;
         }
