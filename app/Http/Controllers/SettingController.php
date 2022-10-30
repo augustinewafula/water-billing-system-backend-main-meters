@@ -58,6 +58,8 @@ class SettingController extends Controller
             ->first();
         $days_before_sending_connection_fee_bill_remainder_sms = Setting::where('key', 'days_before_sending_connection_fee_bill_remainder_sms')
             ->first();
+        $payment_notification_phone_number = Setting::where('key', 'payment_notification_phone_number')
+            ->first();
 
         try {
             DB::beginTransaction();
@@ -111,6 +113,13 @@ class SettingController extends Controller
             ]);
             $days_before_sending_connection_fee_bill_remainder_sms->update([
                 'value' => $request->days_before_sending_connection_fee_bill_remainder_sms
+            ]);
+            $payment_notification_phone_number_request = $request->payment_notification_phone_number;
+            if ($payment_notification_phone_number_request === null) {
+                $payment_notification_phone_number_request = 0;
+            }
+            $payment_notification_phone_number->update([
+                'value' => $payment_notification_phone_number_request
             ]);
 
             DB::commit();
