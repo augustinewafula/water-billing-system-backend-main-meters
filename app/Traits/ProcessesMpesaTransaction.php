@@ -16,7 +16,13 @@ use Throwable;
 
 trait ProcessesMpesaTransaction
 {
-    use ProcessesPrepaidMeterTransaction, ProcessesPostPaidTransaction, ProcessesMonthlyServiceChargeTransaction, ProcessConnectionFeeTransaction,ProcessUnaccountedDebt, initializesDeductionsAmount;
+    use ProcessesPrepaidMeterTransaction,
+        ProcessesPostPaidTransaction,
+        ProcessesMonthlyServiceChargeTransaction,
+        ProcessConnectionFeeTransaction,
+        ProcessUnaccountedDebt,
+        initializesDeductionsAmount,
+        NotifiesNewPayment;
 
     /**
      * @throws JsonException
@@ -24,6 +30,7 @@ trait ProcessesMpesaTransaction
      */
     private function processMpesaTransaction(MpesaTransaction $mpesa_transaction): void
     {
+        $this->notifyNewPayment($mpesa_transaction);
         $user = $this->getUser($mpesa_transaction->BillRefNumber);
 
         $deductions = $this->initializeDeductions();
