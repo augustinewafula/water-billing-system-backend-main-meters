@@ -141,7 +141,18 @@ class RoleController extends Controller
 
     public function getIgnoredModels(): array
     {
-        return ['connection fee payment', 'meter billing', 'meter billing report', 'meter type', 'monthly service charge', 'monthly service charge payment', 'monthly service charge report', 'unresolved mpesa transaction', 'mpesa transaction', 'setting', 'meter charge', 'sms'];
+        return [
+            'connection fee payment',
+            'meter billing',
+            'meter billing report',
+            'meter type',
+            'monthly service charge',
+            'monthly service charge payment',
+            'monthly service charge report',
+            'setting',
+            'meter charge',
+            'sms',
+            'valid meter'];
     }
 
     public function permissionModelsIndex(): JsonResponse
