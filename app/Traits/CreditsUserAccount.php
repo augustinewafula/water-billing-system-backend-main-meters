@@ -16,7 +16,7 @@ trait CreditsUserAccount
     {
         $user = User::findOrFail($request->user_id);
         if (empty($request->mpesa_transaction_reference)) {
-            $transaction_id = 'ST_'.now()->timestamp;
+            $transaction_id = 'ST_'.now()->getPreciseTimestamp(3);
         } else {
             $transaction_id = $request->mpesa_transaction_reference;
         }
@@ -29,7 +29,7 @@ trait CreditsUserAccount
         $mpesa_request->setMethod('POST');
         $mpesa_request->request->add([
             'TransID' => $transaction_id,
-            'TransTime' => now()->timestamp,
+            'TransTime' => now()->getPreciseTimestamp(3),
             'TransAmount' => $request->amount,
             'FirstName' => $user->name,
             'MSISDN' => $this->phoneNumberToInternationalFormat($user->phone),
