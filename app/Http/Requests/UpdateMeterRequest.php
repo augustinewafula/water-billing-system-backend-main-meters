@@ -34,8 +34,8 @@ class UpdateMeterRequest extends FormRequest
             'main_meter' => ['nullable', 'boolean'],
             'location' => ['nullable', 'string'],
             'has_location_coordinates' => ['required', 'boolean'],
-            'location.lat' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-90,90'],
-            'location.lng' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-180,180'],
+            'location_coordinates.lat' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-90,90'],
+            'location_coordinates.lng' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-180,180'],
         ];
     }
 
@@ -44,8 +44,8 @@ class UpdateMeterRequest extends FormRequest
         return [
             'type_id.required_if' => 'The type field is required when mode is automatic',
             'unique' => 'The :attribute already exists',
-            'location.lat.between' => 'The latitude must be between -90 and 90',
-            'location.lng.between' => 'The longitude must be between -180 and 180',
+            'location_coordinates.lat.between' => 'The latitude must be between -90 and 90',
+            'location_coordinates.lng.between' => 'The longitude must be between -180 and 180',
         ];
     }
 }
