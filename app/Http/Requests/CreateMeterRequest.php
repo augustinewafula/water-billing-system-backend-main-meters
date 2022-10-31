@@ -27,7 +27,7 @@ class CreateMeterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => ['required', 'numeric', 'unique:meters,number'],
+            'number' => ['required', 'string', 'unique:meters,number'],
             'mode' => ['required', new EnumValue(MeterMode::class, false)],
             'last_reading' => ['required', 'numeric'],
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
