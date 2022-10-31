@@ -83,6 +83,7 @@ class UserController extends Controller
                     'name' => $user->name,
                     'phone' => $user->phone,
                     'email' => $user->email,
+                    'location' => $user->meter->location,
                     'meter_number' => $user->meter->number,
                     'debt' => $debt,
                     'credit' => $credit,
