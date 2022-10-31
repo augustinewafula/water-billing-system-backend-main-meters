@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -44,7 +45,9 @@ class User extends Authenticatable
      */
     public function setNameAttribute(string $value): void
     {
-        $this->attributes['name'] = ucwords($value);
+        $this->attributes['name'] = Str::of($value)
+            ->lower()
+            ->title();
     }
 
     public function setFirstConnectionFeeOnAttribute($value): void
