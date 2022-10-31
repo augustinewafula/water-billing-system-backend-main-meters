@@ -31,7 +31,7 @@ class StatisticsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:super-admin|admin|supervisor']);
+//        $this->middleware(['role:super-admin|admin|supervisor']);
     }
 
     public function index(): JsonResponse

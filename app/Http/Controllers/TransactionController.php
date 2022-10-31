@@ -29,7 +29,7 @@ class TransactionController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:mpesa-transaction-list|unresolved-mpesa-transaction-list', ['only' => ['index', 'unresolvedTransactionIndex', 'show']]);
+        $this->middleware('permission:mpesa-transaction-list', ['only' => ['index', 'show']]);
     }
 
     public function queryTransactionStatusResultCallback(Request $request, MpesaService $mpesaService): JsonResponse

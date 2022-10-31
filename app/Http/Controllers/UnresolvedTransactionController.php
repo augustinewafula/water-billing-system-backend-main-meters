@@ -20,6 +20,11 @@ class UnresolvedTransactionController extends Controller
 {
     use ProcessesMpesaTransaction;
 
+    public function __construct()
+    {
+        $this->middleware('permission:unresolved-mpesa-transaction-list', ['only' => ['index', 'show']]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $sortBy = $request->query('sortBy');
