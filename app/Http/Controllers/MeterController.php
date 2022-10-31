@@ -164,6 +164,7 @@ class MeterController extends Controller
             'last_reading' => $request->last_reading,
             'mode' => $request->mode,
             'main_meter' => $main_meter,
+            'location' => $request->location,
             'has_location' => $request->has_location,
         ];
         if ($request->has_location) {
