@@ -41,7 +41,7 @@ class Meter extends Model
         'valve_last_switched_off_by',
         'can_generate_token',
         'location',
-        'has_location',
+        'has_location_coordinates',
         'lng',
         'lat'
     ];

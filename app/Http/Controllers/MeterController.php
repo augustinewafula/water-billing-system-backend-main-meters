@@ -143,7 +143,7 @@ class MeterController extends Controller
                 $this->registerPrepaidMeter($request->number);
             }
             $validated = $request->validated();
-            if ($request->has_location) {
+            if ($request->has_location_coordinates) {
                 $validated['lat'] = $request->location['lat'];
                 $validated['lng'] = $request->location['lng'];
             }
@@ -165,9 +165,9 @@ class MeterController extends Controller
             'mode' => $request->mode,
             'main_meter' => $main_meter,
             'location' => $request->location,
-            'has_location' => $request->has_location,
+            'has_location_coordinates' => $request->has_location_coordinates,
         ];
-        if ($request->has_location) {
+        if ($request->has_location_coordinates) {
             $data['lat'] = $request->location['lat'];
             $data['lng'] = $request->location['lng'];
         }
@@ -212,9 +212,9 @@ class MeterController extends Controller
             'number' => $request->number,
             'station_id' => $request->station_id,
             'mode' => $request->mode,
-            'has_location' => $request->has_location,
+            'has_location_coordinates' => $request->has_location_coordinates,
         ];
-        if ($request->has_location) {
+        if ($request->has_location_coordinates) {
             $data['lat'] = $request->location['lat'];
             $data['lng'] = $request->location['lng'];
         }

@@ -33,9 +33,9 @@ class UpdateMeterRequest extends FormRequest
             'sim_card_number' => ['nullable', 'numeric'],
             'main_meter' => ['nullable', 'boolean'],
             'location' => ['nullable', 'string'],
-            'has_location' => ['required', 'boolean'],
-            'location.lat' => ['required_if:has_location,1', 'nullable', 'between:-90,90'],
-            'location.lng' => ['required_if:has_location,1', 'nullable', 'between:-180,180'],
+            'has_location_coordinates' => ['required', 'boolean'],
+            'location.lat' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-90,90'],
+            'location.lng' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-180,180'],
         ];
     }
 
