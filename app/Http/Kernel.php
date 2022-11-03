@@ -92,5 +92,6 @@ class Kernel extends HttpKernel
         'role' => RoleMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
         'shield' => ShieldMiddleware::class,
+        'cacheResponse' => \Spatie\ResponseCache\Middlewares\CacheResponse::class,
     ];
 }
