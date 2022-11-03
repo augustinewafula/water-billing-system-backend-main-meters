@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ResendSmsRequest;
 use App\Http\Requests\SendSmsRequest;
 use App\Http\Requests\SmsCallbackRequest;
 use App\Models\Sms;
@@ -99,6 +100,22 @@ class SmsController extends Controller
             return response()->json($response, 422);
         }
         return response()->json('sent');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function resend(Sms $sms): JsonResponse
+    {
+        $user = $sms->user;
+        try {
+            $this->initiateSendSms($user->phone, $sms->message, $user->id, 'user');
+            return response()->json('sent');
+        } catch (Throwable $th) {
+            Log::info($th);
+            $response = ['message' => 'Failed to send message.'];
+            return response()->json($response, 422);
+        }
     }
 
     /**
