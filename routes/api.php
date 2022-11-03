@@ -55,6 +55,14 @@ Route::prefix('v1')->group(function () {
         });
     });
     Route::group(['middleware' => ['auth:api']], static function () {
+        Route::group(['middleware' => ['cacheResponse']], static function () {
+            Route::get('statistics', [StatisticsController::class, 'index']);
+            Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
+            Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
+            Route::get('statistics/main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
+            Route::get('statistics/per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
+            Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
+        });
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('users', UserController::class);
@@ -78,12 +86,6 @@ Route::prefix('v1')->group(function () {
         Route::get('permission-models', [RoleController::class, 'permissionModelsIndex']);
         Route::get('system-users', [UserController::class, 'systemUsersIndex']);
         Route::post('system-users', [UserController::class, 'storeSystemUser']);
-        Route::get('statistics', [StatisticsController::class, 'index']);
-        Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
-        Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
-        Route::get('statistics/main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
-        Route::get('statistics/per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
-        Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
         Route::get('user-billing-report/{user}', [UserController::class, 'billing_report']);
         Route::get('user-billing-report-years/{user}', [UserController::class, 'billing_report_years']);
         Route::get('download-users', [UserController::class, 'download']);
