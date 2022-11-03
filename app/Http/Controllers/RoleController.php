@@ -231,7 +231,14 @@ class RoleController extends Controller
             $permission_models[] = $formatted_model_name;
         }
         $unique_permission_models = array_unique($permission_models);
-        return $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
+        $filtered_permission_models = $this->filterSpecificNames($unique_permission_models, $this->getIgnoredModels());
+        return $this->sortPermissionModels($filtered_permission_models);
 
+    }
+
+    private function sortPermissionModels(array $filtered_permission_models): array
+    {
+        return collect($filtered_permission_models)->sortByDesc('name')
+            ->toArray();
     }
 }
