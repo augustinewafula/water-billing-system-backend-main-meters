@@ -83,7 +83,7 @@ class SmsController extends Controller
                 $first_name = explode(' ', trim($user->name))[0];
                 $to_replace = [$first_name, $user->name, $user->account_number, $user->meter->number, $user->unaccounted_debt];
                 $personalized_message = $this->personalizeMessage($to_replace, $request->message);
-                $this->initiateSendSms($user->phone, $personalized_message, $user->id);
+                $this->initiateSendSms($user->phone, $personalized_message, $user->id, 'user');
             } catch (Throwable $th) {
                 $failed_messages_count++;
                 Log::info($th);

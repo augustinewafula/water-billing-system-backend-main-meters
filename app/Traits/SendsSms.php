@@ -15,7 +15,7 @@ trait SendsSms
     /**
      * @throws Exception
      */
-    public function initiateSendSms($to, $message, $user_id): ?stdClass
+    public function initiateSendSms($to, $message, $user_id, $initiator = 'system'): ?stdClass
     {
         env('AFRICASTKNG_USERNAME') === 'sandbox' ?
             $url = 'https://api.sandbox.africastalking.com/version1/messaging' :
@@ -28,13 +28,28 @@ trait SendsSms
         if (!empty(env('AFRICASTKNG_SENDER_ID'))) {
             $sms_details = array_merge($sms_details, ['from' => env('AFRICASTKNG_SENDER_ID')]);
         }
-        $response = Http::withHeaders([
-            'apiKey' => env('AFRICASTKNG_APIKEY'),
-            'Accept' => 'application/json'
-        ])
-            ->asForm()
-            ->retry(3, 100)
-            ->post($url, $sms_details);
+
+        try {
+            $response = Http::withHeaders([
+                'apiKey' => env('AFRICASTKNG_APIKEY'),
+                'Accept' => 'application/json'
+            ])
+                ->asForm()
+                ->retry(3, 100)
+                ->post($url, $sms_details);
+        } catch (Throwable $e) {
+            if ($initiator === 'system') {
+                $this->storeSms($to, $message, null, 'Failed', 0, $user_id);
+            }
+            throw new Exception('Error sending sms: '.$e->getMessage());
+        }
+
+        if ($response->failed()) {
+            Log::info('Failed to send sms');
+            if ($initiator === 'system') {
+                $this->storeSms($to, $message, null, 'Failed', 0, $user_id);
+            }
+        }
 
         if ($response->successful()) {
             Log::info('response:' . $response->body());
