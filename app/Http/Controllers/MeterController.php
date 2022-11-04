@@ -215,8 +215,8 @@ class MeterController extends Controller
             'has_location_coordinates' => $request->has_location_coordinates,
         ];
         if ($request->has_location_coordinates) {
-            $data['lat'] = $request->location['lat'];
-            $data['lng'] = $request->location['lng'];
+            $data['lat'] = $request->location_coordinates['lat'];
+            $data['lng'] = $request->location_coordinates['lng'];
         }
         $meter->update($data);
         try {
