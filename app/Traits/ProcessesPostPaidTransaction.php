@@ -74,7 +74,7 @@ trait ProcessesPostPaidTransaction
                 $query->where('status', PaymentStatus::NOT_PAID);
                 $query->orWhere('status', PaymentStatus::PARTIALLY_PAID);
             })
-            ->orderBy('created_at', 'ASC')->get();
+            ->orderBy('month', 'ASC')->get();
 
         \Log::info('Pending meter readings count: '. $pending_meter_readings->count());
 
