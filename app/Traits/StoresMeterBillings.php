@@ -60,7 +60,8 @@ trait StoresMeterBillings
                 $request->deductions,
                 $pending_meter_reading,
                 $credit_applied,
-                $mpesa_transaction_id)) {
+                $mpesa_transaction_id,
+                $user_total_amount)) {
                     $user_total_amount -= $bill_to_pay;
                     $amount_paid = 0;
                     $request->deductions->monthly_service_charge_deducted = 0;
@@ -80,6 +81,7 @@ trait StoresMeterBillings
      * @param $meter_reading
      * @param $credit_applied
      * @param $mpesa_transaction_id
+     * @param $user_total_amount
      * @return bool
      * @throws Throwable
      */
@@ -90,7 +92,8 @@ trait StoresMeterBillings
         $deductions,
         $meter_reading,
         $credit_applied,
-        $mpesa_transaction_id): bool
+        $mpesa_transaction_id,
+        $user_total_amount): bool
     {
         try {
             DB::beginTransaction();
@@ -122,7 +125,7 @@ trait StoresMeterBillings
                     $user_bill_balance = 0;
                 } else {
                     $user->update([
-                        'account_balance' => -$balance,
+                        'account_balance' => $user->account_balance + $user_total_amount,
                         'last_mpesa_transaction_id' => $mpesa_transaction_id
                     ]);
                     $meter_reading->update([
