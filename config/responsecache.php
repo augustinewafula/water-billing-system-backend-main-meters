@@ -1,5 +1,7 @@
 <?php
 
+use App\CacheProfiles\CacheAllSuccessfulGetRequest;
+
 return [
     /*
      * Determine if the response cache middleware should be enabled.
@@ -13,7 +15,7 @@ return [
      *  You can provide your own class given that it implements the
      *  CacheProfile interface.
      */
-    'cache_profile' => Spatie\ResponseCache\CacheProfiles\CacheAllSuccessfulGetRequests::class,
+    'cache_profile' => CacheAllSuccessfulGetRequest::class,
 
     /*
      *  Optionally, you can specify a header that will force a cache bypass.
