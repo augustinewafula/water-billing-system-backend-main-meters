@@ -68,7 +68,7 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
                 $account_number = $meter->user->account_number;
                 $first_name = explode(' ', trim($meter->user->name))[0];
                 $total_debt_formatted = number_format($this->calculateUserMeterReadingDebt($unpaid_meter->meter->id));
-                $tell_user_meter_disconnection_on = Carbon::createFromFormat('Y-m-d', $unpaid_meter->tell_user_meter_disconnection_on)->toFormattedDateString();
+                $tell_user_meter_disconnection_on = Carbon::createFromFormat('Y-m-d  H:i:s', $unpaid_meter->tell_user_meter_disconnection_on)->toFormattedDateString();
 
                 $message = "Hello $first_name, your water bill is passed due date. Your meter shall be disconnected by $tell_user_meter_disconnection_on. Please pay your total debt of Ksh $total_debt_formatted to avoid disconnection.\nPay via paybill number $paybill_number, account number $account_number";
 
