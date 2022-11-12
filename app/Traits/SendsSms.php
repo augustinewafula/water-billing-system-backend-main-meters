@@ -15,7 +15,7 @@ trait SendsSms
     /**
      * @throws Exception
      */
-    public function initiateSendSms($to, $message, $user_id, $initiator = 'system'): ?stdClass
+    public function initiateSendSms($to, $message, $user_id, $initiator = 'system', $station_id=null): ?stdClass
     {
         env('AFRICASTKNG_USERNAME') === 'sandbox' ?
             $url = 'https://api.sandbox.africastalking.com/version1/messaging' :
@@ -39,7 +39,7 @@ trait SendsSms
                 ->post($url, $sms_details);
         } catch (Throwable $e) {
             if ($initiator === 'system') {
-                $this->storeSms($to, $message, null, 'Failed', 0, $user_id);
+                $this->storeSms($to, $message, null, 'Failed', 0, $user_id, $station_id);
             }
             throw new Exception('Error sending sms: '.$e->getMessage());
         }
@@ -47,7 +47,7 @@ trait SendsSms
         if ($response->failed()) {
             Log::info('Failed to send sms');
             if ($initiator === 'system') {
-                $this->storeSms($to, $message, null, 'Failed', 0, $user_id);
+                $this->storeSms($to, $message, null, 'Failed', 0, $user_id, $station_id);
             }
         }
 
@@ -64,9 +64,8 @@ trait SendsSms
                 } catch (Throwable $throwable) {
                     $cost = $recipient->cost;
                 }
-                if ($user_id !== null) {
-                    $this->storeSms($recipient->number, $message, $recipient->messageId, $status, $cost, $user_id);
-                }
+                $this->storeSms($recipient->number, $message, $recipient->messageId, $status, $cost, $user_id, $station_id);
+
             }
             return $response;
         }

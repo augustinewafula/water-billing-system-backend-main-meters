@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ResendSmsRequest;
 use App\Http\Requests\SendSmsRequest;
 use App\Http\Requests\SmsCallbackRequest;
 use App\Models\Sms;
@@ -33,7 +32,7 @@ class SmsController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $sms = Sms::select('sms.*')->with('user:id,name,account_number');
+        $sms = Sms::select('sms.*')->with('user:id,name,account_number', 'station:id,name');
         $sms = $this->filterQuery($request, $sms);
         $sms_cost = $sms->sum('cost');
 
@@ -53,15 +52,27 @@ class SmsController extends Controller
      */
     public function send(SendSmsRequest $request): JsonResponse
     {
+        if ($request->recipient === 'specific-phone-numbers') {
+            $stationId = $request->station_id;
+            $phone_numbers = explode(',', $request->specific_phone_numbers);
+            $phone_numbers = array_map('trim', $phone_numbers);
+            $phone_numbers = array_filter($phone_numbers);
+            $phone_numbers = array_unique($phone_numbers);
+            foreach ($phone_numbers as $phone_number) {
+                $this->initiateSendSms($phone_number, $request->message, null, 'user', $stationId);
+            }
+
+            return response()->json('sent');
+        }
         $users = User::role('user')
             ->with('meter');
-        if ($request->recipient !== 'all' && $request->recipient !== 'specific') {
+        if ($request->recipient !== 'all' && $request->recipient !== 'specific-customer') {
             $station_id = $request->recipient;
             $users->whereHas('meter', function ($query) use ($station_id) {
                 $query->where('station_id', $station_id);
             });
         }
-        if ($request->recipient === 'specific') {
+        if ($request->recipient === 'specific-customer') {
             $recipients = $request->specific_recipients;
             $users->where('phone', $recipients[0]);
             foreach ($recipients as $key => $recipient) {
@@ -212,10 +223,12 @@ class SmsController extends Controller
         }
 
         if ($request->has('station_id')) {
-            $sms = $sms->join('users', 'users.id', 'user_id')
-                ->join('meters', 'meters.id', 'users.meter_id')
-                ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-                ->where('meter_stations.id', $stationId);
+            $sms = $sms->leftJoin('users', 'users.id', 'user_id')
+                ->leftJoin('meters', 'meters.id', 'users.meter_id')
+                ->leftJoin('meter_stations', 'meter_stations.id', 'meters.station_id')
+                ->leftJoin('meter_stations as station', 'station.id', 'sms.station_id')
+                ->where('meter_stations.id', $stationId)
+                ->orWhere('station.id', $stationId);
         }
 
         if ($request->has('user_id')) {

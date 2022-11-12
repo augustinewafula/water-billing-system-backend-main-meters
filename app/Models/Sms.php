@@ -22,7 +22,7 @@ class Sms extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
-    protected $fillable = ['phone', 'message', 'status', 'cost', 'user_id', 'message_id', 'network_code', 'failure_reason'];
+    protected $fillable = ['phone', 'message', 'status', 'cost', 'user_id', 'message_id', 'network_code', 'failure_reason', 'station_id'];
 
     /**
      * Get the user that owns the sms.
@@ -31,6 +31,15 @@ class Sms extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get meter station that owns the meter
+     * @return BelongsTo
+     */
+    public function station(): BelongsTo
+    {
+        return $this->belongsTo(MeterStation::class);
     }
 
     /**
