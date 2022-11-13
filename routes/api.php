@@ -55,13 +55,14 @@ Route::prefix('v1')->group(function () {
         });
     });
     Route::group(['middleware' => ['auth:api']], static function () {
-        Route::group(['middleware' => ['cacheResponse']], static function () {
-            Route::get('statistics', [StatisticsController::class, 'index']);
-            Route::get('statistics/previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
-            Route::get('statistics/meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
-            Route::get('statistics/main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
-            Route::get('statistics/per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
-            Route::get('statistics/monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
+        Route::get('statistics', [StatisticsController::class, 'index']);
+        Route::get('statistics/total-revenue-sum', [StatisticsController::class, 'totalRevenueSum']);
+        Route::group(['middleware' => ['cacheResponse'], 'prefix' => 'statistics'], static function () {
+            Route::get('previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
+            Route::get('meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
+            Route::get('main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
+            Route::get('per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
+            Route::get('monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
         });
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);

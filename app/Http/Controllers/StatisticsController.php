@@ -55,9 +55,13 @@ class StatisticsController extends Controller
             'users' => $users,
             'main_meters' => $mainMeters,
             'meters' => $meters,
-            'revenue' => $this->calculateRevenue(null, null),
             'faulty_meters' => $faultyMeters
         ]);
+    }
+
+    public function totalRevenueSum(): JsonResponse
+    {
+        return response()->json(['revenue' => $this->calculateRevenue(null, null)]);
     }
 
     public function previousMonthRevenueStatistics(): JsonResponse
