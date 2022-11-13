@@ -56,7 +56,7 @@ Route::prefix('v1')->group(function () {
     });
     Route::group(['middleware' => ['auth:api']], static function () {
         Route::get('statistics', [StatisticsController::class, 'index']);
-        Route::get('statistics/total-revenue-sum', [StatisticsController::class, 'totalRevenueSum']);
+        Route::get('statistics/total-revenue', [StatisticsController::class, 'totalRevenueSum']);
         Route::group(['middleware' => ['cacheResponse'], 'prefix' => 'statistics'], static function () {
             Route::get('previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
             Route::get('meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
