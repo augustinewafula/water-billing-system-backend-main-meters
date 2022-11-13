@@ -140,7 +140,8 @@ trait ProcessesPrepaidMeterTransaction
             if ($token_consumed) {
                 $user->account_balance = 0;
             }else {
-                $user->account_balance = ($user->account_balance + $user_total_amount) + $deductions_sum;
+                $user->account_balance = ($user->account_balance + $user_total_amount) +
+                    ($deductions_sum - $deductions->unaccounted_debt_deducted);
             }
             $user->last_mpesa_transaction_id = $mpesa_transaction_id;
             $user->save();
