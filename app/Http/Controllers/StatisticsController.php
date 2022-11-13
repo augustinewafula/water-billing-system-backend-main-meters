@@ -368,8 +368,7 @@ class StatisticsController extends Controller
     {
         $mpesaTransactions = MpesaTransaction::query();
         if ($from !== null && $to !== null) {
-            $mpesaTransactions = $mpesaTransactions->whereDate('created_at', '>', $from)
-                ->whereDate('created_at', '<', $to);
+            $mpesaTransactions = $mpesaTransactions->whereBetween('created_at', [$from, $to]);
         }
         return $mpesaTransactions->get();
     }
