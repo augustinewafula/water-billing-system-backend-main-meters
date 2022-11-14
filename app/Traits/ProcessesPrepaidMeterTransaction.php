@@ -121,6 +121,13 @@ trait ProcessesPrepaidMeterTransaction
         } catch (Throwable $throwable) {
             DB::rollBack();
             Log::error($throwable);
+            $this->notifyUser(
+                (object)['message' => 'Failed to generate token for your meter, please contact management for help.',
+                    'title' => 'Insufficient amount'],
+                $user,
+                'general',
+                $mpesa_transaction->MSISDN
+            );
         }
     }
 
