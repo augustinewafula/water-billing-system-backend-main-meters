@@ -94,15 +94,9 @@ class StatisticsController extends Controller
         $mpesaTransactions = $this->getMpesaTransactions();
         $monthWiseRevenue = new Collection();
         foreach ($mpesaTransactions as $mpesaTransaction) {
-            $related_table_name = $this->getTransactionRelatedTableName($mpesaTransaction->id);
-            if ($related_table_name !== '') {
-                $revenue = MpesaTransaction::select('TransAmount as total', DB::raw('MONTHNAME(created_at) as name'))
-                    ->where('TransID', $mpesaTransaction->TransID)
-                    ->whereYear('created_at', date('Y'))
-                    ->distinct('name')
-                    ->groupBy('name', 'total')
-                    ->get();
-                $monthWiseRevenue = $monthWiseRevenue->merge($revenue);
+            $monthWiseTransactionDetails = $this->getMonthWiseTransactionDetails($mpesaTransaction->id);
+            if ($monthWiseTransactionDetails) {
+                $monthWiseRevenue = $monthWiseRevenue->merge($monthWiseTransactionDetails);
             }
         }
         $revenueSum = $this->calculateRevenueSum($monthWiseRevenue);
@@ -133,14 +127,10 @@ class StatisticsController extends Controller
 
         $sum = 0.00;
         foreach ($mpesaTransactions as $mpesaTransaction) {
-            $relatedTableName = $this->getTransactionRelatedTableName($mpesaTransaction->id);
-            if ($relatedTableName !== ''){
-                if ($meterStation) {
-                    $modelName = Str::studly(Str::singular($relatedTableName));
-                    $mpesaTransactionMeterStationId = $this->getMpesaTransactionMeterStationId($modelName, $mpesaTransaction->id);
-                    if ($mpesaTransactionMeterStationId !== $meterStation->id) {
-                        continue;
-                    }
+            $transactionDetails = $this->getTransactionDetails($mpesaTransaction->id);
+            if ($transactionDetails) {
+                if ($meterStation && $transactionDetails->meter_station_id !== $meterStation->id) {
+                    continue;
                 }
                 $sum += $mpesaTransaction->TransAmount;
             }
@@ -149,57 +139,124 @@ class StatisticsController extends Controller
         return $sum;
     }
 
-    public function getTransactionRelatedTableName(string $transactionId): String
+    public function getMonthWiseTransactionDetails(string $transactionId)
     {
-        $meterBillingsCount = MeterBilling::where('mpesa_transaction_id', $transactionId)->count();
-        if ($meterBillingsCount > 0) {
-            return 'meter_billings';
+        $meterBilling = MeterBilling::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
+            ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+            ->join('meters', 'meters.id', 'meter_readings.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('meter_billings.mpesa_transaction_id', $transactionId)
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+        if ($meterBilling->count() > 0) {
+            return $meterBilling;
         }
-        $meterTokensCount = MeterToken::where('mpesa_transaction_id', $transactionId)->count();
-        if ($meterTokensCount > 0) {
-            return 'meter_tokens';
+        $meterToken = MeterToken::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
+            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('meter_tokens.mpesa_transaction_id', $transactionId)
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+        if ($meterToken->count() > 0) {
+            return $meterToken;
         }
-        $connectionFeePaymentsCount = ConnectionFeePayment::where('mpesa_transaction_id', $transactionId)->count();
-        if ($connectionFeePaymentsCount > 0) {
-            return 'connection_fee_payments';
+        $connectionFeePayment = ConnectionFeePayment::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
+            ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
+            ->join('users', 'users.id', 'connection_fees.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('connection_fee_payments.mpesa_transaction_id', $transactionId)
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+        if ($connectionFeePayment->count() > 0) {
+            return $connectionFeePayment;
         }
-        $creditAccountsCount = CreditAccount::where('mpesa_transaction_id', $transactionId)->count();
-        if ($creditAccountsCount > 0) {
-            return 'credit_accounts';
+        $creditAccount = CreditAccount::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
+            ->join('users', 'users.id', 'credit_accounts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('credit_accounts.mpesa_transaction_id', $transactionId)
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+        if ($creditAccount->count() > 0) {
+            return $creditAccount;
         }
-        $unaccountedDebtsCount = UnaccountedDebt::where('mpesa_transaction_id', $transactionId)->count();
-        if ($unaccountedDebtsCount > 0) {
-            return 'unaccounted_debts';
+        $unaccountedDebt = UnaccountedDebt::select('mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
+            ->join('users', 'users.id', 'unaccounted_debts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('unaccounted_debts.mpesa_transaction_id', $transactionId)
+            ->whereYear('mpesa_transactions.created_at', date('Y'))
+            ->distinct('name')
+            ->groupBy('name', 'total')
+            ->get();
+        if ($unaccountedDebt->count() > 0) {
+            return $unaccountedDebt;
         }
-        return '';
+        return null;
     }
 
-    private function getMpesaTransactionMeterStationId(string $modelName, string $transactionId): string
+    public function getTransactionDetails(string $transactionId)
     {
-        $className = "App\\Models\\$modelName";
-        $model = $className::where('mpesa_transaction_id', $transactionId)->first();
-
-        if ($modelName === 'ConnectionFeePayment') {
-            $model->user_id = $model->with('connection_fee')
-                ->first()
-                ->connection_fee
-                ->user_id;
+        $meterBilling = MeterBilling::select('meter_stations.id as meter_station_id')
+            ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
+            ->join('meters', 'meters.id', 'meter_readings.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('mpesa_transaction_id', $transactionId)
+            ->first();
+        if ($meterBilling) {
+            return $meterBilling;
         }
-        if ($modelName === 'MeterBilling') {
-            $model->meter_id = $model->with('meter_reading')
-                ->first()
-                ->meter_reading
-                ->meter_id;
+        $meterToken = MeterToken::select('meter_stations.id as meter_station_id')
+            ->join('meters', 'meters.id', 'meter_tokens.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('mpesa_transaction_id', $transactionId)
+            ->first();
+        if ($meterToken) {
+            return $meterToken;
         }
-        if ($model->user_id) {
-            $model->meter_id = $className::where('mpesa_transaction_id', $transactionId)
-                ->with('user')
-                ->first()
-                ->user
-                ->meter_id;
+        $connectionFeePayment = ConnectionFeePayment::select('meter_stations.id as meter_station_id')
+            ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
+            ->join('users', 'users.id', 'connection_fees.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('mpesa_transaction_id', $transactionId)
+            ->first();
+        if ($connectionFeePayment) {
+            return $connectionFeePayment;
         }
-        return Meter::findOrFail($model->meter_id)
-            ->station_id;
+        $creditAccount = CreditAccount::select('meter_stations.id as meter_station_id')
+            ->join('users', 'users.id', 'credit_accounts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('mpesa_transaction_id', $transactionId)
+            ->first();
+        if ($creditAccount) {
+            return $creditAccount;
+        }
+        $unaccountedDebt = UnaccountedDebt::select('meter_stations.id as meter_station_id')
+            ->join('users', 'users.id', 'unaccounted_debts.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->where('mpesa_transaction_id', $transactionId)
+            ->first();
+        if ($unaccountedDebt) {
+            return $unaccountedDebt;
+        }
+        return null;
     }
 
     /**
