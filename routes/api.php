@@ -13,11 +13,11 @@ use App\Http\Controllers\MonthlyServiceChargeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
-use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\Statistics\DashboardStatisticsController;
+use App\Http\Controllers\Statistics\TransactionStatisticsController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnresolvedTransactionController;
 use App\Http\Controllers\UserController;
-use App\Models\UnresolvedMpesaTransaction;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,14 +55,25 @@ Route::prefix('v1')->group(function () {
         });
     });
     Route::group(['middleware' => ['auth:api']], static function () {
-        Route::get('statistics', [StatisticsController::class, 'index']);
-        Route::get('statistics/total-revenue', [StatisticsController::class, 'totalRevenueSum']);
+        Route::prefix('statistics')->group(function () {
+            Route::get('/', [DashboardStatisticsController::class, 'index']);
+            Route::get('total-revenue', [DashboardStatisticsController::class, 'totalRevenueSum']);
+            Route::get('today-revenue', [TransactionStatisticsController::class, 'todayRevenue']);
+            Route::get('this-week-revenue', [TransactionStatisticsController::class, 'thisWeekRevenue'])
+                ->middleware('cacheResponse:21600');
+            Route::get('this-month-revenue', [TransactionStatisticsController::class, 'thisMonthRevenue'])
+                ->middleware('cacheResponse:54000');
+            Route::get('this-year-revenue', [TransactionStatisticsController::class, 'thisYearRevenue'])
+                ->middleware('cacheResponse:266400');
+            Route::get('monthly-revenue-per-station', [TransactionStatisticsController::class, 'monthlyRevenueStatisticsPerStation'])
+                ->middleware('cacheResponse');
+        });
         Route::group(['middleware' => ['cacheResponse'], 'prefix' => 'statistics'], static function () {
-            Route::get('previous-month-revenue-statistics', [StatisticsController::class, 'previousMonthRevenueStatistics']);
-            Route::get('meter-readings/{meter}', [StatisticsController::class, 'meterReadings']);
-            Route::get('main-meter-readings', [StatisticsController::class, 'mainMeterReading']);
-            Route::get('per-station-average-meter-readings', [StatisticsController::class, 'perStationAverageMeterReading']);
-            Route::get('monthly-revenue', [StatisticsController::class, 'monthlyRevenueStatistics']);
+            Route::get('previous-month-revenue-statistics', [DashboardStatisticsController::class, 'previousMonthRevenueStatistics']);
+            Route::get('meter-readings/{meter}', [DashboardStatisticsController::class, 'meterReadings']);
+            Route::get('main-meter-readings', [DashboardStatisticsController::class, 'mainMeterReading']);
+            Route::get('per-station-average-meter-readings', [DashboardStatisticsController::class, 'perStationAverageMeterReading']);
+            Route::get('monthly-revenue', [TransactionStatisticsController::class, 'monthlyRevenueStatistics']);
         });
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
