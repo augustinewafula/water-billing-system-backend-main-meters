@@ -99,7 +99,8 @@ class ConnectionFeeController extends Controller
 
         if ($request->has('month') && !empty($request->query('month')) && $request->query('month') !== 'undefined') {
             $formattedFromDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->startOfDay();
-            $connection_fee = $connection_fee->where('month', $formattedFromDate);
+            $formattedToDate = Carbon::createFromFormat('Y-m', $month)->endOfMonth()->endOfDay();
+            $connection_fee = $connection_fee->whereBetween('month', [$formattedFromDate, $formattedToDate]);
 
         }
 
