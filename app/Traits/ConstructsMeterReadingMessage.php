@@ -24,6 +24,7 @@ trait ConstructsMeterReadingMessage
         $units_consumed = $meter_reading->current_reading - $meter_reading->previous_reading;
         $bill = round($meter_reading->bill - $meter_reading->service_fee);
         $connection_fee_debt = $this->calculateUserConnectionFeeDebt($user->id);
+        $upcoming_connection_fee_debt = $this->calculateUpcomingUserConnectionFeeDebt($user->id, $meter_reading->bill_due_at);
         $carry_forward_balance = 0;
         $credit = 0;
 
@@ -40,13 +41,16 @@ trait ConstructsMeterReadingMessage
         if ($meter_billing = MeterBilling::where('meter_reading_id', $meter_reading->id)->first()) {
             $credit = $meter_billing->credit + $meter_reading->amount_paid;
         }
-//        $user_total_debt -= $carry_forward_balance;
+
+        $user_total_debt += ($upcoming_connection_fee_debt - $connection_fee_debt);
         $user_total_debt_formatted = number_format($user_total_debt);
         $carry_forward_balance += $user->unaccounted_debt;
 
         if ($connection_fee_debt > 0) {
             $carry_forward_balance -= $connection_fee_debt;
         }
+        $connection_fee_debt = $upcoming_connection_fee_debt;
+
         $carry_forward_balance_formatted = number_format($carry_forward_balance);
         $credit_formatted = number_format($credit);
 
