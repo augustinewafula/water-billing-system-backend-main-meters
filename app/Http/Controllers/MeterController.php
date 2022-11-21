@@ -213,6 +213,8 @@ class MeterController extends Controller
             'station_id' => $request->station_id,
             'mode' => $request->mode,
             'has_location_coordinates' => $request->has_location_coordinates,
+            'location' => $request->location,
+            'last_reading' => $request->last_reading,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
