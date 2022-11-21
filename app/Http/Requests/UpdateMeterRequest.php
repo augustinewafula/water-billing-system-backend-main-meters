@@ -30,6 +30,7 @@ class UpdateMeterRequest extends FormRequest
             'station_id' => ['required', 'string', 'exists:meter_stations,id'],
             'type_id' => ['required_if:mode,1', 'nullable', 'exists:meter_types,id'],
             'mode' => ['required', new EnumValue(MeterMode::class, false)],
+            'last_reading' => ['required', 'numeric'],
             'sim_card_number' => ['nullable', 'numeric'],
             'main_meter' => ['nullable', 'boolean'],
             'location' => ['nullable', 'string'],
