@@ -72,7 +72,7 @@ trait StoresMeterReading
             DB::beginTransaction();
             $user = User::where('meter_id', $meter->id)->firstOrFail();
             $bill = $this->calculateBill($meter->last_reading, $request->current_reading, $user);
-            $service_fee = $this->calculateServiceFee($bill, 'post-pay');
+            $service_fee = $this->calculateServiceFee($user, $bill, 'post-pay');
             $meter_reading = MeterReading::create([
                 'meter_id' => $request->meter_id,
                 'previous_reading' => $meter->last_reading,

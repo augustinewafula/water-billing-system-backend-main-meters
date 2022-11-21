@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\MeterCharge;
 use App\Models\ServiceCharge;
+use App\Models\User;
 
 trait CalculatesBill
 {
@@ -25,7 +26,7 @@ trait CalculatesBill
     private function calculateUnits($amount_paid, $user): float
     {
         $cost_per_unit = $this->getCostPerUnit($user);
-        $final_amount = $amount_paid - $this->calculateServiceFee($amount_paid, 'prepay');
+        $final_amount = $amount_paid - $this->calculateServiceFee($user, $amount_paid, 'prepay');
 
         return round($final_amount / $cost_per_unit, 1);
     }
@@ -42,8 +43,11 @@ trait CalculatesBill
         return $cost_per_unit;
     }
 
-    private function calculateServiceFee($amount_paid, $for): float
+    private function calculateServiceFee(User $user, $amount_paid, $for): float
     {
+        if ($user->use_custom_charges_for_service_charge && $user->service_charge > 0) {
+            return $user->service_charge;
+        }
         $meter_charges = MeterCharge::where('for', $for)
             ->first();
         if ((int)$amount_paid === 0) {

@@ -36,6 +36,8 @@ class UpdateUserRequest extends FormRequest
             'use_custom_charges_for_cost_per_unit' => ['required', 'boolean'],
             'cost_per_unit' => ['required_if:use_custom_charges_for_cost_per_unit,true', 'nullable', 'numeric'],
             'communication_channels' => ['required', 'string'],
+            'use_custom_charges_for_service_charge' => ['required', 'boolean'],
+            'service_charge' => ['required_if:use_custom_charges_for_service_charge,true', 'nullable', 'numeric'],
         ];
     }
 }

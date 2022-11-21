@@ -92,7 +92,7 @@ trait ProcessesPrepaidMeterTransaction
                 'mpesa_transaction_id' => $mpesa_transaction->id,
                 'token' => strtok($token, ','),
                 'units' => $units,
-                'service_fee' => $this->calculateServiceFee($user_total_amount, 'prepay'),
+                'service_fee' => $this->calculateServiceFee($user, $user_total_amount, 'prepay'),
                 'monthly_service_charge_deducted' => $deductions->monthly_service_charge_deducted,
                 'connection_fee_deducted' => $deductions->connection_fee_deducted,
                 'unaccounted_debt_deducted' => $deductions->unaccounted_debt_deducted,

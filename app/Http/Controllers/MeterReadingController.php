@@ -107,7 +107,7 @@ class MeterReadingController extends Controller
         $meter = Meter::find($request->meter_id);
         $user = User::where('meter_id', $meter->id)->firstOrFail();
         $bill = $this->calculateBill($request->previous_reading, $request->current_reading, $user);
-        $service_fee = $this->calculateServiceFee($bill, 'post-pay');
+        $service_fee = $this->calculateServiceFee($user, $bill, 'post-pay');
 
         $has_message_been_resent = false;
         try {

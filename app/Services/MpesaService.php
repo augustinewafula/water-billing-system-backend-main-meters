@@ -209,7 +209,7 @@ class MpesaService
     public function getMinimumAmountToGenerateToken($user): float
     {
         $MINIMUM_UNITS_TO_GENERATE = 0.1;
-        $service_fee = $this->calculateServiceFee(10, 'prepay');
+        $service_fee = $this->calculateServiceFee($user, 10, 'prepay');
         $cost_per_unit = $this->getCostPerUnit($user);
         $amount_required_for_minimum_units = $MINIMUM_UNITS_TO_GENERATE * $cost_per_unit;
 
@@ -218,7 +218,7 @@ class MpesaService
 
     public function accountNumberExists($bill_reference_number): Model|Builder|null
     {
-        return User::select('users.id', 'users.account_number', 'users.communication_channels', 'users.email', 'users.phone', 'meters.id as meter_id', 'meters.can_generate_token')
+        return User::select('users.*', 'meters.id as meter_id', 'meters.can_generate_token')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->where('account_number', $bill_reference_number)
             ->first();
