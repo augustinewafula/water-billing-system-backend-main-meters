@@ -124,10 +124,13 @@ trait StoresMeterBillings
                     }
                     $user_bill_balance = 0;
                 } else {
-                    $user->update([
-                        'account_balance' => $user->account_balance + $user_total_amount,
-                        'last_mpesa_transaction_id' => $mpesa_transaction_id
-                    ]);
+                    if ($user->account_balance < 0) {
+                        $user->account_balance += $user_total_amount;
+                    }else {
+                        $user->account_balance = -$balance;
+                    }
+                    $user->last_mpesa_transaction_id = $mpesa_transaction_id;
+                    $user->save();
                     $meter_reading->update([
                         'status' => PaymentStatus::PARTIALLY_PAID,
                     ]);
