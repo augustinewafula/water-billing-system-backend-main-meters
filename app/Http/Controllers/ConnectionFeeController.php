@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConnectionFee;
 use App\Http\Controllers\Controller;
+use App\Traits\FiltersRequestQuery;
 use App\Traits\GetsUserConnectionFeeBalance;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -13,7 +14,7 @@ use Str;
 
 class ConnectionFeeController extends Controller
 {
-    use GetsUserConnectionFeeBalance;
+    use GetsUserConnectionFeeBalance, FiltersRequestQuery;
 
     public function __construct()
     {
@@ -63,6 +64,7 @@ class ConnectionFeeController extends Controller
     public function filterQuery(Request $request, $connection_fee)
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
@@ -78,6 +80,10 @@ class ConnectionFeeController extends Controller
                 ->join('meters', 'meters.id', 'users.meter_id')
                 ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
                 ->where('meter_stations.id', $stationId);
+        }
+
+        if ($request->has('search') && Str::length($search) > 0) {
+            $connection_fee = $this->searchEagerLoadedQuery($connection_fee, $search, $search_filter);
         }
 
         if ($request->has('user_id')) {

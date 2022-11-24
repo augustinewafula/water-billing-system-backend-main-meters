@@ -186,6 +186,7 @@ class SmsController extends Controller
     private function filterQuery(Request $request, $sms)
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
@@ -194,13 +195,8 @@ class SmsController extends Controller
         $status = $request->query('status');
 
         if ($request->has('search') && Str::length($search) > 0) {
-            $sms = $sms->where(function ($sms) use ($search) {
-                $sms->where('sms.phone', 'like', '%' . $search . '%')
-                    ->orWhere('sms.status', 'like', '%' . $search . '%')
-                    ->orWhere('sms.cost', 'like', '%' . $search . '%')
-                    ->orWhere('sms.message', 'like', '%' . $search . '%')
-                    ->orWhere('users.account_number', 'like', '%' . $search . '%')
-                    ->orWhere('users.name', 'like', '%' . $search . '%');
+            $sms = $sms->where(function ($query) use ($search, $search_filter) {
+                $query->where($search_filter, 'like', '%' . $search . '%');
             });
         }
 

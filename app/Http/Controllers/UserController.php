@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\ConnectionFeeService;
 use App\Services\MpesaService;
 use App\Traits\CreditsUserAccount;
+use App\Traits\FiltersRequestQuery;
 use App\Traits\GeneratesMonthlyServiceCharge;
 use App\Traits\GeneratesPassword;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -40,7 +41,8 @@ class UserController extends Controller
         GetsUserConnectionFeeBalance,
         SendsSetPasswordEmail,
         CreditsUserAccount,
-        ProcessMeterReadingsAvailableCredits;
+        ProcessMeterReadingsAvailableCredits,
+        FiltersRequestQuery;
 
     public function __construct()
     {
@@ -379,6 +381,7 @@ class UserController extends Controller
     private function filterQuery(Request $request, Builder $users): Builder
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $searchByMeter = $request->query('searchByMeter');
         $searchByNameAndPhone = $request->query('searchByNameAndPhone');
         $searchByNameAndMeterNo = $request->query('searchByNameAndMeterNo');
@@ -390,14 +393,7 @@ class UserController extends Controller
         $status = $request->query('status');
 
         if ($request->has('search') && Str::length($search) > 0) {
-            $users = $users->where(function ($users) use ($search, $stationId) {
-                $users->whereHas('meter', function ($query) use ($search) {
-                    $query->where('number', 'like', '%' . $search . '%');
-                })->orWhere('name', 'like', '%' . $search . '%')
-                    ->orWhere('phone', 'like', '%' . $search . '%')
-                    ->orWhere('account_number', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%');
-            });
+            $users = $this->searchEagerLoadedQuery($users, $search, $search_filter);
         }
         if ($request->has('searchByNameAndPhone') && Str::length($searchByNameAndPhone) > 0) {
             $users = $users->where(function ($users) use ($searchByNameAndPhone) {

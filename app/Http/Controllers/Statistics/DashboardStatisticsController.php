@@ -178,7 +178,7 @@ class DashboardStatisticsController extends Controller
 
     public function monthWiseMeterReadings($meter_id): Collection
     {
-        return MeterReading::select('current_reading as reading', DB::raw('MONTHNAME(month) as label'))
+        return MeterReading::select('current_reading as reading', DB::raw('MONTHNAME(month) as label'. 'max(month) as created_at'))
             ->whereYear('month', date('Y'))
             ->where('meter_id', $meter_id)
             ->distinct('label')

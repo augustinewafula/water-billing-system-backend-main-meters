@@ -217,16 +217,13 @@ class TransactionController extends Controller
     private function filterQuery(Builder $query, Request $request): Builder
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $stationId = $request->query('station_id');
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
-            $query = $query->where(function ($query) use ($search) {
-                $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%')
-                ->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%')
-                    ->orWhere('mpesa_transactions.TransID', 'like', '%' . $search . '%')
-                ->orWhere('users.account_number', 'like', '%' . $search . '%')
-                ->orWhere('users.name', 'like', '%' . $search . '%');
+            $query = $query->where(function ($query) use ($search, $search_filter) {
+                $query->where($search_filter, 'like', '%' . $search . '%');
             });
         }
 

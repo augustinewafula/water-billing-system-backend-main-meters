@@ -38,11 +38,14 @@ class MeterStationController extends Controller
     private function filterQuery(Request $request, Builder $meter_stations)
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
 
         if ($request->has('search') && Str::length($search) > 0) {
-            $meter_stations->where('name', 'like', '%' . $search . '%');
+            $meter_stations = $meter_stations->where(function ($query) use ($search, $search_filter) {
+                $query->where($search_filter, 'like', '%' . $search . '%');
+            });
         }
         if ($request->has('sortBy')) {
             $meter_stations = $meter_stations->orderBy($sortBy, $sortOrder);

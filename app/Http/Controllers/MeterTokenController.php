@@ -121,6 +121,7 @@ class MeterTokenController extends Controller
     public function filterQuery(Request $request, $meter_tokens)
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
@@ -128,14 +129,8 @@ class MeterTokenController extends Controller
         $toDate = $request->query('toDate');
 
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
-            $meter_tokens = $meter_tokens->where(function ($meter_tokens) use ($search) {
-                $meter_tokens->whereHas('mpesa_transaction', function ($query) use ($search) {
-                    $query->where('TransAmount', 'like', '%' . $search . '%');
-                })->orWhere('meter_tokens.token', 'like', '%' . $search . '%')
-                    ->orWhere('meters.number', 'like', '%' . $search . '%')
-                    ->orWhere('users.name', 'like', '%' . $search . '%')
-                    ->orWhere('users.account_number', 'like', '%' . $search . '%')
-                    ->orWhere('meter_tokens.units', 'like', '%' . $search . '%');
+            $meter_tokens = $meter_tokens->where(function ($query) use ($search, $search_filter) {
+                $query->where($search_filter, 'like', '%' . $search . '%');
             });
         }
         if (($request->has('fromDate') && Str::length($request->query('fromDate')) > 0) && ($request->has('toDate') && Str::length($request->query('toDate')) > 0)) {

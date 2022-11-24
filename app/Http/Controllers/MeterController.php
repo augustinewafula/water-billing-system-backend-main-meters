@@ -11,6 +11,7 @@ use App\Jobs\GetMeterReadings;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterType;
+use App\Traits\FiltersRequestQuery;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\ProcessesPrepaidMeterTransaction;
 use App\Traits\TogglesValveStatus;
@@ -30,7 +31,7 @@ use Throwable;
 
 class MeterController extends Controller
 {
-    use ProcessesPrepaidMeterTransaction, TogglesValveStatus, GetsUserConnectionFeeBalance;
+    use ProcessesPrepaidMeterTransaction, TogglesValveStatus, GetsUserConnectionFeeBalance, FiltersRequestQuery;
 
     public function __construct()
     {
@@ -290,21 +291,14 @@ class MeterController extends Controller
     private function filterQuery(Request $request, Builder $meters): Builder
     {
         $search = $request->query('search');
+        $search_filter = $request->query('search_filter');
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
         $stationId = $request->query('station_id');
         $valveStatus = $request->query('valveStatus');
 
         if ($request->has('search') && Str::length($search) > 0) {
-            $meters = $meters->where(function ($meters) use ($search) {
-                $meters->whereHas('type', function ($query) use ($search) {
-                    $query->where('name', 'like', '%' . $search . '%');
-                })->orWhere('number', 'like', '%' . $search . '%')
-                    ->orWhereHas('user', function ($query) use ($search) {
-                        $query->where('account_number', 'like', '%' . $search . '%')
-                            ->orWhere('name', 'like', '%' . $search . '%');
-                    });
-            });
+            $meters = $this->searchEagerLoadedQuery($meters, $search, $search_filter);
         }
         if ($request->has('station_id')) {
             $meters->where('station_id', $stationId);
