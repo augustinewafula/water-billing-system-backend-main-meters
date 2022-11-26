@@ -28,6 +28,7 @@ class UnresolvedTransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $sortBy = $request->query('sortBy');
+        $search_filter = $request->query('search_filter');
         $sortOrder = $request->query('sortOrder');
         $search = $request->query('search');
 
@@ -40,11 +41,9 @@ class UnresolvedTransactionController extends Controller
         if ($request->has('perPage')){
             $perPage = $request->perPage;
         }
-        if ($request->has('search') && Str::length($request->query('search')) > 0) {
-            $unresolvedTransaction = $unresolvedTransaction->where(function ($query) use ($search) {
-                $query->where('mpesa_transactions.TransAmount', 'like', '%' . $search . '%')
-                    ->orWhere('mpesa_transactions.MSISDN', 'like', '%' . $search . '%')
-                    ->orWhere('mpesa_transactions.BillRefNumber', 'like', '%' . $search . '%');
+        if ($request->has('search') && Str::length($search) > 0) {
+            $unresolvedTransaction = $unresolvedTransaction->where(function ($query) use ($search, $search_filter) {
+                $query->where($search_filter, 'like', '%' . $search . '%');
             });
         }
 

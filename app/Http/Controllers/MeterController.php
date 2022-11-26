@@ -84,8 +84,13 @@ class MeterController extends Controller
     {
         $meters = FaultyMeter::with('meter', 'meter.user', 'meter.type');
         $perPage = 10;
+        $search_filter = $request->query('search_filter');
+        $search = $request->query('search');
         if ($request->has('perPage')){
             $perPage = $request->perPage;
+        }
+        if ($request->has('search') && Str::length($search) > 0) {
+            $meters = $this->searchEagerLoadedQuery($meters, $search, $search_filter);
         }
         return response()->json($meters->paginate($perPage));
     }
