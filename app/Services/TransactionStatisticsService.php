@@ -39,7 +39,9 @@ class TransactionStatisticsService {
             ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->whereBetween('mpesa_transactions.created_at', [$from, $to])
+            ->when($from !== null && $to !== null, function ($query) use ($from, $to) {
+                return $query->whereBetween('mpesa_transactions.created_at', [$from, $to]);
+            })
             ->when($meterStation !== null, function ($query) use ($meterStation) {
                 return $query->where('meter_stations.id', $meterStation->id);
             });
@@ -48,7 +50,9 @@ class TransactionStatisticsService {
             ->join('mpesa_transactions', 'meter_tokens.mpesa_transaction_id', 'mpesa_transactions.id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->whereBetween('mpesa_transactions.created_at', [$from, $to])
+            ->when($from !== null && $to !== null, function ($query) use ($from, $to) {
+                return $query->whereBetween('mpesa_transactions.created_at', [$from, $to]);
+            })
             ->when($meterStation !== null, function ($query) use ($meterStation) {
                 return $query->where('meter_stations.id', $meterStation->id);
             });
@@ -59,7 +63,9 @@ class TransactionStatisticsService {
             ->join('users', 'users.id', 'connection_fees.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->whereBetween('mpesa_transactions.created_at', [$from, $to])
+            ->when($from !== null && $to !== null, function ($query) use ($from, $to) {
+                return $query->whereBetween('mpesa_transactions.created_at', [$from, $to]);
+            })
             ->when($meterStation !== null, function ($query) use ($meterStation) {
                 return $query->where('meter_stations.id', $meterStation->id);
             });
@@ -69,7 +75,9 @@ class TransactionStatisticsService {
             ->join('users', 'users.id', 'credit_accounts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->whereBetween('mpesa_transactions.created_at', [$from, $to])
+            ->when($from !== null && $to !== null, function ($query) use ($from, $to) {
+                return $query->whereBetween('mpesa_transactions.created_at', [$from, $to]);
+            })
             ->when($meterStation !== null, function ($query) use ($meterStation) {
                 return $query->where('meter_stations.id', $meterStation->id);
             });
@@ -79,7 +87,9 @@ class TransactionStatisticsService {
             ->join('users', 'users.id', 'unaccounted_debts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->whereBetween('mpesa_transactions.created_at', [$from, $to])
+            ->when($from !== null && $to !== null, function ($query) use ($from, $to) {
+                return $query->whereBetween('mpesa_transactions.created_at', [$from, $to]);
+            })
             ->when($meterStation !== null, function ($query) use ($meterStation) {
                 return $query->where('meter_stations.id', $meterStation->id);
             });
