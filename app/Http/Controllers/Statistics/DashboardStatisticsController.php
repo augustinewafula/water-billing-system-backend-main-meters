@@ -118,38 +118,85 @@ class DashboardStatisticsController extends Controller
     {
         $meter_stations = MeterStation::all();
         $meter_station_readings = [];
-        foreach ($meter_stations as $meter_station){
-            $per_station_meter_readings = [];
-            $meter_station_meters = Meter::select('id')
-                ->where('station_id', $meter_station->id)
-                ->where('main_meter', false)
-                ->get();
-
-            foreach ($meter_station_meters as $meter_station_meter){
-                $meter_reading = DailyMeterReading::where('meter_id', $meter_station_meter->id);
-                if ($request->has('filter')) {
-                    if ($request->query('filter') === 'last-7-days') {
-                        $meter_reading = $meter_reading->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
-                            ->whereYear('created_at', date('Y'));
-                    }
-                    if ($request->query('filter') === 'monthly') {
-                        $meter_reading = $meter_reading->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
-                            ->whereYear('created_at', date('Y'));
-                    }
+        $commonMonths = new Collection();
+        foreach ($meter_stations as $meter_station) {
+            if ($request->has('filter')) {
+                if ($request->query('filter') === 'last-7-days') {
+                    $meter_station_meters = DailyMeterReading::select(DB::raw('SUM(daily_meter_readings.reading) as reading'), DB::raw('DAYNAME(daily_meter_readings.created_at) as name'))
+                        ->join('meters', 'meters.id', 'daily_meter_readings.meter_id')
+                        ->where('meters.station_id', $meter_station->id)
+                        ->where('meters.main_meter', false)
+                        ->whereBetween('daily_meter_readings.created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
+                        ->groupBy('name', 'reading')
+                        ->get();
+                } else if ($request->query('filter') === 'monthly') {
+                    $meter_station_meters = MeterReading::select(DB::raw('meter_readings.current_reading as reading'), DB::raw('MONTHNAME(meter_readings.month) as name'))
+                        ->join('meters', 'meters.id', 'meter_readings.meter_id')
+                        ->where('meters.station_id', $meter_station->id)
+                        ->where('meters.main_meter', false)
+                        ->whereBetween('meter_readings.month', [Carbon::now()->subYear(), Carbon::now()->endOfMonth()])
+                        ->groupBy('name', 'reading')
+                        ->get();
+                } else {
+                    $meter_station_meters = DailyMeterReading::select(DB::raw('SUM(daily_meter_readings.reading) as reading'), DB::raw('DAYNAME(daily_meter_readings.created_at) as name'))
+                        ->join('meters', 'meters.id', 'daily_meter_readings.meter_id')
+                        ->where('meters.station_id', $meter_station->id)
+                        ->where('meters.main_meter', false)
+                        ->whereBetween('daily_meter_readings.created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
+                        ->groupBy('name', 'reading')
+                        ->get();
                 }
-                $meter_reading = $meter_reading->groupBy('name', 'reading')
-                    ->select('reading', DB::raw('DAYNAME(created_at) as name'))
-                    ->get();
-                $per_station_meter_readings[] = $meter_reading;
-
 
             }
+
+            $readingDetails = $this->calculateMeterReadingsSum($meter_station_meters->toArray());
             $meter_station_readings[] = [
                 'name' => $meter_station->name,
-                'readings' => $this->calculateMeterReadingsSum( $per_station_meter_readings)];
+                'readings' => $readingDetails['revenue']];
+            $commonMonths = $commonMonths->merge($readingDetails['common_months']);
 
         }
+        $meter_station_readings = $this->initializeMissingMonths($meter_station_readings, $commonMonths);
         return response()->json($meter_station_readings);
+    }
+
+    private function initializeMissingMonths($meter_station_readings, $commonMonths): Collection
+    {
+        Log::info($meter_station_readings);
+        Log::info($commonMonths);
+        $collection = new Collection();
+        foreach ($meter_station_readings as $meter_station_reading) {
+            foreach ($commonMonths as $commonMonth) {
+                $monthExists = false;
+                foreach ($meter_station_reading['readings'] as $meter_station_reading_month) {
+                    if ($meter_station_reading_month['label'] === $commonMonth['name']) {
+                        $monthExists = true;
+                        break;
+                    }
+                }
+                if (!$monthExists) {
+                    $meter_station_reading['readings'][] = [
+                        'label' => $commonMonth['name'],
+                        'reading' => 0.00
+                    ];
+                }
+            }
+            $meter_station_reading['readings'] = $this->sortRevenueMonths($meter_station_reading['readings']);
+            $collection->push($meter_station_reading);
+        }
+
+        return $collection;
+    }
+
+    public function sortRevenueMonths($revenue): array
+    {
+        usort($revenue, static function($a, $b) {
+            $a = strtotime($a['label']);
+            $b = strtotime($b['label']);
+            return $a - $b;
+        });
+        return $revenue;
+
     }
 
     public function meterReadings(Request $request, Meter $meter): JsonResponse
@@ -158,7 +205,7 @@ class DashboardStatisticsController extends Controller
             if ($request->query('filter') === 'last-7-days') {
                 return response()->json($this->dayWiseMeterReadings($meter->id));
             }
-            if ($request->query('filter') === 'monthly') {
+            if ($request->query('filter') === 'last-30-days') {
                 return response()->json($this->monthWiseMeterReadings($meter->id));
             }
         }
@@ -185,31 +232,36 @@ class DashboardStatisticsController extends Controller
             ->oldest()
             ->groupBy('label', 'reading')
             ->get();
+
     }
 
-    private function calculateMeterReadingsSum($meterReadings): array
+    private function calculateMeterReadingsSum($meterReadings): Collection
     {
 
-        $meterReadings = array_reduce($meterReadings, static function ($accumulator, $item) {
-            foreach ($item as $meterReading){
-                $accumulator[$meterReading['name']] = $accumulator[$meterReading['name']] ?? 0;
-                $accumulator[$meterReading['name']] += $meterReading['reading'];
-            }
+        $meterReadings = array_reduce($meterReadings, static function ($accumulator, $meterReading) {
+            $accumulator[$meterReading['name']] = $accumulator[$meterReading['name']] ?? 0;
+            $accumulator[$meterReading['name']] += $meterReading['reading'];
+
             return $accumulator;
         });
 
         if ($meterReadings === null) {
-            return [];
+            return collect(['revenue' => [], 'common_months' => collect([])]);
         }
         $stationsRevenue = [];
+        $commonMonths = new Collection();
         foreach ($meterReadings as $key => $value) {
             $stationsRevenue[] = [
                 'label' => $key,
                 'reading' => $value
             ];
+            $commonMonths->push([
+                'name' => $key
+            ]);
         }
 
-        return $stationsRevenue;
+        return collect(['revenue' => $stationsRevenue,
+            'common_months' => $commonMonths]);
     }
 
 }
