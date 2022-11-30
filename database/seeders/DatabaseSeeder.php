@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder2::class,
             SettingSeeder3::class,
             AlertContactSeeder::class,
+            PermissionSeeder2::class,
         ]);
     }
 }
