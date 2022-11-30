@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Services\TransactionService;
 use App\Services\TransactionStatisticsService;
 use Carbon\Carbon;
+use DateTime;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -97,18 +98,47 @@ class DashboardStatisticsController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
             ->where('main_meter', true)
             ->get();
+        $distinct_months = $this->getDistinctMonths();
+        $distinct_years = $this->getDistinctYears();
+
         $main_meter_readings = [];
         foreach ($main_meters as $main_meter){
             $meter = Meter::find($main_meter->id);
             $readings = [
                 'name' => $main_meter->name,
-                'readings' => json_decode($this->meterReadings($request, $meter)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)
+                'readings' => json_decode($this->meterReadings($request, $meter, $distinct_months, $distinct_years)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)
             ];
             $main_meter_readings[] = $readings;
         }
         return response()->json([
             'main_meter_readings' => $main_meter_readings,
             'per_station_average_readings' => json_decode($this->perStationAverageMeterReading($request)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)]);
+    }
+
+    private function getDistinctMonths(): Collection
+    {
+        $daily_meter_reading_months = DailyMeterReading::select(DB::raw('DISTINCT MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'))
+            ->orderBy('month', 'asc')
+            ->get();
+
+        $meter_reading_months = MeterReading::select(DB::raw('DISTINCT MONTH(month) as month'), DB::raw('YEAR(month) as year'))
+            ->orderBy('month', 'asc')
+            ->get();
+
+        return $daily_meter_reading_months->concat($meter_reading_months)->unique('month')->sortBy('month');
+    }
+
+    private function getDistinctYears(): Collection
+    {
+        $daily_meter_reading_years = DailyMeterReading::select(DB::raw('DISTINCT YEAR(created_at) as year'))
+            ->orderBy('year', 'asc')
+            ->get();
+
+        $meter_reading_years = MeterReading::select(DB::raw('DISTINCT YEAR(month) as year'))
+            ->orderBy('year', 'asc')
+            ->get();
+
+        return $daily_meter_reading_years->concat($meter_reading_years)->unique('year')->sortBy('year');
     }
 
     /**
@@ -138,11 +168,11 @@ class DashboardStatisticsController extends Controller
                         ->groupBy('name', 'reading')
                         ->get();
                 } else {
-                    $meter_station_meters = DailyMeterReading::select(DB::raw('SUM(daily_meter_readings.reading) as reading'), DB::raw('DAYNAME(daily_meter_readings.created_at) as name'))
-                        ->join('meters', 'meters.id', 'daily_meter_readings.meter_id')
+                    $meter_station_meters = MeterReading::select(DB::raw('meter_readings.current_reading as reading'), DB::raw('YEAR(meter_readings.month) as name'))
+                        ->join('meters', 'meters.id', 'meter_readings.meter_id')
                         ->where('meters.station_id', $meter_station->id)
                         ->where('meters.main_meter', false)
-                        ->whereBetween('daily_meter_readings.created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
+                        ->whereBetween('meter_readings.month', [Carbon::now()->subYear(), Carbon::now()->endOfMonth()])
                         ->groupBy('name', 'reading')
                         ->get();
                 }
@@ -162,8 +192,6 @@ class DashboardStatisticsController extends Controller
 
     private function initializeMissingMonths($meter_station_readings, $commonMonths): Collection
     {
-        Log::info($meter_station_readings);
-        Log::info($commonMonths);
         $collection = new Collection();
         foreach ($meter_station_readings as $meter_station_reading) {
             foreach ($commonMonths as $commonMonth) {
@@ -199,14 +227,21 @@ class DashboardStatisticsController extends Controller
 
     }
 
-    public function meterReadings(Request $request, Meter $meter): JsonResponse
+    public function meterReadings(
+        Request $request,
+        Meter $meter,
+        Collection $distinct_months,
+        Collection $distinct_years): JsonResponse
     {
         if ($request->has('filter')) {
             if ($request->query('filter') === 'last-7-days') {
                 return response()->json($this->dayWiseMeterReadings($meter->id));
             }
-            if ($request->query('filter') === 'last-30-days') {
-                return response()->json($this->monthWiseMeterReadings($meter->id));
+            if ($request->query('filter') === 'monthly') {
+                return response()->json($this->monthWiseMeterReadings($meter->id, $distinct_months));
+            }
+            if ($request->query('filter') === 'yearly') {
+                return response()->json($this->yearWiseMeterReadings($meter->id, $distinct_years));
             }
         }
         return response()->json([]);
@@ -223,16 +258,46 @@ class DashboardStatisticsController extends Controller
             ->get();
     }
 
-    public function monthWiseMeterReadings($meter_id): Collection
+    public function monthWiseMeterReadings($meter_id, $distinct_months): Collection
     {
-        return MeterReading::select('current_reading as reading', DB::raw('MONTHNAME(month) as label'. 'max(month) as created_at'))
-            ->whereYear('month', date('Y'))
-            ->where('meter_id', $meter_id)
-            ->distinct('label')
-            ->oldest()
-            ->groupBy('label', 'reading')
-            ->get();
+        $readings = new Collection();
+        foreach ($distinct_months as $distinct_month) {
+            $latest_reading  = DailyMeterReading::select('reading')
+                ->where('meter_id', $meter_id)
+                ->whereMonth('created_at', $distinct_month->month)
+                ->whereYear('created_at', $distinct_month->year)
+                ->latest()
+                ->first();
+            $readings->push([
+                'label' => $this->monthNumberToName($distinct_month->month),
+                'reading' => $latest_reading ? $latest_reading->reading : 0.00
+            ]);
+        }
 
+        return $readings;
+    }
+
+    public  function yearWiseMeterReadings($meter_id, $distinct_years): Collection
+    {
+        $readings = new Collection();
+        foreach ($distinct_years as $distinct_year) {
+            $latest_reading  = DailyMeterReading::select('reading')
+                ->where('meter_id', $meter_id)
+                ->whereYear('created_at', $distinct_year->year)
+                ->latest()
+                ->first();
+            $readings->push([
+                'label' => $distinct_year->year,
+                'reading' => $latest_reading ? $latest_reading->reading : 0.00
+            ]);
+        }
+
+        return $readings;
+    }
+
+    private function monthNumberToName($monthNumber): string
+    {
+        return DateTime::createFromFormat('!m', $monthNumber)->format('F');
     }
 
     private function calculateMeterReadingsSum($meterReadings): Collection

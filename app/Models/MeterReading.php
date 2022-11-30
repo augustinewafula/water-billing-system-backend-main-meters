@@ -54,7 +54,11 @@ class MeterReading extends Model
 
     public function getMonthAttribute(string $value): string
     {
-        return Carbon::parse($value)->format('Y-m');
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return $value;
+        }
     }
 
     /**
