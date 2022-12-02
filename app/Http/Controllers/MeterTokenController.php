@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClearMeterTokenRequest;
 use App\Http\Requests\CreateMeterTokenRequest;
+use App\Http\Requests\SendClearTokenMessageRequest;
 use App\Jobs\SendSMS;
 use App\Models\Meter;
 use App\Models\MeterToken;
@@ -82,10 +83,6 @@ class MeterTokenController extends Controller
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
             $token = strtok($token, ',');
 
-            $user = User::where('meter_id', $request->meter_id)->firstOrFail();
-            $message = "Hello, $user->name. To clear the token for meter $meter_number, please input the following token: $token";
-            $this->notifyUser((object)['message' => $message, 'title' => 'Payment received'], $user, 'general');
-
         } catch (Throwable $throwable){
             $response = ['message' => 'Failed to reset token'];
             return response()->json($response, 422);
@@ -110,6 +107,24 @@ class MeterTokenController extends Controller
             return response()->json($response, 422);
         }
         return response()->json($token);
+
+    }
+
+    public function sendClearTokenMessage(SendClearTokenMessageRequest $request): JsonResponse
+    {
+        $meter = Meter::where('id', $request->meter_id)
+            ->with('user')
+            ->firstOrFail();
+        if ($request->recipient === 'customer') {
+            $this->notifyUser(
+                (object)['message' => $request->message,
+                    'title' => 'Clear Token'],
+                $meter->user, 'general');
+        } else {
+            SendSMS::dispatch($request->phone_number, $request->message, null, $meter->station_id);
+        }
+
+        return response()->json('success');
 
     }
 

@@ -118,6 +118,7 @@ Route::prefix('v1')->group(function () {
         Route::post('meter-tokens-resend/{meter_token}', [MeterTokenController::class, 'resend']);
         Route::post('meter-tokens-clear', [MeterTokenController::class, 'clear']);
         Route::post('meter-clear-tamper-record', [MeterTokenController::class, 'clearTamperRecord']);
+        Route::post('meter-send-clear-token-message', [MeterTokenController::class, 'sendClearTokenMessage']);
         Route::post('meter-readings-resend/{meter_reading}', [MeterReadingController::class, 'resend']);
         Route::post('roles-update/{role}', [RoleController::class, 'update']);
         Route::delete('unresolved-transactions/{unresolvedMpesaTransaction}', [UnresolvedTransactionController::class, 'destroy']);

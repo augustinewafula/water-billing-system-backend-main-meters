@@ -15,21 +15,22 @@ class SendSMS implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SendsSms, NotifiesOnJobFailure;
 
-    protected $to, $message, $user_id;
+    protected $to, $message, $user_id, $station_id;
 
-    public $tries = 2;
-    public $failOnTimeout = true;
+    public int $tries = 2;
+    public bool $failOnTimeout = true;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($to, $message, $user_id)
+    public function __construct($to, $message, $user_id, $station_id=null)
     {
         $this->to = $to;
         $this->message = $message;
         $this->user_id = $user_id;
+        $this->station_id = $station_id;
     }
 
     /**
@@ -40,7 +41,7 @@ class SendSMS implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->initiateSendSms($this->to, $this->message, $this->user_id);
+        $this->initiateSendSms($this->to, $this->message, $this->user_id, 'system', $this->station_id);
     }
 
 }
