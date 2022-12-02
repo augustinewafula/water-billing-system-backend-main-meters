@@ -147,8 +147,8 @@ trait StoresMeterBillings
                     'date_paid' => Carbon::now()->toDateTimeString(),
                     'mpesa_transaction_id' => $mpesa_transaction_id
                 ]);
-            $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m', $meter_reading->month)->format('M'));
-            $bill_year = Carbon::createFromFormat('Y-m', $meter_reading->month)->format('Y');
+            $bill_month_name = Str::lower(Carbon::createFromFormat('Y-m-d', $meter_reading->month)->format('M'));
+            $bill_year = Carbon::createFromFormat('Y-m-d', $meter_reading->month)->format('Y');
             $this->saveMeterBillingReport([
                 'meter_id' => $meter->id,
                 $bill_month_name => $user_bill_balance,
