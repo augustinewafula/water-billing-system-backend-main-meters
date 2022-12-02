@@ -89,6 +89,14 @@ class DashboardStatisticsController extends Controller
 
     }
 
+    public function  getMeterReadingStatistics(Request $request, Meter $meter): JsonResponse
+    {
+        $distinct_months = $this->getDistinctMonths();
+        $distinct_years = $this->getDistinctYears();
+
+        return $this->meterReadings($request, $meter, $distinct_months, $distinct_years);
+    }
+
     /**
      * @throws JsonException
      */

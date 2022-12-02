@@ -70,7 +70,7 @@ Route::prefix('v1')->group(function () {
         });
         Route::group(['middleware' => ['cacheResponse'], 'prefix' => 'statistics'], static function () {
             Route::get('previous-month-revenue-statistics', [DashboardStatisticsController::class, 'previousMonthRevenueStatistics']);
-            Route::get('meter-readings/{meter}', [DashboardStatisticsController::class, 'meterReadings']);
+            Route::get('meter-readings/{meter}', [DashboardStatisticsController::class, 'getMeterReadingStatistics']);
             Route::get('main-meter-readings', [DashboardStatisticsController::class, 'mainMeterReading']);
             Route::get('per-station-average-meter-readings', [DashboardStatisticsController::class, 'perStationAverageMeterReading']);
             Route::get('monthly-revenue', [TransactionStatisticsController::class, 'monthlyRevenueStatistics']);
