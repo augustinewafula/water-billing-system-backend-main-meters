@@ -122,7 +122,7 @@ trait ProcessesPrepaidMeterTransaction
             DB::rollBack();
             Log::error($throwable);
             $this->notifyUser(
-                (object)['message' => 'Failed to generate token for your meter, please contact management for help.',
+                (object)['message' => "Failed to generate token of Ksh {$mpesa_transaction->TransAmount} for your meter, please contact management for help.",
                     'title' => 'Insufficient amount'],
                 $user,
                 'general',
