@@ -20,7 +20,11 @@ class RoleSeeder extends Seeder
         $permissions = Permission::pluck('name')
             ->all();
 
-        $admin_blacklist_permissions = array_merge($this->constructModelPermission(['service-charge', 'role']));
+        $admin_blacklist_permissions = array_merge($this->constructModelPermission(['service-charge']), [
+            'role-create',
+            'role-edit',
+            'role-delete',
+        ]);
         $supervisor_blacklist_permissions = array_merge($this->constructModelPermission(['admin']), [
             'meter-edit',
             'meter-delete',
