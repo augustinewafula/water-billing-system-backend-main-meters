@@ -216,6 +216,7 @@ class MeterController extends Controller
     {
         $data = [
             'number' => $request->number,
+            'type_id' => $request->type_id,
             'station_id' => $request->station_id,
             'mode' => $request->mode,
             'has_location_coordinates' => $request->has_location_coordinates,
