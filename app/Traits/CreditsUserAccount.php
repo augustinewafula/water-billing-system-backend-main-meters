@@ -8,6 +8,7 @@ use App\Jobs\ProcessTransaction;
 use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Services\MpesaService;
+use Log;
 use Throwable;
 
 trait CreditsUserAccount
@@ -33,6 +34,7 @@ trait CreditsUserAccount
         if ($mpesa_transaction = $this->transactionExists($transaction_id)) {
             throw_if($mpesa_transaction->Consumed, \Exception::class, 'Transaction already consumed');
             ProcessTransaction::dispatch($mpesa_transaction);
+            Log::info('Dispatched ProcessTransaction job for existing transaction '.$transaction_id);
 
             return;
         }
@@ -51,6 +53,7 @@ trait CreditsUserAccount
         $mpesa_request->validate((new MpesaTransactionRequest)->rules());
         $mpesa_transaction = $mpesaService->store($mpesa_request);
         ProcessTransaction::dispatch($mpesa_transaction);
+        Log::info('Dispatched ProcessTransaction job for new transaction '.$transaction_id);
 
     }
 
