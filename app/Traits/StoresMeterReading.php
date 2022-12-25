@@ -38,7 +38,7 @@ trait StoresMeterReading
     {
         $meter = Meter::find($request->meter_id);
 
-        $next_month = Carbon::parse($request->month)->add(1, 'month')->format('M');
+        $next_month = Carbon::parse($request->month)->add(1, 'month')->format('M Y');
         $bill_due_on = Setting::where('key', 'bill_due_on')
             ->first()
             ->value;
