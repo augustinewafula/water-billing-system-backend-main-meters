@@ -33,6 +33,8 @@ trait CreditsUserAccount
         if ($mpesa_transaction = $this->transactionExists($transaction_id)) {
             throw_if($mpesa_transaction->Consumed, \Exception::class, 'Transaction already consumed');
             ProcessTransaction::dispatch($mpesa_transaction);
+
+            return;
         }
 
         $mpesa_request = new MpesaTransactionRequest();
