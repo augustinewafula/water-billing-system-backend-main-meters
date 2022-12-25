@@ -116,6 +116,9 @@ trait ProcessesPostPaidTransaction
                 'amount' => $amount_paid,
                 'mpesa_transaction_id' => $mpesa_transaction_id,
             ]);
+            MpesaTransaction::find($mpesa_transaction_id)->update([
+                'Consumed' => true,
+            ]);
             $user->update([
                 'account_balance' => $user_total_amount,
                 'last_mpesa_transaction_id' => $mpesa_transaction_id,
