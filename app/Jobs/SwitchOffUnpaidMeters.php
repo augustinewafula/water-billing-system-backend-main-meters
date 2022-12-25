@@ -62,6 +62,9 @@ class SwitchOffUnpaidMeters implements ShouldQueue
                 if (!$unpaid_meter_reading->meter) {
                     continue;
                 }
+                if ($unpaid_meter_reading->disconnection_sms_sent) {
+                    continue;
+                }
                 $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter_reading->meter->id);
                 if (!$meter->user) {
                     continue;
