@@ -30,6 +30,7 @@ trait ProcessesMpesaTransaction
      */
     private function processMpesaTransaction(MpesaTransaction $mpesa_transaction): void
     {
+        Log::info('Processing mpesa transaction: ' . $mpesa_transaction->TransID . ' for ' . $mpesa_transaction->MSISDN. ' with amount: ' . $mpesa_transaction->TransAmount. ' and account: ' . $mpesa_transaction->BillRefNumber);
         $this->notifyNewPayment($mpesa_transaction);
         $user = $this->getUser($mpesa_transaction->BillRefNumber);
 
