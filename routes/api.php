@@ -13,6 +13,7 @@ use App\Http\Controllers\MonthlyServiceChargeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\SmsTemplateController;
 use App\Http\Controllers\Statistics\DashboardStatisticsController;
 use App\Http\Controllers\Statistics\TransactionStatisticsController;
 use App\Http\Controllers\TransactionController;
@@ -92,6 +93,9 @@ Route::prefix('v1')->group(function () {
         ]);
         Route::apiResource('meter-tokens', MeterTokenController::class)->except([
             'update', 'destroy'
+        ]);
+        Route::apiResource('sms-templates', SmsTemplateController::class)->except([
+            'show', 'update'
         ]);
         Route::get('settings', [SettingController::class, 'index']);
         Route::post('settings', [SettingController::class, 'update']);

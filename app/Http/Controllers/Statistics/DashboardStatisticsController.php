@@ -34,7 +34,7 @@ class DashboardStatisticsController extends Controller
 //        $this->middleware(['role:super-admin|admin|supervisor']);
     }
 
-    public function index(): JsonResponse
+    public function index(TransactionStatisticsService $transactionStatisticsService): JsonResponse
     {
         try {
             $users = User::role('user')
@@ -55,7 +55,8 @@ class DashboardStatisticsController extends Controller
             'users' => $users,
             'main_meters' => $mainMeters,
             'meters' => $meters,
-            'faulty_meters' => $faultyMeters
+            'faulty_meters' => $faultyMeters,
+            'revenue' => $transactionStatisticsService->calculateRevenue(null, null)
         ]);
     }
 
