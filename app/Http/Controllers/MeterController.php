@@ -150,8 +150,8 @@ class MeterController extends Controller
             }
             $validated = $request->validated();
             if ($request->has_location_coordinates) {
-                $validated['lat'] = $request->location['lat'];
-                $validated['lng'] = $request->location['lng'];
+                $validated['lat'] = $request->location_coordinates['lat'];
+                $validated['lng'] = $request->location_coordinates['lng'];
             }
 
             $meter = Meter::create($validated);
