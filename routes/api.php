@@ -60,16 +60,10 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [DashboardStatisticsController::class, 'index']);
             Route::get('total-revenue', [DashboardStatisticsController::class, 'totalRevenueSum']);
             Route::get('today-revenue', [TransactionStatisticsController::class, 'todayRevenue']);
-            Route::get('this-week-revenue', [TransactionStatisticsController::class, 'thisWeekRevenue'])
-                ->middleware('cacheResponse:21600');
-            Route::get('this-month-revenue', [TransactionStatisticsController::class, 'thisMonthRevenue'])
-                ->middleware('cacheResponse:54000');
-            Route::get('this-year-revenue', [TransactionStatisticsController::class, 'thisYearRevenue'])
-                ->middleware('cacheResponse:266400');
-            Route::get('monthly-revenue-per-station', [TransactionStatisticsController::class, 'monthlyRevenueStatisticsPerStation'])
-                ->middleware('cacheResponse');
-        });
-        Route::group(['middleware' => ['cacheResponse'], 'prefix' => 'statistics'], static function () {
+            Route::get('this-week-revenue', [TransactionStatisticsController::class, 'thisWeekRevenue']);
+            Route::get('this-month-revenue', [TransactionStatisticsController::class, 'thisMonthRevenue']);
+            Route::get('this-year-revenue', [TransactionStatisticsController::class, 'thisYearRevenue']);
+            Route::get('monthly-revenue-per-station', [TransactionStatisticsController::class, 'monthlyRevenueStatisticsPerStation']);
             Route::get('previous-month-revenue-statistics', [DashboardStatisticsController::class, 'previousMonthRevenueStatistics']);
             Route::get('meter-readings/{meter}', [DashboardStatisticsController::class, 'getMeterReadingStatistics']);
             Route::get('main-meter-readings', [DashboardStatisticsController::class, 'mainMeterReading']);
