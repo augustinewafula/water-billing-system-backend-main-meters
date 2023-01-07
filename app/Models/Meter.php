@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -78,6 +79,14 @@ class Meter extends Model
          return  null;
     }
 
+    public function hasUnreadMeterRecords($date): bool|UnreadMeter|null
+    {
+        $date = Carbon::parse($date)->format('Y-m-d H:i:s');
+        \Log::info('Checking if meter has unread meter records', ['date' => $date]);
+        return UnreadMeter::where('meter_id', $this->id)
+            ->whereDate('month', $date)
+            ->first();
+    }
 
     /**
      * Get meter station that owns the meter

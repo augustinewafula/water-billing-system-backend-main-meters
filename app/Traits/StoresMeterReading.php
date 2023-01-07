@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Actions\DeleteUnreadMeter;
 use App\Http\Requests\CreateMeterBillingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Jobs\SendMeterReadingsToUser;
@@ -101,6 +102,9 @@ trait StoresMeterReading
             $send_sms_at = Carbon::createFromFormat('Y-m-d H:i:s', $send_sms_at);
             if ($send_sms_at->diffInMinutes(now()) === 0){
                 SendMeterReadingsToUser::dispatch($meter_reading);
+            }
+            if ($unread_meter = $meter->hasUnreadMeterRecords($meter_reading->month)) {
+                (new DeleteUnreadMeter($meter))->execute($unread_meter->id);
             }
         } catch (Throwable $th) {
             DB::rollBack();

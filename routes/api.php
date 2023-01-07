@@ -17,6 +17,7 @@ use App\Http\Controllers\SmsTemplateController;
 use App\Http\Controllers\Statistics\DashboardStatisticsController;
 use App\Http\Controllers\Statistics\TransactionStatisticsController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UnreadMeterController;
 use App\Http\Controllers\UnresolvedTransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,7 @@ Route::prefix('v1')->group(function () {
         });
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
+        Route::apiResource('unread-meters', UnreadMeterController::class);
         Route::apiResource('users', UserController::class);
         Route::apiResource('meter-stations', MeterStationController::class)->except(['show']);
         Route::apiResource('alert-contacts', AlertContactController::class)->except(['show']);

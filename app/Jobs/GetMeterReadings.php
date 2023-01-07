@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Actions\GenerateUnreadMeters;
 use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
@@ -76,6 +77,7 @@ class GetMeterReadings implements ShouldQueue
                 $this->saveMeterReading($meter_details);
             }
         }
+        (new GenerateUnreadMeters())->execute(now());
     }
 
     public function saveDailyMeterReadings($database_meter, $meter_details): void

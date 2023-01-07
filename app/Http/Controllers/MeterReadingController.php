@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\DeleteUnreadMeter;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\UpdateMeterReadingRequest;
 use App\Models\Meter;
@@ -131,6 +132,9 @@ class MeterReadingController extends Controller
             $meter->update([
                 'last_reading' => $request->current_reading,
             ]);
+            if ($unread_meter = $meter->hasUnreadMeterRecords($meterReading->month)) {
+                (new DeleteUnreadMeter($meter))->execute($unread_meter->id);
+            }
             DB::commit();
         } catch (Throwable $th) {
             Log::error($th);
