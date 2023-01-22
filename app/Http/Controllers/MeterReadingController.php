@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\DeleteUnreadMeter;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\UpdateMeterReadingRequest;
+use App\Models\DailyMeterReading;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterReading;
@@ -64,6 +65,27 @@ class MeterReadingController extends Controller
             'total_bill' => $meter_readings->sum('bill'),
             'total_amount_paid' => $meter_readings_collection->sum('meter_billings_sum_amount_paid') + $meter_readings_collection->sum('meter_billings_sum_credit'),
         ]);
+    }
+
+    public function  dailyReadingsIndex(Request $request, Meter $meter): JsonResponse
+    {
+        $fromDate = $request->query('fromDate');
+        $toDate = $request->query('toDate');
+        $perPage = 10;
+        if ($request->has('perPage')){
+            $perPage = $request->perPage;
+        }
+
+        $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+        $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+
+        $daily_meter_readings = DailyMeterReading::where('meter_id', $meter->id)
+            ->whereBetween('created_at', [$formattedFromDate, $formattedToDate])
+            ->latest()
+            ->paginate($perPage);
+
+        return response()->json($daily_meter_readings);
+
     }
 
 
