@@ -79,6 +79,13 @@ class Meter extends Model
          return  null;
     }
 
+    public function scopeNotPrepaid(Builder $query): Builder
+    {
+        return $query->doesntHave('type')->orWhereHas('type', function ($query) {
+            $query->where('name', '!=', 'Prepaid');
+        });
+    }
+
     public function hasUnreadMeterRecords($date): bool|UnreadMeter|null
     {
         $date = Carbon::parse($date)->format('Y-m-d H:i:s');
