@@ -28,7 +28,7 @@ trait ProcessesPrepaidMeterTransaction
     public function registerPrepaidMeter($meter_number): string
     {
         $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'Meter', [
+            ->post($this->baseUrl . 'NewCustomer', [
                 'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'METER_TYPE' => 1,
@@ -84,8 +84,8 @@ trait ProcessesPrepaidMeterTransaction
 
         try {
             DB::beginTransaction();
-            $meter_number = Meter::find($meter_id)->number;
-            $token = $this->generateMeterToken($meter_number, $user_total_amount);
+            $meter = Meter::find($meter_id);
+            $token = $this->generateMeterToken($meter->number, $user_total_amount, $meter->category);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
             $token = strtok($token, ',');
             MeterToken::create([
@@ -102,7 +102,7 @@ trait ProcessesPrepaidMeterTransaction
 
             $date = Carbon::now()->toDateTimeString();
             $message = "
-            Meter: $meter_number\n
+            Meter: $meter->number\n
             Token: $token\n
             Units: $units\n
             Amount: $user_total_amount\n

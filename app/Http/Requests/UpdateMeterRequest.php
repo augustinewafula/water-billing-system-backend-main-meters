@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\MeterCategories;
+use App\Enums\MeterCategory;
 use App\Enums\MeterMode;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,7 +38,7 @@ class UpdateMeterRequest extends FormRequest
             'has_location_coordinates' => ['required', 'boolean'],
             'location_coordinates.lat' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-90,90'],
             'location_coordinates.lng' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-180,180'],
-            'category' => ['required', new EnumValue(MeterCategories::class, false)],
+            'category' => ['required', new EnumValue(MeterCategory::class, false)],
         ];
     }
 

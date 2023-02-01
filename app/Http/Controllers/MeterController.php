@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MeterCategory;
 use App\Enums\MeterMode;
 use App\Enums\ValveStatus;
 use App\Http\Requests\CreateMainMeterRequest;
@@ -145,7 +146,7 @@ class MeterController extends Controller
     public function save($request): array
     {
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
-            if ($this->isPrepaidMeter($request->type_id)) {
+            if ((int) $request->category === MeterCategory::WATER && $this->isPrepaidMeter($request->type_id)) {
                 $this->registerPrepaidMeter($request->number);
             }
             $validated = $request->validated();

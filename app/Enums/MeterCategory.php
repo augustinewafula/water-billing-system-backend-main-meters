@@ -4,9 +4,9 @@ namespace App\Enums;
 
 use BenSampo\Enum\Enum;
 
-class MeterCategories extends Enum
+class MeterCategory extends Enum
 {
     public const WATER = 1;
-    public const ELECTRICITY = 2;
+    public const ENERGY = 2;
 
 }

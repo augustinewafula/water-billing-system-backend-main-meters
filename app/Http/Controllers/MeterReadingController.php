@@ -81,10 +81,27 @@ class MeterReadingController extends Controller
 
         $daily_meter_readings = DailyMeterReading::where('meter_id', $meter->id)
             ->whereBetween('created_at', [$formattedFromDate, $formattedToDate])
-            ->latest()
-            ->paginate($perPage);
+            ->oldest();
 
-        return response()->json($daily_meter_readings);
+        $average_reading = $daily_meter_readings->avg('reading');
+        $daily_meter_readings = $daily_meter_readings->paginate($perPage);
+
+        $prev_reading = 0;
+        foreach ($daily_meter_readings as $reading) {
+            if ($prev_reading == 0) {
+                $prev_reading = $reading->reading;
+                $reading->units_consumed = 0;
+            } else {
+                $reading->units_consumed = $reading->reading - $prev_reading;
+                $prev_reading = $reading->reading;
+            }
+        }
+        $daily_meter_readings = $daily_meter_readings->sortByDesc('created_at');
+
+        return response()->json([
+            'daily_meter_readings' => $daily_meter_readings,
+            'average_reading' => $average_reading
+        ]);
 
     }
 
