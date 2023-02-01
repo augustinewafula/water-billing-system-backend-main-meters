@@ -45,7 +45,8 @@ class Meter extends Model
         'location',
         'has_location_coordinates',
         'lng',
-        'lat'
+        'lat',
+        'category'
     ];
 
     protected $appends = ['current_reading'];

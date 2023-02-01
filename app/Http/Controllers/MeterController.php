@@ -172,6 +172,7 @@ class MeterController extends Controller
             'main_meter' => $main_meter,
             'location' => $request->location,
             'has_location_coordinates' => $request->has_location_coordinates,
+            'category' => $request->category,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
@@ -222,6 +223,7 @@ class MeterController extends Controller
             'has_location_coordinates' => $request->has_location_coordinates,
             'location' => $request->location,
             'last_reading' => $request->last_reading,
+            'category' => $request->category,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
