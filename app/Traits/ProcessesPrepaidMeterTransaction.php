@@ -28,7 +28,7 @@ trait ProcessesPrepaidMeterTransaction
     public function registerPrepaidMeter($meter_number): string
     {
         $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'NewCustomer', [
+            ->post($this->baseUrl . 'Meter', [
                 'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'METER_TYPE' => 1,
