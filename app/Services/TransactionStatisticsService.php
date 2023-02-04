@@ -102,20 +102,53 @@ class TransactionStatisticsService {
         return $meterBilling->sum('amount');
     }
 
-    public function getMonthlyRevenueStatistics(string $meterStationId = null): array
+    public function  getMonthlyRevenueStatistics(string $meterStationId = null, int $year = null): array
     {
-        $monthWiseTransactionDetails = $this->getMonthWiseTransactionDetails(date('Y'), $meterStationId);
+        if ($year === null) {
+            $year = (int) date('Y');
+        }
+        $monthWiseTransactionDetails = $this->getMonthWiseTransactionDetails($year, $meterStationId);
         $revenueSum = $this->calculateRevenueSum($monthWiseTransactionDetails);
 
         return $this->sortRevenueMonths($revenueSum);
     }
 
-    public function getMonthlyRevenueStatisticsPerStation(Collection $stations): array
+    public function getRevenueYears(): array
+    {
+        $years = [];
+        $models = [
+            MeterBilling::class,
+            MeterToken::class,
+            ConnectionFeePayment::class,
+            CreditAccount::class,
+            UnaccountedDebt::class
+        ];
+
+        foreach ($models as $model) {
+            $years = array_unique(
+                array_merge(
+                    $years,
+                    $model::select(DB::raw('YEAR(created_at) as year'))
+                        ->groupBy('year')
+                        ->orderBy('year', 'desc')
+                        ->pluck('year')
+                        ->toArray()
+                )
+            );
+        }
+
+        return array_unique($years);
+    }
+
+    public function getMonthlyRevenueStatisticsPerStation(Collection $stations, int $year = null): array
     {
         $stationsRevenue = new Collection();
         $commonMonths = new Collection();
+        if ($year === null) {
+            $year = (int) date('Y');
+        }
         foreach ($stations as $station) {
-            $monthlyRevenueStatistics = $this->getMonthlyRevenueStatistics($station->id);
+            $monthlyRevenueStatistics = $this->getMonthlyRevenueStatistics($station->id, $year);
             $stationsRevenue->push([
                 'name' => $station->name,
                 'data' => $monthlyRevenueStatistics

@@ -70,6 +70,7 @@ Route::prefix('v1')->group(function () {
             Route::get('main-meter-readings', [DashboardStatisticsController::class, 'mainMeterReading']);
             Route::get('per-station-average-meter-readings', [DashboardStatisticsController::class, 'perStationAverageMeterReading']);
             Route::get('monthly-revenue', [TransactionStatisticsController::class, 'monthlyRevenueStatistics']);
+            Route::get('revenue-years', [TransactionStatisticsController::class, 'revenueYears']);
         });
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);

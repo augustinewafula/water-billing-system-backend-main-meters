@@ -10,6 +10,18 @@ use Illuminate\Http\JsonResponse;
 
 class TransactionStatisticsController extends Controller
 {
+    public  function revenueYears(
+        Request $request,
+        TransactionStatisticsService $transactionStatisticsService): JsonResponse
+    {
+
+        $revenueYears = $transactionStatisticsService->getRevenueYears();
+
+        return response()->json([
+            'revenue_years' => $revenueYears
+        ]);
+    }
+
     public function todayRevenue(
         Request $request,
         TransactionStatisticsService $transactionStatisticsService): JsonResponse
@@ -115,8 +127,9 @@ class TransactionStatisticsController extends Controller
         TransactionStatisticsService $transactionStatisticsService): JsonResponse
     {
         $stationId = $request->station_id;
+        $year = $request->year;
 
-        $sortedRevenueSum = $transactionStatisticsService->getMonthlyRevenueStatistics($stationId);
+        $sortedRevenueSum = $transactionStatisticsService->getMonthlyRevenueStatistics($stationId, $year);
         return response()->json($sortedRevenueSum);
 
     }
@@ -126,7 +139,9 @@ class TransactionStatisticsController extends Controller
         TransactionStatisticsService $transactionStatisticsService): JsonResponse
     {
         $stations = MeterStation::select('id', 'name')->get();
-        $sortedRevenueSum = $transactionStatisticsService->getMonthlyRevenueStatisticsPerStation($stations);
+        $year = $request->year;
+
+        $sortedRevenueSum = $transactionStatisticsService->getMonthlyRevenueStatisticsPerStation($stations, $year);
         return response()->json($sortedRevenueSum);
 
     }
