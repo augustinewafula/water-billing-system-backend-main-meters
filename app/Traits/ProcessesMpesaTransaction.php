@@ -35,10 +35,11 @@ trait ProcessesMpesaTransaction
         $user = $this->getUser($mpesa_transaction->BillRefNumber);
 
         $deductions = $this->initializeDeductions();
+
         if (!$user && $account_number = $this->isPaymentForMeterConnectionAccount($mpesa_transaction)) {
             $user = $this->getUser($account_number);
-            if ($user && !$this->hasCompletedConnectionFeePayment($user->id)){
-                $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $deductions, true);
+            if ($user && !$this->hasCompletedConnectionFeePayment($user->id)) {
+                $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $deductions, true,true);
                 $deductions->connection_fee_deducted = $connection_fee_deducted;
                 Log::info("connection_fee_deducted: $connection_fee_deducted");
 
