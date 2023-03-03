@@ -155,24 +155,6 @@ trait ProcessConnectionFeeTransaction
                     'status' => $status
                 ]);
 
-                if ($processingConnectionFeeOnly || $month_to_bill->equalTo($lastMonthToBill) || $month_to_bill->lessThanOrEqualTo(Carbon::now()->startOfMonth())){
-                    Log::info('User account balance before deduction: ' . $user->account_balance);
-                    Log::info('Amount paid: ' . $amount_paid);
-                    Log::info('Expected amount: ' . $expected_amount);
-
-                    if ($amount_paid === 0 && $processingConnectionFeeOnly){
-                        $user_account_balance = $user->account_balance - $expected_amount;
-                        $user->update([
-                            'account_balance' => $user_account_balance
-                        ]);
-                    } else{
-                        $user_account_balance = abs($user->account_balance) - $amount_paid;
-                        $user->update([
-                            'account_balance' => $user_account_balance === -0 ? 0 : -$user_account_balance
-                        ]);
-                    }
-                    Log::info('User account balance after deduction: ' . $user->account_balance);
-                }
                 if (is_object($mpesa_transaction)) {
                     MpesaTransaction::find($mpesa_transaction_id)->update([
                         'Consumed' => true,
@@ -189,6 +171,12 @@ trait ProcessConnectionFeeTransaction
             $amount_paid = 0;
 
         }
+        Log::info('User account balance before deduction: ' . $user->account_balance);
+        Log::info('Total connection fee paid: ' . $total_connection_fee_paid);
+        $user->update([
+            'account_balance' => $user->account_balance + $total_connection_fee_paid
+        ]);
+        Log::info('User account balance after deduction: ' . $user->account_balance);
         $user->update([
             'total_connection_fee_paid' => $user->total_connection_fee_paid + $total_connection_fee_paid,
             'last_mpesa_transaction_id' => $mpesa_transaction_id
