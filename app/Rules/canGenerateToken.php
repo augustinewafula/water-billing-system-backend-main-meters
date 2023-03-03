@@ -26,9 +26,11 @@ class canGenerateToken implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        return User::where('users.id', $value)
+        $canGenerateToken = User::where('users.id', $value)
             ->join('meters', 'users.meter_id', 'meters.id')
             ->value('can_generate_token');
+
+        return $canGenerateToken === null || $canGenerateToken;
     }
 
     /**
