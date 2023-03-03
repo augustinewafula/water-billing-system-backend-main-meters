@@ -13,6 +13,9 @@ trait NotifiesUser
 {
     public function notifyUser($info, $user, $message_type, $phone_number = null): void
     {
+        if (!$user->should_notify_user) {
+            return;
+        }
         if ($this->shouldNotifyViaSms($user->communication_channels)) {
             $user_phone_number =
                 ($phone_number && $this->isValidPhoneNumber($phone_number)) ?

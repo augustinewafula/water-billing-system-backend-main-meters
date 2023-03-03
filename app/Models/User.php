@@ -92,6 +92,7 @@ class User extends Authenticatable
         'number_of_months_to_pay_connection_fee',
         'use_custom_charges_for_service_charge',
         'service_charge',
+        'should_notify_user'
     ];
 
     /**
