@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MeterStation extends Model
@@ -31,6 +32,11 @@ class MeterStation extends Model
     public function meters(): HasMany
     {
         return $this->hasMany(Meter::class, 'station_id');
+    }
+
+    public function mainMeter(): HasOne
+    {
+        return $this->hasOne(Meter::class, 'station_id')->where('main_meter', true);
     }
 
     /**

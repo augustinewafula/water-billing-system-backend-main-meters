@@ -99,29 +99,88 @@ class DashboardStatisticsController extends Controller
     }
 
     /**
-     * @throws JsonException
      */
     public function  mainMeterReading(Request $request): JsonResponse
     {
-        $main_meters = Meter::select('meter_stations.name', 'meters.id')
-            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
-            ->where('main_meter', true)
-            ->get();
-        $distinct_months = $this->getDistinctMonths();
-        $distinct_years = $this->getDistinctYears();
+         $startDate = $request->input('fromDate');
+         $endDate = $request->input('toDate');
 
-        $main_meter_readings = [];
-        foreach ($main_meters as $main_meter){
-            $meter = Meter::find($main_meter->id);
-            $readings = [
-                'name' => $main_meter->name,
-                'readings' => json_decode($this->meterReadings($request, $meter, $distinct_months, $distinct_years)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)
+        $meter_stations = MeterStation::with('mainMeter')
+            ->get();
+
+        $meter_readings = [];
+        foreach ($meter_stations as $meter_station) {
+            $main_meter_readings = [];
+            if ($meter_station->mainMeter) {
+                $main_meter_readings = $this->getDailyMeterReadingsChartData($startDate, $endDate, $meter_station->mainMeter->id);
+            }
+            $meter_readings[] = [
+                'station' => $meter_station->name,
+                'main_meter_readings' => $main_meter_readings,
+                'meters_reading' => $this->getDailyMeterReadingsChartData($startDate, $endDate, null, $meter_station->id),
             ];
-            $main_meter_readings[] = $readings;
         }
-        return response()->json([
-            'main_meter_readings' => $main_meter_readings,
-            'per_station_average_readings' => json_decode($this->perStationAverageMeterReading($request)->content(), JSON_THROW_ON_ERROR, 512, JSON_THROW_ON_ERROR)]);
+        return response()->json($meter_readings);
+    }
+
+
+    /**
+     * @param string $startDate
+     * @param string $endDate
+     * @param string|null $meterId
+     * @param string|null $meterStationId
+     * @return array
+     */
+    private function getDailyMeterReadingsChartData(string $startDate, string $endDate, string $meterId = null, string $meterStationId = null): array
+    {
+        $dailyMeterReadings = DB::table('daily_meter_readings')
+            ->select('meter_id', DB::raw('DATE(daily_meter_readings.created_at) as date'), DB::raw('AVG(reading) as average_reading'))
+            ->whereBetween('daily_meter_readings.created_at', [$startDate, $endDate])
+            ->groupBy('meter_id', 'date')
+            ->orderBy('date');
+        $dailyMeterReadings->when($meterId, static function ($query) use ($meterId) {
+            return $query->where('meter_id', $meterId);
+        });
+        $dailyMeterReadings->when($meterStationId, static function ($query) use ($meterStationId) {
+            return $query->join('meters', 'meters.id', '=', 'daily_meter_readings.meter_id')
+                ->where('meters.station_id', $meterStationId);
+        });
+        $dailyMeterReadings = $dailyMeterReadings->get();
+
+        // Calculate the daily consumption of each meter
+        $dailyConsumption = [];
+        $prevReadings = [];
+        foreach ($dailyMeterReadings as $reading) {
+            $meterId = $reading->meter_id;
+            if (isset($prevReadings[$meterId])) {
+                $consumption = $reading->average_reading - $prevReadings[$meterId];
+                $dailyConsumption[$reading->date][$meterId] = $consumption;
+            }
+            $prevReadings[$meterId] = $reading->average_reading;
+        }
+
+        // Calculate the time span for each chart data point
+        $numDays = count($dailyConsumption);
+        $timeSpan = max(1, round($numDays / 12));
+        $chartData = [];
+        $currentSum = 0;
+        $currentCount = 0;
+        $currentIndex = 0;
+        foreach ($dailyConsumption as $date => $consumptions) {
+            $currentSum += array_sum($consumptions);
+            $currentCount += count($consumptions);
+            $currentIndex++;
+            if ($currentIndex % $timeSpan === 0 || $currentIndex === $numDays) {
+                $average = $currentSum / max(1, $currentCount);
+                $chartData[] = [
+                    'x' => strtotime($date) * 1000,
+                    'y' => round($average),
+                ];
+                $currentSum = 0;
+                $currentCount = 0;
+            }
+        }
+        return $chartData;
     }
 
     private function getDistinctMonths(): Collection
@@ -148,92 +207,6 @@ class DashboardStatisticsController extends Controller
             ->get();
 
         return $daily_meter_reading_years->concat($meter_reading_years)->unique('year')->sortBy('year');
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public function perStationAverageMeterReading(Request $request): JsonResponse
-    {
-        $meter_stations = MeterStation::all();
-        $meter_station_readings = [];
-        $commonMonths = new Collection();
-        foreach ($meter_stations as $meter_station) {
-            if ($request->has('filter')) {
-                if ($request->query('filter') === 'last-7-days') {
-                    $meter_station_meters = DailyMeterReading::select(DB::raw('SUM(daily_meter_readings.reading) as reading'), DB::raw('DAYNAME(daily_meter_readings.created_at) as name'))
-                        ->join('meters', 'meters.id', 'daily_meter_readings.meter_id')
-                        ->where('meters.station_id', $meter_station->id)
-                        ->where('meters.main_meter', false)
-                        ->whereBetween('daily_meter_readings.created_at', [Carbon::now()->subDays(7), Carbon::now()->endOfWeek()])
-                        ->groupBy('name', 'reading')
-                        ->get();
-                } else if ($request->query('filter') === 'monthly') {
-                    $meter_station_meters = MeterReading::select(DB::raw('meter_readings.current_reading as reading'), DB::raw('MONTHNAME(meter_readings.month) as name'))
-                        ->join('meters', 'meters.id', 'meter_readings.meter_id')
-                        ->where('meters.station_id', $meter_station->id)
-                        ->where('meters.main_meter', false)
-                        ->whereBetween('meter_readings.month', [Carbon::now()->subYear(), Carbon::now()->endOfMonth()])
-                        ->groupBy('name', 'reading')
-                        ->get();
-                } else {
-                    $meter_station_meters = MeterReading::select(DB::raw('meter_readings.current_reading as reading'), DB::raw('YEAR(meter_readings.month) as name'))
-                        ->join('meters', 'meters.id', 'meter_readings.meter_id')
-                        ->where('meters.station_id', $meter_station->id)
-                        ->where('meters.main_meter', false)
-                        ->whereBetween('meter_readings.month', [Carbon::now()->subYear(), Carbon::now()->endOfMonth()])
-                        ->groupBy('name', 'reading')
-                        ->get();
-                }
-
-            }
-
-            $readingDetails = $this->calculateMeterReadingsSum($meter_station_meters->toArray());
-            $meter_station_readings[] = [
-                'name' => $meter_station->name,
-                'readings' => $readingDetails['revenue']];
-            $commonMonths = $commonMonths->merge($readingDetails['common_months']);
-
-        }
-        $meter_station_readings = $this->initializeMissingMonths($meter_station_readings, $commonMonths);
-        return response()->json($meter_station_readings);
-    }
-
-    private function initializeMissingMonths($meter_station_readings, $commonMonths): Collection
-    {
-        $collection = new Collection();
-        foreach ($meter_station_readings as $meter_station_reading) {
-            foreach ($commonMonths as $commonMonth) {
-                $monthExists = false;
-                foreach ($meter_station_reading['readings'] as $meter_station_reading_month) {
-                    if ($meter_station_reading_month['label'] === $commonMonth['name']) {
-                        $monthExists = true;
-                        break;
-                    }
-                }
-                if (!$monthExists) {
-                    $meter_station_reading['readings'][] = [
-                        'label' => $commonMonth['name'],
-                        'reading' => 0.00
-                    ];
-                }
-            }
-            $meter_station_reading['readings'] = $this->sortRevenueMonths($meter_station_reading['readings']);
-            $collection->push($meter_station_reading);
-        }
-
-        return $collection;
-    }
-
-    public function sortRevenueMonths($revenue): array
-    {
-        usort($revenue, static function($a, $b) {
-            $a = strtotime($a['label']);
-            $b = strtotime($b['label']);
-            return $a - $b;
-        });
-        return $revenue;
-
     }
 
     public function meterReadings(
@@ -307,35 +280,6 @@ class DashboardStatisticsController extends Controller
     private function monthNumberToName($monthNumber): string
     {
         return DateTime::createFromFormat('!m', $monthNumber)->format('F');
-    }
-
-    private function calculateMeterReadingsSum($meterReadings): Collection
-    {
-
-        $meterReadings = array_reduce($meterReadings, static function ($accumulator, $meterReading) {
-            $accumulator[$meterReading['name']] = $accumulator[$meterReading['name']] ?? 0;
-            $accumulator[$meterReading['name']] += $meterReading['reading'];
-
-            return $accumulator;
-        });
-
-        if ($meterReadings === null) {
-            return collect(['revenue' => [], 'common_months' => collect([])]);
-        }
-        $stationsRevenue = [];
-        $commonMonths = new Collection();
-        foreach ($meterReadings as $key => $value) {
-            $stationsRevenue[] = [
-                'label' => $key,
-                'reading' => $value
-            ];
-            $commonMonths->push([
-                'name' => $key
-            ]);
-        }
-
-        return collect(['revenue' => $stationsRevenue,
-            'common_months' => $commonMonths]);
     }
 
 }
