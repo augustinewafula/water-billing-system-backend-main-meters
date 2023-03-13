@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Enums\PrepaidMeterType;
 use App\Jobs\SendSMS;
 use App\Models\Meter;
 use App\Models\MeterCharge;
@@ -20,12 +21,27 @@ trait ProcessesPrepaidMeterTransaction
 {
     use AuthenticatesMeter, CalculatesBill, CalculatesUserAmount, GeneratesMeterToken, NotifiesUser;
 
-    protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
+    protected string $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
     /**
      * @throws JsonException
      */
-    public function registerPrepaidMeter($meter_number): string
+    public function registerPrepaidMeter(string $meter_number, int $prepaid_meter_type): string
+    {
+        if ($prepaid_meter_type === PrepaidMeterType::SH) {
+            $response = $this->registerSHMeter($meter_number);
+        } else {
+            // TODO: implement calin meter registration. For now, we'll just return a dummy response because the calin meter registration api is not yet implemented
+//            $response = $this->registerCalinMeter($meter_number);
+            $response = 'Calin Meter registered successfully';
+        }
+        return $response;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function registerSHMeter(string $meter_number)
     {
         $response = Http::retry(3, 100)
             ->post($this->baseUrl . 'Meter', [
@@ -36,6 +52,23 @@ trait ProcessesPrepaidMeterTransaction
                 'ApiToken' => $this->loginPrepaidMeter(),
             ]);
         Log::info('prepaid meter register response:' . $response->body());
+
+        return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function registerCalinMeter(string $meter_number)
+    {
+        $response = Http::retry(3, 100)
+            ->post('https://ami.calinhost.com/api/POS_Meter', [
+                'company_name' => env('CALIN_METER_COMPANY'),
+                'user_name' => env('CALIN_METER_USERNAME'),
+                'password' => env('CALIN_METER_PASSWORD'),
+                'customer_number' => $meter_number,
+                'meter_number' => $meter_number,
+                'customer_name' => $meter_number,
+            ]);
+        Log::info('calin prepaid meter register response:' . $response->body());
+
         return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
     }
 
@@ -85,7 +118,7 @@ trait ProcessesPrepaidMeterTransaction
         try {
             DB::beginTransaction();
             $meter = Meter::find($meter_id);
-            $token = $this->generateMeterToken($meter->number, $user_total_amount, $meter->category);
+            $token = $this->generateMeterToken($meter->number, $user_total_amount, $meter->category, $meter->prepaid_meter_type);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
             $token = strtok($token, ',');
             MeterToken::create([

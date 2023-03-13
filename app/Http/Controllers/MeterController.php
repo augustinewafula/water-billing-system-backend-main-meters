@@ -147,7 +147,7 @@ class MeterController extends Controller
     {
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
             if ((int) $request->category === MeterCategory::WATER && $this->isPrepaidMeter($request->type_id)) {
-                $this->registerPrepaidMeter($request->number);
+                $this->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type);
             }
             $validated = $request->validated();
             if ($request->has_location_coordinates) {
@@ -174,6 +174,7 @@ class MeterController extends Controller
             'location' => $request->location,
             'has_location_coordinates' => $request->has_location_coordinates,
             'category' => $request->category,
+            'prepaid_meter_type' => $request->prepaid_meter_type,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
@@ -225,6 +226,7 @@ class MeterController extends Controller
             'location' => $request->location,
             'last_reading' => $request->last_reading,
             'category' => $request->category,
+            'prepaid_meter_type' => $request->prepaid_meter_type,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
@@ -233,7 +235,7 @@ class MeterController extends Controller
         $meter->update($data);
         try {
             if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid') {
-                $this->registerPrepaidMeter($meter->number);
+                $this->registerPrepaidMeter($meter->number, (int)$request->prepaid_meter_type);
             }
         } catch (Throwable $exception) {
             Log::error('Failed to register prepaid meter id: ' . $meter->id);

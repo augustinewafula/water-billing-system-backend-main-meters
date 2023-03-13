@@ -79,7 +79,7 @@ class MeterTokenController extends Controller
     {
         $meter = Meter::find($request->meter_id);
         try {
-            $token = $this->clearMeterToken($meter->number, $meter->category);
+            $token = $this->clearMeterToken($meter->number, $meter->category, $meter->prepaid_meter_type);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
             $token = strtok($token, ',');
 
@@ -98,7 +98,7 @@ class MeterTokenController extends Controller
     {
         $meter = Meter::find($request->meter_id);
         try {
-            $token = $prepaidMeterService->clearTamperRecord($meter->number, $meter->category);
+            $token = $prepaidMeterService->clearTamperRecord($meter->number, $meter->category, $meter->prepaid_meter_type);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
             $token = strtok($token, ',');
 

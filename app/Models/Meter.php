@@ -46,7 +46,8 @@ class Meter extends Model
         'has_location_coordinates',
         'lng',
         'lat',
-        'category'
+        'category',
+        'prepaid_meter_type',
     ];
 
     protected $appends = ['current_reading'];

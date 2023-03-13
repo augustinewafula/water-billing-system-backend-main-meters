@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\MeterCategory;
 use App\Enums\MeterMode;
+use App\Enums\PrepaidMeterType;
 use App\Enums\ValveStatus;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,6 +42,7 @@ class CreateMeterRequest extends FormRequest
             'location_coordinates.lat' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-90,90'],
             'location_coordinates.lng' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-180,180'],
             'category' => ['required', new EnumValue(MeterCategory::class, false)],
+            'prepaid_meter_type' => ['required_if:is_prepaid_meter,1', new EnumValue(PrepaidMeterType::class, false)],
         ];
     }
 

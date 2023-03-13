@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\MeterCategory;
+use App\Enums\PrepaidMeterType;
 use App\Models\MeterCharge;
 use Http;
 use JsonException;
@@ -14,28 +15,35 @@ trait GeneratesMeterToken
     /**
      * @throws JsonException
      */
-    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory): ?string
+    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $meterType = PrepaidMeterType::SH): ?string
     {
+
+        $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
+            ->first();
         if ($meterCategory === MeterCategory::WATER) {
-            return $this->generateWaterToken($meter_number, $amount);
+            if ($meterType === PrepaidMeterType::SH) {
+                $response = $this->generateWaterToken($meter_number, $amount, $prepaid_meter_charges);
+            } else {
+                $response = $this->genererateCalinMeterToken($meter_number, $amount, $prepaid_meter_charges);
+            }
+
+            return $response;
         }
 
-        return $this->generateEnergyToken($meter_number, $amount);
+        return $this->generateEnergyToken($meter_number, $amount, $prepaid_meter_charges);
 
     }
 
     /**
      * @throws JsonException
      */
-    private function generateWaterToken($meter_number, $amount)
+    private function generateWaterToken($meter_number, $amount, $prepaid_meter_charges)
     {
 
         $api_token = env('PREPAID_METER_API_TOKEN');
         if (empty($api_token)) {
             $api_token = $this->loginPrepaidMeter();
         }
-        $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
-            ->first();
 
         $response = Http::retry(2, 100)
             ->post($this->baseUrl . 'vending', [
@@ -59,11 +67,32 @@ trait GeneratesMeterToken
         return null;
     }
 
-    private function generateEnergyToken($meter_number, $amount)
+    /**
+     * @throws JsonException
+     */
+    private function genererateCalinMeterToken($meter_number, $amount, $prepaid_meter_charges)
     {
-        $prepaid_meter_charges = MeterCharge::where('for', 'prepay')
-            ->first();
+        $response = Http::retry(2, 100)
+            ->post("http://47.90.189.157:6001/api/POS_Purchase", [
+                'company_name' => env('CALIN_METER_COMPANY'),
+                'user_name' => env('CALIN_METER_USERNAME'),
+                'password' => env('CALIN_METER_PASSWORD'),
+                'password_vend' => env('CALIN_METER_PASSWORD'),
+                'meter_number' => $meter_number,
+                'is_vend_by_unit' => true,
+                'amount' => (int)$amount,
+            ]);
+        if ($response->successful()) {
+            Log::info('calin vending response:' . $response->body());
 
+            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->result->token;
+        }
+
+        return null;
+    }
+
+    private function generateEnergyToken($meter_number, $amount, $prepaid_meter_charges)
+    {
         $response = Http::retry(2, 100)
             ->post('http://www.server-api.stronpower.com/api/VendingMeter', [
                 'CompanyName' => env('PREPAID_ENERGY_METER_COMPANY'),

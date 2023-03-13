@@ -3,21 +3,25 @@
 namespace App\Traits;
 
 use App\Enums\MeterCategory;
+use App\Enums\PrepaidMeterType;
 use Http;
 use JsonException;
 use Log;
 
 trait ClearsMeterToken
 {
-    protected $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
 
     /**
      * @throws JsonException
      */
-    public function clearMeterToken(string $meter_number, int $meterCategory): ?string
+    public function clearMeterToken(string $meter_number, int $meterCategory, int $prePaidMeterType = PrepaidMeterType::SH): ?string
     {
         if ($meterCategory === MeterCategory::WATER) {
-            return $this->clearWaterToken($meter_number);
+            if ($prePaidMeterType === PrepaidMeterType::SH) {
+                return $this->clearWaterToken($meter_number);
+            }
+
+            return $this->clearCalinMeterToken($meter_number);
         }
 
         return $this->clearEnergyToken($meter_number);
@@ -27,7 +31,7 @@ trait ClearsMeterToken
     private function clearWaterToken($meter_number)
     {
         $response = Http::retry(2, 100)
-            ->post($this->baseUrl . 'ClearCredit', [
+            ->post('http://www.shometersapi.stronpower.com/api/ClearCredit', [
                 'CustomerId' => $meter_number,
                 'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
@@ -55,6 +59,25 @@ trait ClearsMeterToken
             ]);
         if ($response->successful()) {
             Log::info('clear credit response energy meter:' . $response->body());
+            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+        }
+        return null;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function clearCalinMeterToken($meter_number)
+    {
+        $response = Http::retry(2, 100)
+            ->post('http://47.90.189.157:6001/api/Maintenance_ClearCredit', [
+                'company_name' => env('CALIN_METER_COMPANY'),
+                'user_name' => env('CALIN_METER_USERNAME'),
+                'password' => env('CALIN_METER_PASSWORD'),
+                'meter_number' => $meter_number,
+            ]);
+        if ($response->successful()) {
+            Log::info('clear credit response calin meter:' . $response->body());
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
         }
         return null;
