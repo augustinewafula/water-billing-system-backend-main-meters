@@ -175,6 +175,7 @@ class MeterController extends Controller
             'has_location_coordinates' => $request->has_location_coordinates,
             'category' => $request->category,
             'prepaid_meter_type' => $request->prepaid_meter_type,
+            'sim_card_number' => $request->sim_card_number,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
@@ -227,6 +228,7 @@ class MeterController extends Controller
             'last_reading' => $request->last_reading,
             'category' => $request->category,
             'prepaid_meter_type' => $request->prepaid_meter_type,
+            'sim_card_number' => $request->sim_card_number,
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
