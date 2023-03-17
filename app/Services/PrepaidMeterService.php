@@ -50,13 +50,13 @@ class PrepaidMeterService
         $response = Http::retry(2, 100)
             ->post('http://47.90.189.157:6001/api/Maintenance_ClearTamper', [
                 'company_name' => env('CALIN_METER_COMPANY'),
-                'user_name' => env('CALIN_METER_USERNAME'),
+                'user_name' => env('CALIN_METER_USERNAME2'),
                 'password' => env('CALIN_METER_PASSWORD'),
                 'meter_number' => $meter_number,
             ]);
         if ($response->successful()) {
             Log::info('clear credit response calin meter:' . $response->body());
-            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->result;
         }
         return null;
     }
