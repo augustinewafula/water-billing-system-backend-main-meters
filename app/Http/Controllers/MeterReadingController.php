@@ -14,6 +14,7 @@ use App\Traits\ConstructsMeterReadingMessage;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\SendsMeterReading;
 use App\Traits\StoresMeterReading;
+use Artisan;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
@@ -85,6 +86,15 @@ class MeterReadingController extends Controller
             ->paginate($perPage);
 
         return response()->json($daily_meter_readings);
+
+    }
+
+    public function fetchMonthlyReadings(): JsonResponse
+    {
+        Artisan::call('meter-readings:get --type=monthly');
+        $current_month = Carbon::now()->format('F');
+
+        return response()->json(['message' => 'Monthly meter readings for ' . $current_month . ' is scheduled to be fetched shortly.']);
 
     }
 
