@@ -118,7 +118,9 @@ trait ProcessesPrepaidMeterTransaction
         try {
             DB::beginTransaction();
             $meter = Meter::find($meter_id);
-            $token = $this->generateMeterToken($meter->number, $user_total_amount, $meter->category, $meter->prepaid_meter_type);
+            $cost_per_unit = $this->getCostPerUnit($user);
+            $user_amount_after_service_fee_deduction = $this->getUserAmountAfterServiceFeeDeduction($user_total_amount, $user);
+            $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
             $token = strtok($token, ',');
             MeterToken::create([

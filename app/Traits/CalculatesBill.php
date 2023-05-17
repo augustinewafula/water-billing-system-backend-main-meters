@@ -26,9 +26,14 @@ trait CalculatesBill
     private function calculateUnits($amount_paid, $user): float
     {
         $cost_per_unit = $this->getCostPerUnit($user);
-        $final_amount = $amount_paid - $this->calculateServiceFee($user, $amount_paid, 'prepay');
+        $final_amount = $this->getUserAmountAfterServiceFeeDeduction($amount_paid, $user);
 
         return round($final_amount / $cost_per_unit, 1);
+    }
+
+    private function getUserAmountAfterServiceFeeDeduction($amount_paid, $user): float
+    {
+        return $amount_paid - $this->calculateServiceFee($user, $amount_paid, 'prepay');
     }
 
     private function getCostPerUnit($user): float
@@ -61,7 +66,7 @@ trait CalculatesBill
     {
         $service_charges = ServiceCharge::where('meter_charge_id', $meter_charge_id)
             ->get();
-        $service_fee = 10;
+        $service_fee = 0;
         foreach ($service_charges as $service_charge) {
             if (($service_charge->from <= $amount_paid) && ($amount_paid <= $service_charge->to)) {
                 $service_fee = $service_charge->amount;
@@ -69,8 +74,8 @@ trait CalculatesBill
             }
         }
         if ($isServiceChargeInPercentage) {
-            if ($amount_paid === 1) {
-                return 200;
+            if ($service_fee === 0) {
+                $service_fee = 1;
             }
             $service_fee = ($service_fee * $amount_paid) / 100;
         }
