@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DailyMeterReading extends Model
 {
-    use HasFactory, HasUuid, SoftDeletes, MassPrunable;
+    use HasFactory, HasUuid, MassPrunable;
 
     public $incrementing = false;
 
@@ -28,6 +28,6 @@ class DailyMeterReading extends Model
      */
     public function prunable(): Builder
     {
-        return static::where('created_at', '<=', now()->subMonth());
+        return static::where('created_at', '<=', now()->subMonths(6));
     }
 }
