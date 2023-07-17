@@ -35,6 +35,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:run --only-db')->twiceDaily();
         $schedule->command('passport:purge')->everyThirtyMinutes();
 //        $schedule->command('prune:daily-meter-readings')->daily();
+        $schedule->command('activitylog:clean --days=30')->daily();
     }
 
     public function meterReadingOn()
