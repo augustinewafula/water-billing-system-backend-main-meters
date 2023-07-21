@@ -21,6 +21,16 @@ class DailyMeterReading extends Model
 
     protected $fillable = ['meter_id', 'reading'];
 
+    public function getConsumedUnitsAttribute()
+    {
+        return $this->attributes['consumed_units'] ?? 0;
+    }
+
+    public function setConsumedUnitsAttribute($value)
+    {
+        $this->attributes['consumed_units'] = $value;
+    }
+
     /**
      * Get the prunable model query.
      *

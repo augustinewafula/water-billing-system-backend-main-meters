@@ -68,7 +68,7 @@ class MeterReadingController extends Controller
         ]);
     }
 
-    public function  dailyReadingsIndex(Request $request, Meter $meter): JsonResponse
+    public function dailyReadingsIndex(Request $request, Meter $meter): JsonResponse
     {
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
@@ -85,8 +85,18 @@ class MeterReadingController extends Controller
             ->latest()
             ->paginate($perPage);
 
-        return response()->json($daily_meter_readings);
+        $previous_reading = null;
+        foreach ($daily_meter_readings as $reading) {
+            if ($previous_reading === null) {
+                $previous_reading = $reading->reading;
+                $reading->consumed_units = 0;
+            } else {
+                $reading->consumed_units = $previous_reading - $reading->reading;
+                $previous_reading = $reading->reading;
+            }
+        }
 
+        return response()->json($daily_meter_readings);
     }
 
     public function fetchMonthlyReadings(): JsonResponse
