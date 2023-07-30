@@ -48,6 +48,9 @@ trait CreditsUserAccount
             'FirstName' => $user->name,
             'MSISDN' => $this->phoneNumberToInternationalFormat($user->phone),
             'BillRefNumber' => $account_number,
+            'credited' => true,
+            'credited_by' => auth()->user()->id,
+            'reason_for_crediting' => $request->reason_for_crediting,
         ]);
 
         $mpesa_request->validate((new MpesaTransactionRequest)->rules());

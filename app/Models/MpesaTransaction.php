@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MpesaTransaction extends Model
@@ -34,13 +35,22 @@ class MpesaTransaction extends Model
         'MSISDN',
         'TransAmount',
         'OrgAccountBalance',
-        'Consumed'];
+        'Consumed',
+        'credited',
+        'credited_by',
+        'reason_for_crediting',
+    ];
 
     protected $appends = ['transferable'];
 
     protected $casts = [
         'created_at' => 'datetime',
     ];
+
+    public function creditedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'credited_by');
+    }
 
     public function getTransferableAttribute(): bool
     {

@@ -31,6 +31,7 @@ class CreditAccountRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:1'],
             'account_type' => ['required', 'numeric', 'in:1,2'],
             'mpesa_transaction_reference' => ['nullable', 'string'],
+            'reason_for_crediting' => ['nullable', 'string'],
         ];
     }
 }

@@ -28,7 +28,7 @@ class MpesaService
 
     public function store(MpesaTransactionRequest $mpesa_transaction): MpesaTransaction
     {
-        return MpesaTransaction::create([
+        $data = [
             'TransactionType' => $mpesa_transaction->TransactionType,
             'TransID' => $mpesa_transaction->TransID,
             'TransTime' => $mpesa_transaction->TransTime,
@@ -42,8 +42,26 @@ class MpesaService
             'FirstName' => $mpesa_transaction->FirstName,
             'MiddleName' => $mpesa_transaction->MiddleName,
             'LastName' => $mpesa_transaction->LastName,
-        ]);
+        ];
+
+        // Check if the 'credited' column is present in the request
+        if ($mpesa_transaction->has('credited')) {
+            $data['credited'] = $mpesa_transaction->credited;
+        }
+
+        // Check if the 'credited_by' column is present in the request
+        if ($mpesa_transaction->has('credited_by')) {
+            $data['credited_by'] = $mpesa_transaction->credited_by;
+        }
+
+        // Check if the 'reason_for_crediting' column is present in the request
+        if ($mpesa_transaction->has('reason_for_crediting')) {
+            $data['reason_for_crediting'] = $mpesa_transaction->reason_for_crediting;
+        }
+
+        return MpesaTransaction::create($data);
     }
+
 
     public function storeUnverifiedTransaction(MpesaTransactionRequest $mpesa_transaction): UnverifiedMpesaTransaction
     {
