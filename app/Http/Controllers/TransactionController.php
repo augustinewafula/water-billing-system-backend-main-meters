@@ -221,6 +221,8 @@ class TransactionController extends Controller
         $stationId = $request->query('station_id');
         $fromDate = $request->query('fromDate');
         $toDate = $request->query('toDate');
+        $credit = $request->query('credit');
+        $noCredit = $request->query('noCredit');
         if ($request->has('search') && Str::length($request->query('search')) > 0) {
             $query = $query->where(function ($query) use ($search, $search_filter) {
                 $query->where($search_filter, 'like', '%' . $search . '%');
@@ -242,6 +244,18 @@ class TransactionController extends Controller
                 $query = $query->join('users', 'users.meter_id', 'meters.id');
             }
             $query = $query->where('users.id', $request->query('user_id'));
+        }
+
+        if ($credit === 'true' && $noCredit === 'true') {
+            // If both credit and noCredit are true, return all records
+            // where credited is either true or false (credit = 1 or credit = 0)
+            $query->whereIn('mpesa_transactions.credited', [true, false]);
+        } elseif ($credit === 'true') {
+            // If only credit is true, return records with credited = true (credit = 1)
+            $query->where('mpesa_transactions.credited', true);
+        } elseif ($noCredit === 'true') {
+            // If only noCredit is true, return records with credited = false (credit = 0)
+            $query->where('mpesa_transactions.credited', false);
         }
 
         return $query;
