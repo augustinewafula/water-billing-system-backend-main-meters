@@ -136,14 +136,13 @@ trait ProcessesPrepaidMeterTransaction
             $this->updateUserAccountBalance($user, $user_total_amount, $deductions, $mpesa_transaction_id, true);
 
             $date = Carbon::now()->toDateTimeString();
-            $message = "
-            Meter: $meter->number\n
-            Token: $token\n
-            Units: $units\n
-            Amount: $user_total_amount\n
-            Account: $user->account_number\n
-            Date: $date\n
-            Ref: $mpesa_transaction->TransID";
+            $message = "Meter: $meter->number\n"
+                . "Token: $token\n"
+                . "Units: $units\n"
+                . "Amount: $user_total_amount\n"
+                . "Account: $user->account_number\n"
+                . "Date: $date\n"
+                . "Ref: $mpesa_transaction->TransID";
 
             $this->notifyUser(
                 (object)['message' => $message, 'title' => 'Water Meter Tokens'],
