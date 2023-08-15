@@ -146,7 +146,7 @@ class MeterController extends Controller
     public function save($request): array
     {
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
-            if ((int) $request->category === MeterCategory::WATER && $this->isPrepaidMeter($request->type_id)) {
+            if ($this->isPrepaidMeter($request->type_id)) {
                 $this->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type);
             }
             $validated = $request->validated();
