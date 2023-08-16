@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreditAccountRequest;
+use App\Http\Requests\DebitAccountRequest;
 use App\Http\Requests\TransferTransactionRequest;
 use App\Models\ConnectionFeePayment;
 use App\Models\CreditAccount;
@@ -11,6 +12,7 @@ use App\Models\MeterToken;
 use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
+use App\Models\User;
 use App\Services\MpesaService;
 use App\Services\TransactionService;
 use App\Traits\ConvertsPhoneNumberToInternationalFormat;
@@ -133,6 +135,42 @@ class TransactionController extends Controller
         }
         return response()->json('success', 201);
     }
+
+    public function debitAccount(DebitAccountRequest $request): JsonResponse
+    {
+        try {
+            $user = User::findOrFail($request->user_id);
+
+            // Determine the amount to be debited, considering the user's credit
+            $debitAmount = $request->amount;
+
+            // If there is any credit, use it towards the debit amount
+            if ($user->account_balance > 0) {
+                // Calculate how much credit can be used
+                $creditToUse = min($user->account_balance, $debitAmount);
+
+                // Reduce the debit amount by the credit used
+                $debitAmount -= $creditToUse;
+
+                // Update the credit field with the remaining amount, ensuring it's not less than 0
+                $user->account_balance = max($user->account_balancea - $creditToUse, 0);
+            }
+
+            // Update the unaccounted_debt by the calculated debit amount
+            $user->unaccounted_debt += $debitAmount;
+
+            // Save the changes to the user
+            $user->save();
+
+        } catch (Throwable $throwable) {
+            \Log::error($throwable);
+            $response = ['message' => 'Failed to debit account: '.$throwable->getMessage()];
+            return response()->json($response, 422);
+        }
+
+        return response()->json('success', 201);
+    }
+
 
     public function transfer(TransferTransactionRequest $request, TransactionService $transactionService): JsonResponse
     {
