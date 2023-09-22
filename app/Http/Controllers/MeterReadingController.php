@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Actions\DeleteUnreadMeter;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\UpdateMeterReadingRequest;
-use App\Models\DailyMeterReading;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterReading;
@@ -14,7 +13,6 @@ use App\Traits\ConstructsMeterReadingMessage;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\SendsMeterReading;
 use App\Traits\StoresMeterReading;
-use Artisan;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Contracts\Foundation\Application;
@@ -52,7 +50,8 @@ class MeterReadingController extends Controller
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
             ->join('users', 'users.meter_id', 'meters.id')
             ->withSum('meter_billings', 'amount_paid')
-            ->withSum('meter_billings', 'credit');
+            ->withSum('meter_billings', 'credit')
+            ->withSum('meter_billings', 'amount_over_paid');
         $meter_readings = $this->filterQuery($request, $meter_readings);
 
         $perPage = 10;
@@ -64,48 +63,8 @@ class MeterReadingController extends Controller
         return response()->json([
             'meter_readings' => $meter_readings->paginate($perPage),
             'total_bill' => $meter_readings->sum('bill'),
-            'total_amount_paid' => $meter_readings_collection->sum('meter_billings_sum_amount_paid') + $meter_readings_collection->sum('meter_billings_sum_credit'),
+            'total_amount_paid' => ($meter_readings_collection->sum('meter_billings_sum_amount_paid') + $meter_readings_collection->sum('meter_billings_sum_credit')) - $meter_readings_collection->sum('meter_billings_sum_amount_over_paid'),
         ]);
-    }
-
-    public function dailyReadingsIndex(Request $request, Meter $meter): JsonResponse
-    {
-        $fromDate = $request->query('fromDate');
-        $toDate = $request->query('toDate');
-        $perPage = 10;
-        if ($request->has('perPage')){
-            $perPage = $request->perPage;
-        }
-
-        $formattedFromDate = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
-        $formattedToDate = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
-
-        $daily_meter_readings = DailyMeterReading::where('meter_id', $meter->id)
-            ->whereBetween('created_at', [$formattedFromDate, $formattedToDate])
-            ->latest()
-            ->paginate($perPage);
-
-        $previous_reading = null;
-        foreach ($daily_meter_readings as $reading) {
-            if ($previous_reading === null) {
-                $previous_reading = $reading->reading;
-                $reading->consumed_units = 0;
-            } else {
-                $reading->consumed_units = $previous_reading - $reading->reading;
-                $previous_reading = $reading->reading;
-            }
-        }
-
-        return response()->json($daily_meter_readings);
-    }
-
-    public function fetchMonthlyReadings(): JsonResponse
-    {
-        Artisan::call('meter-readings:get --type=monthly');
-        $current_month = Carbon::now()->format('F');
-
-        return response()->json(['message' => 'Monthly meter readings for ' . $current_month . ' is scheduled to be fetched shortly.']);
-
     }
 
 
