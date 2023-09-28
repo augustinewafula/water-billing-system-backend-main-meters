@@ -48,6 +48,7 @@ class Meter extends Model
         'lat',
         'category',
         'prepaid_meter_type',
+        'concentrator_id',
     ];
 
     protected $appends = ['current_reading'];
@@ -105,6 +106,15 @@ class Meter extends Model
     public function station(): BelongsTo
     {
         return $this->belongsTo(MeterStation::class);
+    }
+
+    /**
+     * Get the concentrator associated with the user.
+     * @return BelongsTo
+     */
+    public function concentrator(): BelongsTo
+    {
+        return $this->belongsTo(Concentrator::class);
     }
 
     /**

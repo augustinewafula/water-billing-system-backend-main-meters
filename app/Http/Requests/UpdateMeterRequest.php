@@ -41,6 +41,7 @@ class UpdateMeterRequest extends FormRequest
             'location_coordinates.lng' => ['required_if:has_location_coordinates,1', 'nullable', 'between:-180,180'],
             'category' => ['required', new EnumValue(MeterCategory::class, false)],
             'prepaid_meter_type' => ['required_if:is_prepaid_meter,1', new EnumValue(PrepaidMeterType::class, false)],
+            'concentrator_id' => ['nullable', 'exists:concentrators,id'],
         ];
     }
 

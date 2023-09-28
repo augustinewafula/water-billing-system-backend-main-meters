@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlertContactController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConcentratorController;
 use App\Http\Controllers\ConnectionFeeController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\MeterBillingController;
@@ -72,6 +73,7 @@ Route::prefix('v1')->group(function () {
             Route::get('monthly-revenue', [TransactionStatisticsController::class, 'monthlyRevenueStatistics']);
             Route::get('revenue-years', [TransactionStatisticsController::class, 'revenueYears']);
         });
+        Route::apiResource('concentrators', ConcentratorController::class);
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);
         Route::apiResource('unread-meters', UnreadMeterController::class);
