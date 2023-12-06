@@ -135,6 +135,9 @@ class MeterController extends Controller
      */
     public function storeMainMeter(CreateMainMeterRequest $request): JsonResponse
     {
+        if (!$request->filled('category')) {
+            $request->merge(['category' => MeterCategory::WATER]);
+        }
         $response = $this->save($request);
 
         return response()->json($response['message'], $response['status_code']);
