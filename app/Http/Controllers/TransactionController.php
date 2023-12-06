@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Str;
+use DB;
 use Throwable;
 
 class TransactionController extends Controller
@@ -59,7 +60,9 @@ class TransactionController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
 
-        $postpaid_transactions = MpesaTransaction::with('creditedBy:id,name')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
+        $hashedPhoneSelect = DB::raw("IF(SHA2(CONCAT('254', SUBSTR(users.phone, 2)), 256) = mpesa_transactions.MSISDN, users.phone, 'UNKNOWN') as phone_number");
+
+        $postpaid_transactions = MpesaTransaction::with('creditedBy:id,name')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', $hashedPhoneSelect, 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
             ->join('meter_billings', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
@@ -67,21 +70,21 @@ class TransactionController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $postpaid_transactions = $this->filterQuery($postpaid_transactions, $request);
 
-        $prepaid_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
+        $prepaid_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', $hashedPhoneSelect, 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
             ->join('meter_tokens', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('users', 'users.meter_id', 'meters.id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $prepaid_transactions = $this->filterQuery($prepaid_transactions, $request);
 
-        $unaccounted_debt_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
+        $unaccounted_debt_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', $hashedPhoneSelect, 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
             ->join('unaccounted_debts', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
             ->join('users', 'users.id', 'unaccounted_debts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $unaccounted_debt_transactions = $this->filterQuery($unaccounted_debt_transactions, $request);
 
-        $connection_fee_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
+        $connection_fee_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', $hashedPhoneSelect, 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
             ->join('connection_fee_payments', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
             ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
             ->join('users', 'users.id', 'connection_fees.user_id')
@@ -89,7 +92,7 @@ class TransactionController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $connection_fee_transactions = $this->filterQuery($connection_fee_transactions, $request);
 
-        $credit_account_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', 'mpesa_transactions.MSISDN as phone_number', 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
+        $credit_account_transactions = MpesaTransaction::with('creditedBy')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', $hashedPhoneSelect, 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
             ->join('credit_accounts', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
             ->join('users', 'users.id', 'credit_accounts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
@@ -191,66 +194,59 @@ class TransactionController extends Controller
      * @return JsonResponse
      */
     public function show($id): JsonResponse
-    {
+{
+    $userDetails = $this->getUser($id);
+    $transaction = MpesaTransaction::where('id', $id)->first();
 
-        $user = $this->getUser($id);
-        $transaction = MpesaTransaction::where('id', $id)->first();
-        return response()->json([
-            'user' => $user,
-            'transaction' => $transaction
-        ]);
+    if ($userDetails) {
+        $transaction->MSISDN = $userDetails['phone_number']; // Replace MSISDN
+        $user = $userDetails['user'];
+    } else {
+        $user = null;
     }
+
+    return response()->json([
+        'user' => $user,
+        'transaction' => $transaction
+    ]);
+}
+
 
     public function getUser($transaction_id)
-    {
-        $user = MeterToken::select('users.*')
-            ->join('users', 'meter_tokens.meter_id', 'users.meter_id')
-            ->where('mpesa_transaction_id', $transaction_id)
-            ->first();
-        if ($user){
-            return $user;
-        }
+{
+    $hashedPhoneComparison = DB::raw("SHA2(CONCAT('254', SUBSTR(users.phone, 2)), 256) = mpesa_transactions.MSISDN");
 
-        $user = MeterBilling::select('users.*')
-            ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
-            ->join('users', 'meter_readings.meter_id', 'users.meter_id')
-            ->where('mpesa_transaction_id', $transaction_id)
-            ->first();
-        if ($user){
-            return $user;
-        }
+    $baseQuery = function ($joinTable, $joinCondition) use ($transaction_id, $hashedPhoneComparison) {
+        return User::selectRaw("users.*, IF($hashedPhoneComparison, users.phone, 'UNKNOWN') as modified_phone_number")
+                   ->join($joinTable, $joinCondition, '=', 'users.meter_id')
+                   ->join('mpesa_transactions', 'mpesa_transactions.id', '=', 'mpesa_transaction_id')
+                   ->where('mpesa_transactions.id', $transaction_id);
+    };
 
-        $user = UnaccountedDebt::select('users.*')
-            ->join('users', 'unaccounted_debts.user_id', 'users.id')
-            ->where('mpesa_transaction_id', $transaction_id)
-            ->first();
-        if ($user){
-            return $user;
-        }
+    $relations = [
+        ['meter_tokens', 'meter_tokens.meter_id'],
+        ['meter_readings', 'meter_readings.id'],
+        ['unaccounted_debts', 'unaccounted_debts.user_id'],
+        ['monthly_service_charge_payments', 'monthly_service_charge_payments.monthly_service_charge_id'],
+        ['credit_accounts', 'credit_accounts.user_id'],
+        ['connection_fee_payments', 'connection_fee_payments.connection_fee_id']
+    ];
 
-        $user = MonthlyServiceChargePayment::select('users.*')
-            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
-            ->join('users', 'monthly_service_charges.user_id', 'users.id')
-            ->where('mpesa_transaction_id', $transaction_id)
-            ->first();
-        if ($user){
-            return $user;
+    foreach ($relations as [$joinTable, $joinCondition]) {
+        $user = $baseQuery($joinTable, $joinCondition)->first();
+        if ($user) {
+            return [
+                'user' => $user,
+                'phone_number' => $user->modified_phone_number
+            ];
         }
-
-        $user = CreditAccount::select('users.*')
-            ->join('users', 'credit_accounts.user_id', 'users.id')
-            ->where('mpesa_transaction_id', $transaction_id)
-            ->first();
-        if ($user){
-            return $user;
-        }
-
-        return ConnectionFeePayment::select('users.*')
-            ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
-            ->join('users', 'connection_fees.user_id', 'users.id')
-            ->where('mpesa_transaction_id', $transaction_id)
-            ->first();
     }
+
+    return null;
+}
+
+
+
 
     private function filterQuery(Builder $query, Request $request): Builder
     {
