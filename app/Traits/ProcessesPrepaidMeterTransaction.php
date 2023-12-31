@@ -12,8 +12,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use DB;
 use Http;
+use Illuminate\Support\Facades\Log;
 use JsonException;
-use Log;
 use RuntimeException;
 use Throwable;
 
@@ -120,7 +120,18 @@ trait ProcessesPrepaidMeterTransaction
             $meter = Meter::find($meter_id);
             $cost_per_unit = $this->getCostPerUnit($user);
             $user_amount_after_service_fee_deduction = $this->getUserAmountAfterServiceFeeDeduction($user_total_amount, $user);
-            $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type);
+            try {
+                $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
+            } catch (Throwable $throwable) {
+                Log::info('Failed to generate token for meter ' . $meter->number . ', retrying');
+                $this->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
+                $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
+            }
+            if ($token === 'false01') {
+                Log::info('Failed to generate token for meter ' . $meter->number . ', registering meter and retrying');
+                $this->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
+                $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
+            }
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
             $token = strtok($token, ',');
             MeterToken::create([
