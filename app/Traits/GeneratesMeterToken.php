@@ -15,7 +15,7 @@ trait GeneratesMeterToken
     /**
      * @throws JsonException
      */
-    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH): ?string
+    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH, ? float $units = null): ?string
     {
         if ($meterCategory === MeterCategory::WATER) {
             if ($meterType === PrepaidMeterType::SH) {
@@ -27,7 +27,7 @@ trait GeneratesMeterToken
             return $response;
         }
 
-        return $this->generateEnergyToken($meter_number, $amount, $cost_per_unit);
+        return $this->generateEnergyToken($meter_number, $amount, $units);
 
     }
 
@@ -88,7 +88,7 @@ trait GeneratesMeterToken
         return null;
     }
 
-    private function generateEnergyToken($meter_number, $amount, $cost_per_unit)
+    private function generateEnergyToken($meter_number, $amount, $units)
     {
         $response = Http::retry(2, 100)
             ->post('http://www.server-api.stronpower.com/api/VendingMeter', [
@@ -96,11 +96,11 @@ trait GeneratesMeterToken
                 'UserName' => env('PREPAID_ENERGY_METER_USERNAME'),
                 'PassWord' => env('PREPAID_ENERGY_METER_PASSWORD'),
                 'MeterID' => $meter_number,
-                'Price     ' => $cost_per_unit,
-                'Amount' => (int)$amount,
+                'is_vend_by_unit' => 'true',
+                'Amount' => $units,
             ]);
         if ($response->successful()) {
-            Log::info('vending response:' . $response->body());
+            \Illuminate\Support\Facades\Log::info('vending response:' . $response->body());
 
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)[0]->Token;
         }
