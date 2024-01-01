@@ -127,7 +127,7 @@ trait ProcessesPrepaidMeterTransaction
                 $this->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
                 $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
             }
-            if ($token === 'false01') {
+            if ($token === 'false01' || $token ==='') {
                 Log::info('Failed to generate token for meter ' . $meter->number . ', registering meter and retrying');
                 $this->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
                 $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
