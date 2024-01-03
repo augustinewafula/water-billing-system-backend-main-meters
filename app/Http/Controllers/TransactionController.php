@@ -60,7 +60,15 @@ class TransactionController extends Controller
         $sortBy = $request->query('sortBy');
         $sortOrder = $request->query('sortOrder');
 
-        $hashedPhoneSelect = DB::raw("IF(SHA2(CONCAT('254', SUBSTR(users.phone, 2)), 256) = mpesa_transactions.MSISDN, users.phone, 'UNKNOWN') as phone_number");
+        $hashedPhoneSelect = DB::raw("
+            CASE
+                WHEN CHAR_LENGTH(mpesa_transactions.MSISDN) = 64 THEN
+                    IF(SHA2(CONCAT('254', SUBSTR(users.phone, 2)), 256) = mpesa_transactions.MSISDN, users.phone, 'UNKNOWN')
+                ELSE
+                    IF(CONCAT('254', SUBSTR(users.phone, 2)) = mpesa_transactions.MSISDN, users.phone, 'UNKNOWN')
+            END as phone_number
+        ");
+
 
         $postpaid_transactions = MpesaTransaction::with('creditedBy:id,name')->select('mpesa_transactions.id', 'mpesa_transactions.TransID as transaction_reference', 'mpesa_transactions.TransTime as transaction_number', 'mpesa_transactions.TransAmount as amount', $hashedPhoneSelect, 'mpesa_transactions.created_at as transaction_time', 'mpesa_transactions.credited', 'mpesa_transactions.credited_by', 'mpesa_transactions.reason_for_crediting', 'users.name', 'users.account_number')
             ->join('meter_billings', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
@@ -214,13 +222,20 @@ class TransactionController extends Controller
 
     public function getUser($transaction_id)
 {
-    $hashedPhoneComparison = DB::raw("SHA2(CONCAT('254', SUBSTR(users.phone, 2)), 256) = mpesa_transactions.MSISDN");
+    $hashedPhoneComparison = DB::raw("
+        CASE
+            WHEN CHAR_LENGTH(mpesa_transactions.MSISDN) = 64 THEN
+                SHA2(CONCAT('254', SUBSTR(users.phone, 2)), 256) = mpesa_transactions.MSISDN
+            ELSE
+                CONCAT('254', SUBSTR(users.phone, 2)) = mpesa_transactions.MSISDN
+        END
+    ");
 
     $baseQuery = function ($joinTable, $joinCondition) use ($transaction_id, $hashedPhoneComparison) {
         return User::selectRaw("users.*, IF($hashedPhoneComparison, users.phone, 'UNKNOWN') as modified_phone_number")
-                   ->join($joinTable, $joinCondition, '=', 'users.meter_id')
-                   ->join('mpesa_transactions', 'mpesa_transactions.id', '=', 'mpesa_transaction_id')
-                   ->where('mpesa_transactions.id', $transaction_id);
+            ->join($joinTable, $joinCondition, '=', 'users.meter_id')
+            ->join('mpesa_transactions', 'mpesa_transactions.id', '=', 'mpesa_transaction_id')
+            ->where('mpesa_transactions.id', $transaction_id);
     };
 
     $relations = [
