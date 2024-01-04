@@ -12,7 +12,7 @@ use App\Models\UnaccountedDebt;
 use Carbon\Carbon;
 use Date;
 use Illuminate\Support\Collection;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class TransactionStatisticsService {
 
@@ -115,7 +115,7 @@ class TransactionStatisticsService {
 
     public function getRevenueYears(): array
     {
-        $years = [];
+        $tempYears = [];
         $models = [
             MeterBilling::class,
             MeterToken::class,
@@ -125,19 +125,19 @@ class TransactionStatisticsService {
         ];
 
         foreach ($models as $model) {
-            $years = array_unique(
-                array_merge(
-                    $years,
-                    $model::select(DB::raw('YEAR(created_at) as year'))
-                        ->groupBy('year')
-                        ->orderBy('year', 'desc')
-                        ->pluck('year')
-                        ->toArray()
-                )
-            );
+            $modelYears = $model::select(DB::raw('YEAR(created_at) as year'))
+                ->whereNotNull('created_at')
+                ->groupBy('year')
+                ->orderBy('year', 'desc')
+                ->pluck('year')
+                ->toArray();
+            // Collect the years without merging them inside the loop
+            $tempYears[] = $modelYears;
         }
 
-        return array_unique($years);
+        // Flatten the array and then filter out null values and duplicates
+        $years = array_merge(...$tempYears);
+        return array_values(array_filter(array_unique($years)));
     }
 
     public function getMonthlyRevenueStatisticsPerStation(Collection $stations, int $year = null): array
