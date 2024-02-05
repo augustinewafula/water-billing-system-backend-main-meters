@@ -12,6 +12,7 @@ use App\Jobs\GetMeterReadings;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterType;
+use App\Services\PrepaidMeterService;
 use App\Traits\FiltersRequestQuery;
 use App\Traits\GetsUserConnectionFeeBalance;
 use App\Traits\ProcessesPrepaidMeterTransaction;
@@ -150,7 +151,8 @@ class MeterController extends Controller
     {
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
             if ($this->isPrepaidMeter($request->type_id)) {
-                $this->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type);
+                $prepaidMeterService = new PrepaidMeterService();
+                $prepaidMeterService->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type);
             }
             $validated = $request->validated();
             if ($request->has_location_coordinates) {
@@ -242,7 +244,8 @@ class MeterController extends Controller
         $meter->update($data);
         try {
             if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid') {
-                $this->registerPrepaidMeter($meter->number, (int)$request->prepaid_meter_type);
+                $prepaidMeterService = new PrepaidMeterService();
+                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$request->prepaid_meter_type);
             }
         } catch (Throwable $exception) {
             Log::error('Failed to register prepaid meter id: ' . $meter->id);

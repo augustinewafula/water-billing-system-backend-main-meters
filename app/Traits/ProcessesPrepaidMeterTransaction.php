@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\PrepaidMeterType;
+use App\Jobs\GenerateMeterTokenJob;
 use App\Jobs\SendSMS;
 use App\Models\Meter;
 use App\Models\MeterCharge;
@@ -19,58 +20,8 @@ use Throwable;
 
 trait ProcessesPrepaidMeterTransaction
 {
-    use AuthenticatesMeter, CalculatesBill, CalculatesUserAmount, GeneratesMeterToken, NotifiesUser;
+    use CalculatesUserAmount, UpdatesUserAccountBalance, NotifiesUser;
 
-    protected string $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
-
-    /**
-     * @throws JsonException
-     */
-    public function registerPrepaidMeter(string $meter_number, int $prepaid_meter_type): string
-    {
-        if ($prepaid_meter_type === PrepaidMeterType::SH) {
-            $response = $this->registerSHMeter($meter_number);
-        } else {
-            // TODO: implement calin meter registration. For now, we'll just return a dummy response because the calin meter registration api is not yet implemented
-//            $response = $this->registerCalinMeter($meter_number);
-            $response = 'Calin Meter registered successfully';
-        }
-        return $response;
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public function registerSHMeter(string $meter_number)
-    {
-        $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'Meter', [
-                'METER_ID' => $meter_number,
-                'COMPANY' => env('PREPAID_METER_COMPANY'),
-                'METER_TYPE' => 1,
-                'REMARK' => 'production',
-                'ApiToken' => $this->loginPrepaidMeter(),
-            ]);
-        Log::info('prepaid meter register response:' . $response->body());
-
-        return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
-    }
-
-    public function registerCalinMeter(string $meter_number)
-    {
-        $response = Http::retry(3, 100)
-            ->post('https://ami.calinhost.com/api/POS_Meter', [
-                'company_name' => env('CALIN_METER_COMPANY'),
-                'user_name' => env('CALIN_METER_USERNAME'),
-                'password' => env('CALIN_METER_PASSWORD'),
-                'customer_number' => $meter_number,
-                'meter_number' => $meter_number,
-                'customer_name' => $meter_number,
-            ]);
-        Log::info('calin prepaid meter register response:' . $response->body());
-
-        return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
-    }
 
     /**
      * @param $meter_id
@@ -115,100 +66,8 @@ trait ProcessesPrepaidMeterTransaction
             return;
         }
 
-        try {
-            DB::beginTransaction();
-            $meter = Meter::find($meter_id);
-            $cost_per_unit = $this->getCostPerUnit($user);
-            $user_amount_after_service_fee_deduction = $this->getUserAmountAfterServiceFeeDeduction($user_total_amount, $user);
-            try {
-                $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
-            } catch (Throwable $throwable) {
-                Log::info('Failed to generate token for meter ' . $meter->number . ', retrying');
-                $this->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
-                $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
-            }
-            if ($token === 'false01' || $token ==='') {
-                Log::info('Failed to generate token for meter ' . $meter->number . ', registering meter and retrying');
-                $this->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
-                $token = $this->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
-            }
-            throw_if($token === null || $token === '', RuntimeException::class, 'Failed to generate token');
-            $token = strtok($token, ',');
-            MeterToken::create([
-                'mpesa_transaction_id' => $mpesa_transaction->id,
-                'token' => strtok($token, ','),
-                'units' => $units,
-                'service_fee' => $this->calculateServiceFee($user, $user_total_amount, 'prepay'),
-                'monthly_service_charge_deducted' => $deductions->monthly_service_charge_deducted,
-                'connection_fee_deducted' => $deductions->connection_fee_deducted,
-                'unaccounted_debt_deducted' => $deductions->unaccounted_debt_deducted,
-                'meter_id' => $user->meter_id,
-            ]);
-            $this->updateUserAccountBalance($user, $user_total_amount, $deductions, $mpesa_transaction_id, true);
+        GenerateMeterTokenJob::dispatch($meter_id, $mpesa_transaction, $deductions, $user_total_amount, $user);
 
-            $date = Carbon::now()->toDateTimeString();
-            $message = "Meter: $meter->number\n"
-                . "Token: $token\n"
-                . "Units: $units\n"
-                . "Amount: $user_total_amount\n"
-                . "Account: $user->account_number\n"
-                . "Date: $date\n"
-                . "Ref: $mpesa_transaction->TransID";
-
-            $this->notifyUser(
-                (object)['message' => $message, 'title' => 'Water Meter Tokens'],
-                $user,
-                'meter tokens',
-                $mpesa_transaction->MSISDN
-            );
-            DB::commit();
-
-        } catch (Throwable $throwable) {
-            DB::rollBack();
-            Log::error($throwable);
-            $this->notifyUser(
-                (object)['message' => "Failed to generate token of Ksh {$mpesa_transaction->TransAmount} for your meter, please contact management for help.",
-                    'title' => 'Insufficient amount'],
-                $user,
-                'general',
-                $mpesa_transaction->MSISDN
-            );
-        }
-    }
-
-    private function updateUserAccountBalance(
-        User $user,
-        $user_total_amount,
-        $deductions,
-        $mpesa_transaction_id=null,
-        $token_consumed=false): User
-    {
-        $deductions_sum = $deductions->monthly_service_charge_deducted +
-            $deductions->connection_fee_deducted +
-            $deductions->unaccounted_debt_deducted;
-
-        try {
-            DB::beginTransaction();
-            if ($token_consumed) {
-                $user->account_balance = 0;
-            }else {
-                $user->account_balance = ($user->account_balance + $user_total_amount) +
-                    ($deductions_sum - $deductions->unaccounted_debt_deducted);
-            }
-            $user->last_mpesa_transaction_id = $mpesa_transaction_id;
-            $user->save();
-            if ($mpesa_transaction_id){
-                MpesaTransaction::find($mpesa_transaction_id)->update([
-                    'Consumed' => true,
-                ]);
-            }
-            DB::commit();
-        } catch (Throwable $throwable) {
-            DB::rollBack();
-            Log::error($throwable);
-        }
-
-        return $user;
     }
 
     /**
