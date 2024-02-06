@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\MeterCategory;
 use App\Models\Meter;
 use App\Models\MeterToken;
 use App\Services\PrepaidMeterService;
@@ -76,12 +77,12 @@ class GenerateMeterTokenJob implements ShouldQueue
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
             } catch (Throwable $throwable) {
                 Log::info('Failed to generate token for meter ' . $meter->number . ', retrying');
-                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
+                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, MeterCategory::fromValue($meter->category));
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
             }
             if ($token === 'false01' || $token ==='') {
                 Log::info('Failed to generate token for meter ' . $meter->number . ', registering meter and retrying');
-                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, $meter->category);
+                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, MeterCategory::fromValue($meter->category));
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units);
             }
             Log::info("Generated token for meter $meter->number is $token");
@@ -103,10 +104,10 @@ class GenerateMeterTokenJob implements ShouldQueue
             $message = "Meter: $meter->number\n"
                 . "Token: $token\n"
                 . "Units: $units\n"
-                . "Amount: $this->user_total_amount\n"
-                . "Account: $this->user->account_number\n"
+                . "Amount: {$this->user_total_amount}\n"
+                . "Account: {$this->user->account_number}\n"
                 . "Date: $date\n"
-                . "Ref: $this->mpesa_transaction->TransID";
+                . "Ref: {$this->mpesa_transaction->TransID}";
 
             $this->notifyUser(
                 (object)['message' => $message, 'title' => 'Water Meter Tokens'],

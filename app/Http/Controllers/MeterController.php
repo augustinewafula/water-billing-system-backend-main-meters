@@ -152,7 +152,7 @@ class MeterController extends Controller
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
             if ($this->isPrepaidMeter($request->type_id)) {
                 $prepaidMeterService = new PrepaidMeterService();
-                $prepaidMeterService->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type);
+                $prepaidMeterService->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type, MeterCategory::fromValue($request->category));
             }
             $validated = $request->validated();
             if ($request->has_location_coordinates) {
@@ -245,7 +245,7 @@ class MeterController extends Controller
         try {
             if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid') {
                 $prepaidMeterService = new PrepaidMeterService();
-                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$request->prepaid_meter_type);
+                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$request->prepaid_meter_type, MeterCategory::fromValue($request->category));
             }
         } catch (Throwable $exception) {
             Log::error('Failed to register prepaid meter id: ' . $meter->id);

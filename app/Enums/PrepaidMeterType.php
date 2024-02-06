@@ -8,5 +8,6 @@ class PrepaidMeterType extends Enum
 {
     public const SH = 1;
     public const CALIN = 2;
+    public const GOMELONG = 3;
 
 }

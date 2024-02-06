@@ -18,14 +18,19 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    public function registerPrepaidMeter(string $meter_number, int $prepaid_meter_type): string
+    public function registerPrepaidMeter(string $meter_number, int $prepaid_meter_type, MeterCategory $meterCategory): string
     {
+        $response = '';
         if ($prepaid_meter_type === PrepaidMeterType::SH) {
             $response = $this->registerSHMeter($meter_number);
-        } else {
+        }
+        if ($prepaid_meter_type === PrepaidMeterType::CALIN) {
             // TODO: implement calin meter registration. For now, we'll just return a dummy response because the calin meter registration api is not yet implemented
 //            $response = $this->registerCalinMeter($meter_number);
             $response = 'Calin Meter registered successfully';
+        }
+        if ($prepaid_meter_type === PrepaidMeterType::GOMELONG) {
+            $response = $this->registerGomelongMeter($meter_number, $meterCategory);
         }
         return $response;
     }
@@ -70,6 +75,27 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
+    public function registerGomelongMeter(string $meter_number, MeterCategory $meterCategory)
+    {
+        $response = Http::retry(3, 100)
+            ->post('http://120.26.4.119:9094/api/Power/MeterRegister', [
+                'UserId' => env('GOMELONG_METER_USERNAME'),
+                'Password' => env('GOMELONG_METER_PASSWORD'),
+                'UserTypeId' => 1,
+                'MeterCode' => $meter_number,
+                'MeterType' => $meterCategory->value,
+            ]);
+        Log::info('gomelong prepaid meter register response:' . $response->body());
+
+
+        $jsonResponse = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+
+        return $jsonResponse->Message;
+    }
+
+    /**
+     * @throws JsonException
+     */
     public function clearTamperRecord(string $meter_number, int $meterCategory, int $prePaidMeterType = PrepaidMeterType::SH): ?string
     {
         if ($meterCategory === MeterCategory::WATER) {
@@ -77,7 +103,14 @@ class PrepaidMeterService
                 return $this->clearWaterTamper($meter_number);
             }
 
+            if ($prePaidMeterType === PrepaidMeterType::GOMELONG) {
+                return $this->clearGomelongTamper($meter_number);
+            }
+
             return $this->clearCalinMeterTamper($meter_number);
+        }
+        if ($prePaidMeterType === PrepaidMeterType::GOMELONG) {
+            return $this->clearGomelongTamper($meter_number);
         }
 
         return $this->clearEnergyTamper($meter_number);
@@ -136,6 +169,26 @@ class PrepaidMeterService
         return null;
     }
 
+    /**
+     * @throws JsonException
+     */
+    private function clearGomelongTamper($meter_number)
+    {
+        $response = Http::retry(2, 100)
+            ->post('http://120.26.4.119:9094/api/Power/GetClearTamperSignToken', [
+                'UserId' => env('GOMELONG_METER_USERNAME'),
+                'Password' => env('GOMELONG_METER_PASSWORD'),
+                'MeterCode' => $meter_number,
+            ]);
+        if ($response->successful()) {
+            Log::info('gomelong clear tamper response:' . $response->body());
+            $jsonResponse = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+
+            return $jsonResponse->Data;
+        }
+        return null;
+    }
+
 
     /**
      * @throws JsonException
@@ -143,16 +196,29 @@ class PrepaidMeterService
     public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH, ? float $units = null): ?string
     {
         if ($meterCategory === MeterCategory::WATER) {
+            $response = '';
             if ($meterType === PrepaidMeterType::SH) {
                 $response = $this->generateWaterToken($meter_number, $amount, $cost_per_unit);
-            } else {
+            }
+
+            if ($meterType === PrepaidMeterType::CALIN) {
                 $response = $this->genererateCalinMeterToken($meter_number, $amount, $cost_per_unit);
+            }
+
+            if ($meterType === PrepaidMeterType::GOMELONG) {
+                $response = $this->generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory::fromValue($meterCategory));
             }
 
             return $response;
         }
 
-        return $this->generateEnergyToken($meter_number, $amount, $units);
+        if ($meterType === PrepaidMeterType::GOMELONG) {
+            $response = $this->generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory::fromValue($meterCategory));
+        } else {
+            $response = $this->generateEnergyToken($meter_number, $amount, $units);
+        }
+
+        return $response;
 
     }
 
@@ -185,6 +251,29 @@ class PrepaidMeterService
                 $this->setEnvironmentValue('PREPAID_METER_API_TOKEN', null);
             }
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+        }
+        return null;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory $meterCategory)
+    {
+        Log::info("Starting generateGomelongToken function with meter_number: {$meter_number}, amount: {$amount}, cost_per_unit: {$cost_per_unit}, meterCategory: {$meterCategory->value}");
+        $response = Http::retry(2, 100)
+            ->post("http://120.26.4.119:9094/api/Power/GetVendingToken", [
+                'UserId' => env('GOMELONG_METER_USERNAME'),
+                'Password' => env('GOMELONG_METER_PASSWORD'),
+                'MeterCode' => $meter_number,
+                'MeterType' => $meterCategory->value,
+                'VendingAmount' => (int)$amount,
+            ]);
+        Log::info('gomelong vending response:' . $response->body());
+        if ($response->successful()) {
+            $jsonResponse = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+
+            return $jsonResponse->Data->Token;
         }
         return null;
     }

@@ -21,7 +21,15 @@ trait ClearsMeterToken
                 return $this->clearWaterToken($meter_number);
             }
 
+            if ($prePaidMeterType === PrepaidMeterType::GOMELONG) {
+                return $this->clearGomelongToken($meter_number);
+            }
+
             return $this->clearCalinMeterToken($meter_number);
+        }
+
+        if ($prePaidMeterType === PrepaidMeterType::GOMELONG) {
+            return $this->clearGomelongToken($meter_number);
         }
 
         return $this->clearEnergyToken($meter_number);
@@ -79,6 +87,27 @@ trait ClearsMeterToken
         if ($response->successful()) {
             Log::info('clear credit response calin meter:' . $response->body());
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->result;
+        }
+        return null;
+    }
+
+
+    /**
+     * @throws JsonException
+     */
+    private function clearGomelongToken($meter_number)
+    {
+        $response = Http::retry(2, 100)
+            ->post('http://120.26.4.119:9094/api/Power/GetClearCreditToken', [
+                'UserId' => env('GOMELONG_METER_USERNAME'),
+                'Password' => env('GOMELONG_METER_PASSWORD'),
+                'MeterCode' => $meter_number,
+            ]);
+        if ($response->successful()) {
+            Log::info('gomelong clear tamper response:' . $response->body());
+            $jsonResponse = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+
+            return $jsonResponse->Data;
         }
         return null;
     }
