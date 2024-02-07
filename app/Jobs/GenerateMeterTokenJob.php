@@ -20,6 +20,7 @@ use Illuminate\Queue\Middleware\ThrottlesExceptions;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 use RuntimeException;
 use Throwable;
 
@@ -63,10 +64,13 @@ class GenerateMeterTokenJob implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws Throwable
+     * @throws JsonException
      */
     public function handle(): void
     {
         try {
+            Log::info("Attempting to generate meter token. Attempt number: " . $this->attempts());
             $meter = Meter::find($this->meter_id);
             $units = $this->calculateUnits($this->user_total_amount, $this->user);
             $cost_per_unit = $this->getCostPerUnit($this->user);
@@ -117,13 +121,29 @@ class GenerateMeterTokenJob implements ShouldQueue
             );
         } catch (Throwable $throwable) {
             Log::error($throwable);
-            $this->notifyUser(
-                (object)['message' => "Failed to generate token of Ksh {$this->mpesa_transaction->TransAmount} for your meter, please contact management for help.",
-                    'title' => 'Insufficient amount'],
-                $this->user,
-                'general',
-                $this->mpesa_transaction->MSISDN
-            );
+            // Rethrow the exception to let the job fail and be retried or marked as failed.
+            throw $throwable;
         }
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param Throwable $throwable
+     * @return void
+     */
+    public function failed(Throwable $throwable): void
+    {
+        Log::error("Error on attempt " . $this->attempts() . ": " . $throwable->getMessage(), ['exception' => $throwable]);
+        // Notify the user that the job has failed after all retries.
+        $this->notifyUser(
+            (object)[
+                'message' => "Failed to generate token of Ksh {$this->mpesa_transaction->TransAmount} for your meter, please contact management for help.",
+                'title' => 'Meter Token Generation Failure'
+            ],
+            $this->user,
+            'general',
+            $this->mpesa_transaction->MSISDN
+        );
     }
 }
