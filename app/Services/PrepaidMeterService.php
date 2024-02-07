@@ -77,13 +77,15 @@ class PrepaidMeterService
      */
     public function registerGomelongMeter(string $meter_number, MeterCategory $meterCategory)
     {
+        // ENERGY => 1, WATER => 2
+        $meterType = $meterCategory->value === MeterCategory::ENERGY ? 1 : 2;
         $response = Http::retry(3, 100)
             ->post('http://120.26.4.119:9094/api/Power/MeterRegister', [
                 'UserId' => env('GOMELONG_METER_USERNAME'),
                 'Password' => env('GOMELONG_METER_PASSWORD'),
                 'UserTypeId' => 1,
                 'MeterCode' => $meter_number,
-                'MeterType' => $meterCategory->value,
+                'MeterType' => $meterType,
             ]);
         Log::info('gomelong prepaid meter register response:' . $response->body());
 
@@ -261,12 +263,14 @@ class PrepaidMeterService
     private function generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory $meterCategory)
     {
         Log::info("Starting generateGomelongToken function with meter_number: {$meter_number}, amount: {$amount}, cost_per_unit: {$cost_per_unit}, meterCategory: {$meterCategory->value}");
+        // ENERGY => 1, WATER => 2
+        $meterType = $meterCategory->value === MeterCategory::ENERGY ? 1 : 2;
         $response = Http::retry(2, 100)
             ->post("http://120.26.4.119:9094/api/Power/GetVendingToken", [
                 'UserId' => env('GOMELONG_METER_USERNAME'),
                 'Password' => env('GOMELONG_METER_PASSWORD'),
                 'MeterCode' => $meter_number,
-                'MeterType' => $meterCategory->value,
+                'MeterType' => $meterType,
                 'VendingAmount' => (int)$amount,
             ]);
         Log::info('gomelong vending response:' . $response->body());
