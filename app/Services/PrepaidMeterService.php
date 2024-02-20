@@ -204,18 +204,18 @@ class PrepaidMeterService
             }
 
             if ($meterType === PrepaidMeterType::CALIN) {
-                $response = $this->genererateCalinMeterToken($meter_number, $amount, $cost_per_unit);
+                $response = $this->genererateCalinMeterToken($meter_number, $amount, $units);
             }
 
             if ($meterType === PrepaidMeterType::GOMELONG) {
-                $response = $this->generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory::fromValue($meterCategory));
+                $response = $this->generateGomelongToken($meter_number, $amount, $units, MeterCategory::fromValue($meterCategory));
             }
 
             return $response;
         }
 
         if ($meterType === PrepaidMeterType::GOMELONG) {
-            $response = $this->generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory::fromValue($meterCategory));
+            $response = $this->generateGomelongToken($meter_number, $amount, $units, MeterCategory::fromValue($meterCategory));
         } else {
             $response = $this->generateEnergyToken($meter_number, $amount, $units);
         }
@@ -260,9 +260,9 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    private function generateGomelongToken($meter_number, $amount, $cost_per_unit, MeterCategory $meterCategory)
+    private function generateGomelongToken($meter_number, $amount, $units, MeterCategory $meterCategory)
     {
-        Log::info("Starting generateGomelongToken function with meter_number: {$meter_number}, amount: {$amount}, cost_per_unit: {$cost_per_unit}, meterCategory: {$meterCategory->value}");
+        Log::info("Starting generateGomelongToken function with meter_number: {$meter_number}, amount: {$amount}, units: {$units}, meterCategory: {$meterCategory->value}");
         // ENERGY => 1, WATER => 2
         $meterType = $meterCategory->value === MeterCategory::ENERGY ? 1 : 2;
         $response = Http::retry(2, 100)
@@ -271,7 +271,8 @@ class PrepaidMeterService
                 'Password' => env('GOMELONG_METER_PASSWORD'),
                 'MeterCode' => $meter_number,
                 'MeterType' => $meterType,
-                'VendingAmount' => (int)$amount,
+                'AmountOrQuantity' => $units,
+                'VendingType' => 1, // 0 for amount, 1 for quantity
             ]);
         Log::info('gomelong vending response:' . $response->body());
         if ($response->successful()) {
@@ -285,7 +286,7 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    private function genererateCalinMeterToken($meter_number, $amount, $cost_per_unit)
+    private function genererateCalinMeterToken($meter_number, $amount, $units)
     {
         $response = Http::retry(2, 100)
             ->post("http://47.90.189.157:6001/api/POS_Purchase", [
@@ -295,7 +296,7 @@ class PrepaidMeterService
                 'password_vend' => env('CALIN_METER_PASSWORD'),
                 'meter_number' => $meter_number,
                 'is_vend_by_unit' => true,
-                'amount' => (int)$amount,
+                'amount' => $units,
             ]);
         if ($response->successful()) {
             Log::info('calin vending response:' . $response->body());
