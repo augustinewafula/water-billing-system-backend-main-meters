@@ -8,7 +8,7 @@ use App\Jobs\ProcessTransaction;
 use App\Models\MpesaTransaction;
 use App\Models\User;
 use App\Services\MpesaService;
-use Log;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 trait CreditsUserAccount
@@ -33,6 +33,11 @@ trait CreditsUserAccount
 
         if ($mpesa_transaction = $this->transactionExists($transaction_id)) {
             throw_if($mpesa_transaction->Consumed, \Exception::class, 'Transaction already consumed');
+            // Update BillRefNumber if it differs from the current account number
+            if ($mpesa_transaction->BillRefNumber !== $account_number) {
+                $mpesa_transaction->update(['BillRefNumber' => $account_number]);
+                Log::info("Updated BillRefNumber for transaction {$transaction_id} to {$account_number}");
+            }
             ProcessTransaction::dispatch($mpesa_transaction);
             Log::info('Dispatched ProcessTransaction job for existing transaction '.$transaction_id);
 
