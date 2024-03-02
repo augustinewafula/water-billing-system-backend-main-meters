@@ -49,6 +49,22 @@ class MeterTokenController extends Controller
             ->join('users', 'users.meter_id', 'meters.id');
         $meter_tokens = $this->filterQuery($request, $meter_tokens);
 
+        if ($request->has('forExport')){
+            $meter_tokens = $meter_tokens->get();
+            $meter_tokens = $meter_tokens->map(function ($meter_token) {
+                return [
+                    'account_number' => $meter_token->account_number,
+                    'customer' => $meter_token->user_name,
+                    'meter_number' => $meter_token->meter_number,
+                    'token' => $meter_token->token,
+                    'units' => $meter_token->units,
+                    'amount_paid' => $meter_token->amount_paid,
+                    'date_purchased' => $meter_token->created_at->toDateTimeString()
+                ];
+            });
+            return response()->json($meter_tokens);
+        }
+
         $perPage = 10;
         if ($request->has('perPage')){
             $perPage = $request->perPage;
