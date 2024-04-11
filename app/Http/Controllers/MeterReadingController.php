@@ -85,6 +85,17 @@ class MeterReadingController extends Controller
             ->latest()
             ->paginate($perPage);
 
+        $previous_reading = null;
+        foreach ($daily_meter_readings as $reading) {
+            if ($previous_reading === null) {
+                $previous_reading = $reading->reading;
+                $reading->consumed_units = 0;
+            } else {
+                $reading->consumed_units = $previous_reading - $reading->reading;
+                $previous_reading = $reading->reading;
+            }
+        }
+
         return response()->json($daily_meter_readings);
 
     }
