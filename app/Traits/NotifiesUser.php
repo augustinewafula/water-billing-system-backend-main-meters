@@ -18,7 +18,7 @@ trait NotifiesUser
         }
         if ($this->shouldNotifyViaSms($user->communication_channels)) {
             $user_phone_number =
-                ($phone_number && $this->isValidPhoneNumber($phone_number)) ?
+                ($phone_number && ($this->isValidPhoneNumber($phone_number) || $this->isHashedPhoneNumber($phone_number))) ?
                     $phone_number :
                     $user->phone;
             SendSMS::dispatch($user_phone_number, $info->message, $user->id);
@@ -49,6 +49,11 @@ trait NotifiesUser
     private function isValidPhoneNumber($phone_number): bool
     {
         return preg_match('/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/', $phone_number);
+    }
+
+    private function isHashedPhoneNumber(string $number): bool
+    {
+        return preg_match('/^[a-f0-9]{64}$/', $number) === 1;
     }
 
     public function shouldNotifyViaSms($user_communication_channels): bool
