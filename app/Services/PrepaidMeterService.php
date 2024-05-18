@@ -263,11 +263,12 @@ class PrepaidMeterService
     private function generateGomelongToken($meter_number, $amount, $units, MeterCategory $meterCategory)
     {
         Log::info("Starting generateGomelongToken function with meter_number: {$meter_number}, amount: {$amount}, units: {$units}, meterCategory: {$meterCategory->value}");
+    
         // ENERGY => 1, WATER => 2
         $meterType = $meterCategory->value === MeterCategory::ENERGY ? 1 : 2;
-
-        // Prepare the post parameters
-        $postParameters = [
+    
+        // Prepare the query parameters
+        $queryParameters = [
             'UserId' => env('GOMELONG_METER_USERNAME'),
             'Password' => env('GOMELONG_METER_PASSWORD'),
             'MeterCode' => $meter_number,
@@ -275,20 +276,20 @@ class PrepaidMeterService
             'AmountOrQuantity' => $units,
             'VendingType' => 1, // 0 for amount, 1 for quantity
         ];
-
-        // Log the post parameters
-        Log::info('Sending Gomelong vending request with parameters: ' . json_encode($postParameters, JSON_THROW_ON_ERROR));
-
+    
+        // Log the query parameters
+        Log::info('Sending Gomelong vending request with parameters: ' . json_encode($queryParameters, JSON_THROW_ON_ERROR));
+    
         $response = Http::retry(2, 100)
-            ->post("http://120.26.4.119:9094/api/Power/GetVendingToken", $postParameters);
-
+            ->get("http://120.26.4.119:9094/api/Power/GetVendingToken", $queryParameters);
+    
         Log::info('Gomelong vending response: ' . $response->body());
-
+    
         if ($response->successful()) {
             $jsonResponse = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
-
             return $jsonResponse->Data->Token;
         }
+    
         return null;
     }
 
