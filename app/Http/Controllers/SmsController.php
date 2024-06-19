@@ -160,16 +160,18 @@ class SmsController extends Controller
     public function callback(SmsCallbackRequest $request): JsonResponse
     {
         $this->initiateWebhook($request->all());
+
         $sms = Sms::where('message_id', $request->id)->first();
-        $status = $request->status;
-        if ($status === 'Success'){
-            $status = 'Delivered';
+
+        if ($sms) {
+            $status = $request->status === 'Success' ? 'Delivered' : $request->status;
+            $sms->update([
+                'status' => $status,
+                'network_code' => $request->networkCode,
+                'failure_reason' => $request->failureReason,
+            ]);
         }
-        $sms->update([
-            'status' => $status,
-            'network_code' => $request->networkCode,
-            'failure_reason' => $request->failureReason,
-        ]);
+
         return response()->json('received');
     }
 
