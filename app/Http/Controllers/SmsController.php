@@ -12,9 +12,10 @@ use Exception;
 use Http;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use JsonException;
-use Log;
-use Str;
+use Spatie\WebhookServer\WebhookCall;
+use Illuminate\Support\Str;
 use Throwable;
 
 class SmsController extends Controller
@@ -158,6 +159,7 @@ class SmsController extends Controller
 
     public function callback(SmsCallbackRequest $request): JsonResponse
     {
+        $this->initiateWebhook($request->all());
         $sms = Sms::where('message_id', $request->id)->first();
         $status = $request->status;
         if ($status === 'Success'){
@@ -169,6 +171,27 @@ class SmsController extends Controller
             'failure_reason' => $request->failureReason,
         ]);
         return response()->json('received');
+    }
+
+    public function initiateWebhook($request): void
+    {
+        Log::info('initiateSmsWebhook called', ['data' => $request]);
+        $mpesaTransactionCallbackUrl = env('TRANSACTION_CALLBACK_URL');
+        if ($mpesaTransactionCallbackUrl) {
+            // Parse the URL and replace the path
+            $parsedUrl = parse_url($mpesaTransactionCallbackUrl);
+            $smsCallbackPath = str_replace('/transaction-confirmation', '/sms-callback', $parsedUrl['path']);
+
+            // Rebuild the URL with the new path
+            $smsCallbackUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $smsCallbackPath;
+
+            // Initiate the webhook call with the new SMS callback URL
+            WebhookCall::create()
+                ->url($smsCallbackUrl)
+                ->payload($request)
+                ->useSecret('webhook-secret')
+                ->dispatch();
+        }
     }
 
     private function personalizeMessage(array $replace_with, $message): string
