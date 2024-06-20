@@ -159,6 +159,7 @@ class SmsController extends Controller
 
     public function callback(SmsCallbackRequest $request): JsonResponse
     {
+        Log::info('SmsCallback called', ['data' => $request->all()]);
         $this->initiateWebhook($request->all());
 
         $sms = Sms::where('message_id', $request->id)->first();
