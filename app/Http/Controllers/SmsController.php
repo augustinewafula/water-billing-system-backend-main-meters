@@ -187,6 +187,8 @@ class SmsController extends Controller
             // Rebuild the URL with the new path
             $smsCallbackUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $smsCallbackPath;
 
+            Log::info('Sms callback URL: ' . $smsCallbackUrl);
+
             // Initiate the webhook call with the new SMS callback URL
             WebhookCall::create()
                 ->url($smsCallbackUrl)
