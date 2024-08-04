@@ -32,8 +32,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('users:debit-connection-fee')->daily();
         $schedule->command('connection-fees:send-bill-remainder')->daily();
 //        $schedule->command('monthly-service-charge:generate')->monthly();
-        $schedule->command('backup:clean')->twiceDaily(0, 12);
-        $schedule->command('backup:run --only-db')->twiceDaily();
+        $schedule->command('backup:clean')->dailyAt('01:00');
+        $schedule->command('backup:run')->daily();
         $schedule->command('passport:purge')->everyThirtyMinutes();
 //        $schedule->command('prune:daily-meter-readings')->daily();
         $schedule->command('activitylog:clean --days=30')->daily();
