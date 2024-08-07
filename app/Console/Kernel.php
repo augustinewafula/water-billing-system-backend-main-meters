@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:run')->daily();
         $schedule->command('passport:purge')->everyThirtyMinutes();
 //        $schedule->command('prune:daily-meter-readings')->daily();
-        $schedule->command('activitylog:clean')->daily();
+        $schedule->command('activitylog:clean --force')->daily();
         $schedule->command('prune:failed-jobs')->daily();
     }
 
