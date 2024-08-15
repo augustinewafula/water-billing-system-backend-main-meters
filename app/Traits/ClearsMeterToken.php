@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Enums\MeterCategory;
 use App\Enums\PrepaidMeterType;
+use App\Services\PrepaidMeterService;
 use Http;
 use JsonException;
 use Log;
@@ -14,8 +15,11 @@ trait ClearsMeterToken
     /**
      * @throws JsonException
      */
-    public function clearMeterToken(string $meter_number, int $meterCategory, int $prePaidMeterType = PrepaidMeterType::SH): ?string
+    public function clearMeterToken(string $meter_number, int $meterCategory, int $prePaidMeterType = PrepaidMeterType::SH, $usePrismVend = false): ?string
     {
+        if ($usePrismVend) {
+            return (new PrepaidMeterService())->clearPrismCredit($meter_number);
+        }
         if ($meterCategory === MeterCategory::WATER) {
             if ($prePaidMeterType === PrepaidMeterType::SH) {
                 return $this->clearWaterToken($meter_number);

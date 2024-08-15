@@ -98,8 +98,11 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    public function clearTamperRecord(string $meter_number, int $meterCategory, int $prePaidMeterType = PrepaidMeterType::SH): ?string
+    public function clearTamperRecord(string $meter_number, int $meterCategory, int $prePaidMeterType = PrepaidMeterType::SH, $usePrismVend = false): ?string
     {
+        if ($usePrismVend) {
+            return $this->clearPrismTamper($meter_number);
+        }
         if ($meterCategory === MeterCategory::WATER) {
             if ($prePaidMeterType === PrepaidMeterType::SH) {
                 return $this->clearWaterTamper($meter_number);
@@ -195,8 +198,11 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH, ? float $units = null): ?string
+    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH, ? float $units = null, $usePrismVend = false): ?string
     {
+        if ($usePrismVend) {
+            return $this->generatePrismToken($meter_number, $amount, $units, MeterCategory::fromValue($meterCategory));
+        }
         if ($meterCategory === MeterCategory::WATER) {
             $response = '';
             if ($meterType === PrepaidMeterType::SH) {
@@ -333,6 +339,92 @@ class PrepaidMeterService
 
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)[0]->Token;
         }
+        return null;
+    }
+
+    private function generatePrismToken(string $meter_number, float $amount, float $units, MeterCategory $meterCategory): ?string
+    {
+        $subclass = $meterCategory === MeterCategory::ENERGY ? '0' : '1';
+
+        // Calculate the value: 1 unit = 10,000 values
+        $value = $units * 10000;
+
+        \Illuminate\Support\Facades\Log::info('Prism vending calculation:', [
+            'meterId' => $meter_number,
+            'units' => $units,
+            'calculatedValue' => $value
+        ]);
+
+        $response = Http::retry(2, 1000)
+            ->timeout(100)
+            ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
+            ->acceptJson()
+            ->asForm()
+            ->post('http://197.232.113.169:8080/stsvend/VendCredit.xml', [
+                'meterId' => $meter_number,
+                'subclass' => $subclass,
+                'value' => $value, // Use the calculated value instead of units
+            ]);
+
+        // Log the response regardless of the status
+        \Illuminate\Support\Facades\Log::info('Prism vending response:', [
+            'meterId' => $meter_number,
+            'status' => $response->status(),
+            'body' => $response->body()
+        ]);
+
+        if ($response->successful()) {
+            $xml = simplexml_load_string($response->body());
+            $token = (string)$xml->tokenDec;
+
+            $formattedToken = chunk_split($token, 4, ' ');
+            $formattedToken = rtrim($formattedToken);
+
+            return $formattedToken;
+        }
+
+        return null;
+    }
+
+    public function clearPrismCredit($meter_number): ?string
+    {
+        return $this->sendPrismClearRequest($meter_number, '1');
+    }
+
+    private function clearPrismTamper($meter_number): ?string
+    {
+        return $this->sendPrismClearRequest($meter_number, '5');
+    }
+
+    private function sendPrismClearRequest($meter_number, $subclass): ?string
+    {
+        $response = Http::retry(2, 1000)
+            ->timeout(100)
+            ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
+            ->acceptJson()
+            ->asForm()
+            ->post('http://197.232.113.169:8080/stsvend/VendMse.xml', [
+                'meterId' => $meter_number,
+                'subclass' => $subclass,
+            ]);
+
+        \Illuminate\Support\Facades\Log::info('Prism clear response:', [
+            'meterId' => $meter_number,
+            'status' => $response->status(),
+            'body' => $response->body()
+        ]);
+
+        if ($response->successful()) {
+
+            $xml = simplexml_load_string($response->body());
+            $token = (string)$xml->tokenDec;
+
+            $formattedToken = chunk_split($token, 4, ' ');
+            $formattedToken = rtrim($formattedToken);
+
+            return $formattedToken;
+        }
+
         return null;
     }
 

@@ -95,7 +95,7 @@ class MeterTokenController extends Controller
     {
         $meter = Meter::find($request->meter_id);
         try {
-            $token = $this->clearMeterToken($meter->number, $meter->category, $meter->prepaid_meter_type);
+            $token = $this->clearMeterToken($meter->number, $meter->category, $meter->prepaid_meter_type, $meter->use_prism_vend);
             throw_if($token === null || $token === '', RuntimeException::class, 'Failed to clear credit token');
             $token = strtok($token, ',');
 
