@@ -49,6 +49,7 @@ class Meter extends Model
         'category',
         'prepaid_meter_type',
         'concentrator_id',
+        'use_prism_vend'
     ];
 
     protected $appends = ['current_reading'];
