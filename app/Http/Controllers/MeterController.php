@@ -150,7 +150,7 @@ class MeterController extends Controller
     public function save($request): array
     {
         if ((int)$request->mode === MeterMode::AUTOMATIC) {
-            if ($this->isPrepaidMeter($request->type_id)) {
+            if ($this->isPrepaidMeter($request->type_id) && !$request->has('use_prism_vend')) {
                 $prepaidMeterService = new PrepaidMeterService();
                 $prepaidMeterService->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type, MeterCategory::fromValue($request->category));
             }
@@ -182,6 +182,7 @@ class MeterController extends Controller
             'prepaid_meter_type' => $request->prepaid_meter_type,
             'sim_card_number' => $request->sim_card_number,
             'concentrator_id' => $request->concentrator_id,
+            'use_prism_vend' => $request->use_prism_vend
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
@@ -236,6 +237,7 @@ class MeterController extends Controller
             'prepaid_meter_type' => $request->prepaid_meter_type,
             'sim_card_number' => $request->sim_card_number,
             'concentrator_id' => $request->concentrator_id,
+            'use_prism_vend' => $request->use_prism_vend
         ];
         if ($request->has_location_coordinates) {
             $data['lat'] = $request->location_coordinates['lat'];
@@ -243,7 +245,7 @@ class MeterController extends Controller
         }
         $meter->update($data);
         try {
-            if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid') {
+            if ($request->number !== $meter->number && MeterType::find($request->type_id)->name === 'Prepaid'  && !$request->has('use_prism_vend')) {
                 $prepaidMeterService = new PrepaidMeterService();
                 $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$request->prepaid_meter_type, MeterCategory::fromValue($request->category));
             }
