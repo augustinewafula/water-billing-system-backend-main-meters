@@ -7,6 +7,7 @@ use App\Enums\PrepaidMeterType;
 use App\Traits\AuthenticatesMeter;
 use App\Traits\SetsEnvironmentalValue;
 use Http;
+use Illuminate\Http\Client\RequestException;
 use JsonException;
 use Log;
 
@@ -355,74 +356,119 @@ class PrepaidMeterService
             'calculatedValue' => $value
         ]);
 
-        $response = Http::retry(2, 1000)
-            ->timeout(100)
-            ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
-            ->acceptJson()
-            ->asForm()
-            ->post('http://197.232.113.169:8080/stsvend/VendCredit.xml', [
+        try {
+            $response = Http::retry(2, 1000)
+                ->timeout(100)
+                ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
+                ->acceptJson()
+                ->asForm()
+                ->post('http://197.232.113.169:8080/stsvend/VendCredit.xml', [
+                    'meterId' => $meter_number,
+                    'subclass' => $subclass,
+                    'value' => $value, // Use the calculated value instead of units
+                ]);
+
+            // Log the response regardless of the status
+            \Illuminate\Support\Facades\Log::info('Prism vending response:', [
                 'meterId' => $meter_number,
-                'subclass' => $subclass,
-                'value' => $value, // Use the calculated value instead of units
+                'status' => $response->status(),
+                'body' => $response->body()
             ]);
 
-        // Log the response regardless of the status
-        \Illuminate\Support\Facades\Log::info('Prism vending response:', [
-            'meterId' => $meter_number,
-            'status' => $response->status(),
-            'body' => $response->body()
-        ]);
+            $response->throw();  // This will throw an exception for non-2xx responses
 
-        if ($response->successful()) {
-            $xml = simplexml_load_string($response->body());
-            $token = (string)$xml->tokenDec;
+            if ($response->successful()) {
+                $xml = simplexml_load_string($response->body());
+                $token = (string)$xml->tokenDec;
 
-            $formattedToken = chunk_split($token, 4, ' ');
-            $formattedToken = rtrim($formattedToken);
+                $formattedToken = chunk_split($token, 4, ' ');
+                $formattedToken = rtrim($formattedToken);
 
-            return $formattedToken;
+                return $formattedToken;
+            }
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Log the full exception details
+            \Illuminate\Support\Facades\Log::error('Prism vending error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'response' => $e->response?->body(),
+            ]);
+
+            // You might want to rethrow the exception or handle it in some way
+            throw $e;
         }
 
         return null;
     }
 
+    /**
+     * @throws RequestException
+     */
     public function clearPrismCredit($meter_number): ?string
     {
         return $this->sendPrismClearRequest($meter_number, '1');
     }
 
+    /**
+     * @throws RequestException
+     */
     private function clearPrismTamper($meter_number): ?string
     {
         return $this->sendPrismClearRequest($meter_number, '5');
     }
 
+    /**
+     * @throws RequestException
+     */
     private function sendPrismClearRequest($meter_number, $subclass): ?string
     {
-        $response = Http::retry(2, 1000)
-            ->timeout(100)
-            ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
-            ->acceptJson()
-            ->asForm()
-            ->post('http://197.232.113.169:8080/stsvend/VendMse.xml', [
+        try {
+            $response = Http::retry(2, 1000)
+                ->timeout(100)
+                ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
+                ->acceptJson()
+                ->asForm()
+                ->post('http://197.232.113.169:8080/stsvend/VendMse.xml', [
+                    'meterId' => $meter_number,
+                    'subclass' => $subclass,
+                ]);
+
+            // Log the response regardless of the status
+            \Illuminate\Support\Facades\Log::info('Prism clear response:', [
                 'meterId' => $meter_number,
-                'subclass' => $subclass,
+                'status' => $response->status(),
+                'body' => $response->body()
             ]);
 
-        \Illuminate\Support\Facades\Log::info('Prism clear response:', [
-            'meterId' => $meter_number,
-            'status' => $response->status(),
-            'body' => $response->body()
-        ]);
+            $response->throw();  // This will throw an exception for non-2xx responses
 
-        if ($response->successful()) {
+            if ($response->successful()) {
+                $xml = simplexml_load_string($response->body());
+                $token = (string)$xml->tokenDec;
 
-            $xml = simplexml_load_string($response->body());
-            $token = (string)$xml->tokenDec;
+                $formattedToken = chunk_split($token, 4, ' ');
+                $formattedToken = rtrim($formattedToken);
 
-            $formattedToken = chunk_split($token, 4, ' ');
-            $formattedToken = rtrim($formattedToken);
+                return $formattedToken;
+            }
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Log the full exception details
+            \Illuminate\Support\Facades\Log::error('Prism clear request error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'response' => $e->response?->body(),
+            ]);
 
-            return $formattedToken;
+            // You might want to rethrow the exception or handle it in some way
+            throw $e;
+        } catch (\Exception $e) {
+            // Catch any other exceptions that might occur
+            \Illuminate\Support\Facades\Log::error('Unexpected error in Prism clear request:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
         }
 
         return null;
