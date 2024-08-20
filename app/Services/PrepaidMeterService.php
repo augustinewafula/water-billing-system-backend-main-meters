@@ -362,7 +362,7 @@ class PrepaidMeterService
                 ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
                 ->acceptJson()
                 ->asForm()
-                ->post('http://197.232.113.169:8080/stsvend/VendCredit.xml', [
+                ->post('http://41.209.60.94:8080/stsvend/VendCredit.xml', [
                     'meterId' => $meter_number,
                     'subclass' => $subclass,
                     'value' => $value, // Use the calculated value instead of units
@@ -428,7 +428,7 @@ class PrepaidMeterService
                 ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
                 ->acceptJson()
                 ->asForm()
-                ->post('http://197.232.113.169:8080/stsvend/VendMse.xml', [
+                ->post('http://41.209.60.94:8080/stsvend/VendMse.xml', [
                     'meterId' => $meter_number,
                     'subclass' => $subclass,
                 ]);
