@@ -345,15 +345,17 @@ class PrepaidMeterService
 
     private function generatePrismToken(string $meter_number, float $amount, float $units, MeterCategory $meterCategory): ?string
     {
-        $subclass = $meterCategory === MeterCategory::ENERGY ? '0' : '1';
+        $subclass = $meterCategory->value === MeterCategory::ENERGY ? '0' : '1';
 
         // Calculate the value: 1 unit = 10,000 values
         $value = $units * 10000;
 
-        \Illuminate\Support\Facades\Log::info('Prism vending calculation:', [
+        Log::info('Prism vending calculation:', [
             'meterId' => $meter_number,
             'units' => $units,
-            'calculatedValue' => $value
+            'calculatedValue' => $value,
+            'subclass' => $subclass,
+            'meter category' => $meterCategory->description
         ]);
 
         try {
