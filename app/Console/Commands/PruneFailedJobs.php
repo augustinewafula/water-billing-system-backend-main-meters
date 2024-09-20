@@ -27,7 +27,7 @@ class PruneFailedJobs extends Command
      */
     public function handle(): int
     {
-        $days = $this->argument('days') ?? '30';
+        $days = $this->argument('days') ?? '7';
         $days = (int) $days;
 
         // Calculate the cutoff date
