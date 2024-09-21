@@ -31,12 +31,12 @@ trait NotifiesUser
             return;
         }
 
-        if (($message_type === 'meter tokens') && $this->shouldNotifyViaEmail($user->communication_channels)) {
-            $message = $this->formatMessageForEmail($info);
-            Mail::to($user->email)
-                ->queue(new MeterTokens($message));
-            return;
-        }
+//        if (($message_type === 'meter tokens') && $this->shouldNotifyViaEmail($user->communication_channels)) {
+//            $message = $this->formatMessageForEmail($info);
+//            Mail::to($user->email)
+//                ->queue(new MeterTokens($message));
+//            return;
+//        }
 
         if (($message_type === 'general') && $this->shouldNotifyViaEmail($user->communication_channels)) {
             $message = $this->formatMessageForEmail($info);
