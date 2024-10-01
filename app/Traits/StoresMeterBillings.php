@@ -7,6 +7,7 @@ use App\Http\Requests\CreateMeterBillingRequest;
 use App\Models\Meter;
 use App\Models\MeterBilling;
 use App\Models\MeterBillingReport;
+use App\Models\MeterReading;
 use App\Models\MpesaTransaction;
 use Carbon\Carbon;
 use DB;
@@ -35,7 +36,7 @@ trait StoresMeterBillings
             $amount_paid = 0;
         }
 
-        foreach ($pending_meter_readings as $pending_meter_reading) {
+        foreach ($pending_meter_readings as $index => $pending_meter_reading) {
             Log::info('Processing meter billing for meter reading: '. $pending_meter_reading->id);
             $user = $user->refresh();
 
@@ -50,6 +51,22 @@ trait StoresMeterBillings
 
             if (round($user_total_amount) <= 0.00) {
                 Log::info("User total amount is $user_total_amount. No need to create meter billing.");
+                if ($index > 1) {
+                    // unpaid meter readings are not yet added to user debt, so add them
+                    $user->refresh();
+                    $user->loadMissing('meter');
+                    $unpaidBillsSum = MeterReading::where('meter_id', $user->meter->id)
+                        ->where('status', PaymentStatus::NOT_PAID)
+                        ->sum('bill');
+                    Log::info("Adding $unpaidBillsSum to user account balance");
+                    Log::info("User account balance: $user->account_balance");
+                    // Only update the account balance if there are unpaid bills
+                    if ($unpaidBillsSum > 0) {
+                        // Subtract unpaid bills sum from account balance (since it's debt)
+                        $newBalance = $user->account_balance - $unpaidBillsSum;
+                        $user->update(['account_balance' => $newBalance]);
+                    }
+                }
                 break;
             }
 
@@ -71,6 +88,7 @@ trait StoresMeterBillings
             }
 
         }
+
     }
 
     /**
