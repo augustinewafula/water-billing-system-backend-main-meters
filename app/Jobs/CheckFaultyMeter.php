@@ -96,7 +96,7 @@ class CheckFaultyMeter implements ShouldQueue
             if ($fault_type === FaultyMeterFaultType::LOST_COMMUNICATION){
                 $message .= "not communicated with the server for more than $difference_in_hours hours";
             }
-            SendAlert::dispatch($message);
+//            SendAlert::dispatch($message);
         }
     }
 
