@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Models\ConnectionFee;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 trait SendsMeterReading
 {
@@ -14,7 +15,12 @@ trait SendsMeterReading
     public function sendMeterReading($meter_reading): void
     {
         $user = User::where('meter_id', $meter_reading->meter_id)
-            ->firstOrFail();
+            ->first();
+
+        if ($user === null) {
+            Log::warning('User not found for meter '.$meter_reading->meter_id);
+            return;
+        }
 
         $bill_month = Carbon::parse($meter_reading->month)->isoFormat('MMMM YYYY');
         $message = $this->constructMeterReadingMessage($meter_reading, $user);
