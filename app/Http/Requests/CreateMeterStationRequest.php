@@ -26,7 +26,7 @@ class CreateMeterStationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'unique:meter_stations', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
-            'paybill_number' => ['required', 'numeric', 'digits:6'],
+            'paybill_number' => ['required', 'numeric',],
         ];
     }
 }
