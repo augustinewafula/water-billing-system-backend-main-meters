@@ -328,7 +328,25 @@ class PrepaidMeterService
             if ($response->body() === '' && str_contains($baseUrl, 'shometersapi')) {
                 $this->setEnvironmentValue('PREPAID_METER_API_TOKEN', null);
             }
-            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+
+            try {
+                $decodedResponse = json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
+
+                // For server-api, safely extract the token from the response array
+                if (!str_contains($baseUrl, 'shometersapi')) {
+                    if (is_array($decodedResponse) &&
+                        !empty($decodedResponse) &&
+                        isset($decodedResponse[0]->Token)) {
+                        return $decodedResponse[0]->Token;
+                    }
+                    return null;
+                }
+
+                return $decodedResponse;
+            } catch (\JsonException $e) {
+                Log::error('Failed to decode vending response: ' . $e->getMessage());
+                return null;
+            }
         }
         return null;
     }
