@@ -32,7 +32,7 @@ trait AuthenticatesMeter
     public function loginPrepaidMeter(): ?string
     {
         $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'login', [
+            ->post($this->stronPowerBaseUrlUrl . 'login', [
                 'Companyname' => env('PREPAID_METER_COMPANY'),
                 'Username' => env('PREPAID_METER_USERNAME'),
                 'Password' => env('PREPAID_METER_PASSWORD'),

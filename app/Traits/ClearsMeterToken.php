@@ -40,15 +40,32 @@ trait ClearsMeterToken
 
     }
 
-    private function clearWaterToken($meter_number)
+    private function clearWaterToken(string $meter_number)
     {
-        $response = Http::retry(2, 100)
-            ->post('http://www.shometersapi.stronpower.com/api/ClearCredit', [
+//        $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
+         $baseUrl = 'http://server-api.stronpower.com/api/';
+
+        if (str_contains($baseUrl, 'shometersapi')) {
+            $data = [
                 'CustomerId' => $meter_number,
                 'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'Employee' => '0000',
-            ]);
+            ];
+        } else {
+            $data = [
+                'CompanyName' => env('PREPAID_METER_COMPANY'),
+                'UserName' => env('PREPAID_METER_USERNAME'),
+                'PassWord' => env('PREPAID_METER_PASSWORD'),
+                'METER_ID' => $meter_number,
+                'CustomerId' => $meter_number
+            ];
+        }
+
+        $endpoint = 'ClearCredit';
+        $response = Http::retry(2, 100)
+            ->post($baseUrl . $endpoint, $data);
+
         if ($response->successful()) {
             Log::info('clear credit response water meter:' . $response->body());
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);

@@ -14,7 +14,10 @@ use Log;
 class PrepaidMeterService
 {
     use AuthenticatesMeter, SetsEnvironmentalValue;
-    protected string $baseUrl = 'http://www.shometersapi.stronpower.com/api/';
+
+    //stron power base url changed because generated token is not working when inputted, it returns 'OLD'
+//    protected string $stronPowerBaseUrlUrl = 'http://www.shometersapi.stronpower.com/api/';
+    protected string $stronPowerBaseUrlUrl = 'http://www.server-api.stronpower.com/api/';
 
     /**
      * @throws JsonException
@@ -41,14 +44,41 @@ class PrepaidMeterService
      */
     public function registerSHMeter(string $meter_number)
     {
-        $response = Http::retry(3, 100)
-            ->post($this->baseUrl . 'Meter', [
+        $baseUrl = $this->stronPowerBaseUrlUrl;
+
+        // Data for shometersapi endpoint
+        if (str_contains($baseUrl, 'shometersapi')) {
+            $data = [
                 'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'METER_TYPE' => 1,
                 'REMARK' => 'production',
                 'ApiToken' => $this->loginPrepaidMeter(),
-            ]);
+            ];
+        }
+        // Data for server-api endpoint
+        else if (str_contains($baseUrl, 'server-api')) {
+            $data = [
+                'CompanyName' => env('PREPAID_METER_COMPANY'),
+                'UserName' => env('PREPAID_METER_USERNAME'),
+                'PassWord' => env('PREPAID_METER_PASSWORD'),
+                'AccountID' => $meter_number,
+                'CustomerID' => $meter_number,
+                'CustomerName' => "PRO-$meter_number",
+                'CustomerAddress' => '',
+                'CustomerPhone' => '',
+                'CustomerEmail' => '',
+                'PriceCategories' => 'HomeChargePrice',
+                'SalesStationID' => '0004',
+                'MeterID' => $meter_number,
+                'MeterType' => 1
+            ];
+        }
+
+        $endpoint = str_contains($baseUrl, 'shometersapi') ? 'Meter' : 'NewCustomer';
+        $response = Http::retry(3, 100)
+            ->post($baseUrl . $endpoint, $data);
+
         \Illuminate\Support\Facades\Log::info('prepaid meter register response:' . $response->body());
 
         return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
@@ -123,15 +153,34 @@ class PrepaidMeterService
 
     }
 
-    private function clearWaterTamper($meter_number)
+    private function clearWaterTamper(string $meter_number)
     {
-        $response = Http::retry(2, 100)
-            ->post($this->baseUrl . 'ClearTamper', [
+        $baseUrl = $this->stronPowerBaseUrlUrl;
+
+        // Data for shometersapi endpoint
+        if (str_contains($baseUrl, 'shometersapi')) {
+            $data = [
                 'CustomerId' => $meter_number,
                 'METER_ID' => $meter_number,
                 'COMPANY' => env('PREPAID_METER_COMPANY'),
                 'Employee' => '0000',
-            ]);
+            ];
+        }
+        // Data for server-api endpoint
+        else if (str_contains($baseUrl, 'server-api')) {
+            $data = [
+                'CompanyName' => env('PREPAID_METER_COMPANY'),
+                'UserName' => env('PREPAID_METER_USERNAME'),
+                'PassWord' => env('PREPAID_METER_PASSWORD'),
+                'METER_ID' => $meter_number,
+                'CustomerId' => $meter_number
+            ];
+        }
+
+        $endpoint = str_contains($baseUrl, 'shometersapi') ? 'ClearTamper' : 'ClearTamper';
+        $response = Http::retry(2, 100)
+            ->post($baseUrl . $endpoint, $data);
+
         if ($response->successful()) {
             Log::info('clear tamper response water meter:' . $response->body());
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
@@ -207,7 +256,7 @@ class PrepaidMeterService
         if ($meterCategory === MeterCategory::WATER) {
             $response = '';
             if ($meterType === PrepaidMeterType::SH) {
-                $response = $this->generateWaterToken($meter_number, $amount, $cost_per_unit);
+                $response = $this->generateWaterToken($meter_number, $amount, $cost_per_unit, $units);
             }
 
             if ($meterType === PrepaidMeterType::CALIN) {
@@ -234,16 +283,18 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    private function generateWaterToken($meter_number, $amount, $cost_per_unit)
+    private function generateWaterToken($meter_number, $amount, $cost_per_unit, ? float $units = null)
     {
+        $baseUrl = $this->stronPowerBaseUrlUrl;
 
-        $api_token = env('PREPAID_METER_API_TOKEN');
-        if (empty($api_token)) {
-            $api_token = $this->loginPrepaidMeter();
-        }
+        // Data for shometersapi endpoint
+        if (str_contains($baseUrl, 'shometersapi')) {
+            $api_token = env('PREPAID_METER_API_TOKEN');
+            if (empty($api_token)) {
+                $api_token = $this->loginPrepaidMeter();
+            }
 
-        $response = Http::retry(2, 100)
-            ->post($this->baseUrl . 'vending', [
+            $data = [
                 'CustomerId' => $meter_number,
                 'MeterId' => $meter_number,
                 'Price' => $cost_per_unit,
@@ -253,10 +304,28 @@ class PrepaidMeterService
                 'Company' => env('PREPAID_METER_COMPANY'),
                 'Employee' => '0000',
                 'ApiToken' => $api_token,
-            ]);
+            ];
+        }
+        // Data for server-api endpoint
+        else if (str_contains($baseUrl, 'server-api')) {
+            $data = [
+                'CompanyName' => env('PREPAID_METER_COMPANY'),
+                'UserName' => env('PREPAID_METER_USERNAME'),
+                'PassWord' => env('PREPAID_METER_PASSWORD'),
+                'MeterID' => $meter_number,
+                'is_vend_by_unit' => 'true',
+                'Amount' => $units
+            ];
+        }
+
+        $endpoint = str_contains($baseUrl, 'shometersapi') ? 'vending' : 'VendingMeter';
+        $response = Http::retry(2, 100)
+            ->post($baseUrl . $endpoint, $data);
+
         Log::info('vending response:' . $response->body());
+
         if ($response->successful()) {
-            if ($response->body() === '') {
+            if ($response->body() === '' && str_contains($baseUrl, 'shometersapi')) {
                 $this->setEnvironmentValue('PREPAID_METER_API_TOKEN', null);
             }
             return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR);
