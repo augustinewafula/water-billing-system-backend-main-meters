@@ -84,7 +84,7 @@ class GenerateMeterTokenJob implements ShouldQueue
                 $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, MeterCategory::fromValue($meter->category));
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units, $meter->use_prism_vend);
             }
-            if ($token === 'false01' || $token ==='') {
+            if ($token === null || $token === 'false01' || $token ==='') {
                 Log::info('Failed to generate token for meter ' . $meter->number . ', registering meter and retrying');
                 $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, MeterCategory::fromValue($meter->category));
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units, $meter->use_prism_vend);
