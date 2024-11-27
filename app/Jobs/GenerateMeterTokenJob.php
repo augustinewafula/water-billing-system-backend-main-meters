@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\MeterCategory;
 use App\Models\Meter;
 use App\Models\MeterToken;
+use App\Services\ConcentratorService;
 use App\Services\PrepaidMeterService;
 use App\Traits\CalculatesBill;
 use App\Traits\GeneratesMeterToken;
@@ -81,12 +82,22 @@ class GenerateMeterTokenJob implements ShouldQueue
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units, $meter->use_prism_vend);
             } catch (Throwable $throwable) {
                 Log::info('Failed to generate token for meter ' . $meter->number . ', retrying');
-                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, MeterCategory::fromValue($meter->category));
+                $prepaidMeterService->registerPrepaidMeter(
+                    $meter->number,
+                    (int)$meter->prepaid_meter_type,
+                    MeterCategory::fromValue($meter->category),
+                    $meter->concentrator_id
+                );
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units, $meter->use_prism_vend);
             }
             if ($token === null || $token === 'false01' || $token ==='') {
                 Log::info('Failed to generate token for meter ' . $meter->number . ', registering meter and retrying');
-                $prepaidMeterService->registerPrepaidMeter($meter->number, (int)$meter->prepaid_meter_type, MeterCategory::fromValue($meter->category));
+                $prepaidMeterService->registerPrepaidMeter(
+                    $meter->number,
+                    (int)$meter->prepaid_meter_type,
+                    MeterCategory::fromValue($meter->category),
+                    $meter->concentrator_id
+                );
                 $token = $prepaidMeterService->generateMeterToken($meter->number, $user_amount_after_service_fee_deduction, $meter->category, $cost_per_unit, $meter->prepaid_meter_type, $units, $meter->use_prism_vend);
             }
             Log::info("Generated token for meter $meter->number is $token");
@@ -119,6 +130,11 @@ class GenerateMeterTokenJob implements ShouldQueue
                 'meter tokens',
                 $this->mpesa_transaction->MSISDN
             );
+            if ($meter->concentrator_id !== null) {
+                $concentratorService = new ConcentratorService();
+                $concentratorService->sendMeterToken($meter->number, $token);
+
+            }
         } catch (Throwable $throwable) {
             Log::error($throwable);
             // Rethrow the exception to let the job fail and be retried or marked as failed.

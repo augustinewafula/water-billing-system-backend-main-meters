@@ -9,9 +9,11 @@ use App\Http\Requests\CreateMainMeterRequest;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
 use App\Jobs\GetMeterReadings;
+use App\Models\Concentrator;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterType;
+use App\Services\ConcentratorService;
 use App\Services\PrepaidMeterService;
 use App\Traits\FiltersRequestQuery;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -153,6 +155,15 @@ class MeterController extends Controller
             if ($this->isPrepaidMeter($request->type_id) && !$request->has('use_prism_vend')) {
                 $prepaidMeterService = new PrepaidMeterService();
                 $prepaidMeterService->registerPrepaidMeter($request->number, (int)$request->prepaid_meter_type, MeterCategory::fromValue($request->category));
+            }
+            if ($request->concentrator_id) {
+                $concentrator = Concentrator::find($request->concentrator_id);
+                $concentratorService = new ConcentratorService();
+                $concentratorService->registerMeterWithConcentrator(
+                    $request->number,
+                    $request->number,
+                    $concentrator->concentrator_id
+                );
             }
             $validated = $request->validated();
             if ($request->has_location_coordinates) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateConcentratorRequest;
 use App\Http\Requests\UpdateConcentratorRequest;
 use App\Models\Concentrator;
+use App\Services\ConcentratorService;
 use App\Traits\FiltersRequestQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,10 +47,15 @@ class ConcentratorController extends Controller
      *
      * @param CreateConcentratorRequest $request
      * @return JsonResponse
+     * @throws \JsonException
      */
-    public function store(CreateConcentratorRequest $request): JsonResponse
+    public function store(CreateConcentratorRequest $request, ConcentratorService $concentratorService): JsonResponse
     {
         $concentrator = Concentrator::create($request->validated());
+        $concentratorService->register(
+            $concentrator->concentrator_id,
+            $concentrator->name
+        );
         return response()->json(['message' => $concentrator, 'status_code' => 201]);
     }
 
@@ -74,7 +80,17 @@ class ConcentratorController extends Controller
      */
     public function update(UpdateConcentratorRequest $request, Concentrator $concentrator): JsonResponse
     {
+        $oldConcentratorId = $concentrator->concentrator_id;
         $concentrator->update($request->validated());
+
+        if ($oldConcentratorId !== $concentrator->concentrator_id) {
+            $concentratorService = new ConcentratorService();
+            $concentratorService->register(
+                $concentrator->concentrator_id,
+                $concentrator->name
+            );
+        }
+
         return response()->json($concentrator);
     }
 

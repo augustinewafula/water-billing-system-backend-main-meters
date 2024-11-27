@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\MeterCategory;
 use App\Enums\PrepaidMeterType;
+use App\Models\Concentrator;
 use App\Traits\AuthenticatesMeter;
 use App\Traits\SetsEnvironmentalValue;
 use Http;
@@ -22,7 +23,7 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    public function registerPrepaidMeter(string $meter_number, int $prepaid_meter_type, MeterCategory $meterCategory): string
+    public function registerPrepaidMeter(string $meter_number, int $prepaid_meter_type, MeterCategory $meterCategory, string $concentrator_id = null): string
     {
         $response = '';
         if ($prepaid_meter_type === PrepaidMeterType::SH) {
@@ -35,6 +36,19 @@ class PrepaidMeterService
         }
         if ($prepaid_meter_type === PrepaidMeterType::GOMELONG) {
             $response = $this->registerGomelongMeter($meter_number, $meterCategory);
+        }
+        if ($concentrator_id) {
+            $concentrator = Concentrator::find($concentrator_id);
+            if (!$concentrator) {
+                Log::warning("Concentrator with id {$concentrator_id} not found.");
+                return $response;
+            }
+            $concentratorService = new ConcentratorService();
+            $concentratorService->registerMeterWithConcentrator(
+                $meter_number,
+                $meter_number,
+                $concentrator->concentrator_id
+            );
         }
         return $response;
     }
