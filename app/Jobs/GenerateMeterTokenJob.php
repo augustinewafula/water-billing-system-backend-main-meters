@@ -31,7 +31,7 @@ class GenerateMeterTokenJob implements ShouldQueue
 
     public int $tries = self::MAX_RETRIES;
 
-    private int $meterId;
+    private string $meterId;
     private object $mpesaTransaction;
     private object $deductions;
     private float $userTotalAmount;
