@@ -48,19 +48,40 @@ class ConcentratorService
 
     public function sendMeterToken(string $meterNumber, string $token): bool
     {
-        $response = Http::timeout(80)
-            ->retry(3, 150)
-            ->post($this->baseUrl . 'VendingMeterSendToken', [
-            'CompanyName' => env('CONCENTRATOR_COMPANY'),
-            'UserName' => env('CONCENTRATOR_USERNAME'),
-            'PassWord' => env('CONCENTRATOR_PASSWORD'),
-            'MeterID' => $meterNumber,
-            'Token' => $token,
-        ]);
+        try {
+            $response = Http::timeout(80)
+                ->retry(3, 150)
+                ->post($this->baseUrl . 'VendingMeterSendToken', [
+                    'CompanyName' => env('CONCENTRATOR_COMPANY'),
+                    'UserName' => env('CONCENTRATOR_USERNAME'),
+                    'PassWord' => env('CONCENTRATOR_PASSWORD'),
+                    'MeterID' => $meterNumber,
+                    'Token' => $token,
+                ]);
 
-        Log::info('concentrator send meter token response:' . $response->body());
+            $responseBody = $response->body();
+            Log::info('concentrator send meter token response:' . $responseBody);
 
-        return $response->successful();
+            // Check both HTTP status and response message
+            if (!$response->successful()) {
+                Log::error('HTTP request failed with status: ' . $response->status());
+                return false;
+            }
+
+            // Check for error messages in the response body
+            $errorMessages = ['Recharge failed!', 'Failed', 'Error']; // Add other error messages as needed
+            foreach ($errorMessages as $errorMessage) {
+                if (str_contains($responseBody, $errorMessage)) {
+                    Log::error('Token sending failed with message: ' . $responseBody);
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Exception while sending meter token: ' . $e->getMessage());
+            return false;
+        }
     }
 
 }
