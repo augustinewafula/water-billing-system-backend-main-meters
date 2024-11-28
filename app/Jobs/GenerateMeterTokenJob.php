@@ -320,7 +320,7 @@ class GenerateMeterTokenJob implements ShouldQueue
         try {
             $this->concentratorService->registerMeterWithConcentrator(
                 $meter->number,
-                $meter->customer_id,
+                $meter->number,
                 $meter->concentrator_id
             );
 
