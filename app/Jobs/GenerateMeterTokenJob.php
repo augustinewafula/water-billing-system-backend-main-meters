@@ -315,8 +315,7 @@ class GenerateMeterTokenJob implements ShouldQueue
         $meter->loadMissing('concentrator');
         Log::warning('Failed to send token to concentrator, attempting meter re-registration', [
             'meter_number' => $meter->number,
-            'concentrator_id' => $meter->concentrator->concentrator_id,
-            'customer_id' => $meter->customer_id
+            'concentrator_id' => $meter->concentrator->concentrator_id
         ]);
 
         try {
@@ -336,15 +335,13 @@ class GenerateMeterTokenJob implements ShouldQueue
             if (!$retryResult) {
                 Log::error('Token send failed after meter re-registration', [
                     'meter_number' => $meter->number,
-                    'concentrator_id' => $meter->concentrator_id,
-                    'customer_id' => $meter->customer_id
+                    'concentrator_id' => $meter->concentrator->concentrator_id,
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('Error during meter re-registration process', [
                 'meter_number' => $meter->number,
-                'concentrator_id' => $meter->concentrator_id,
-                'customer_id' => $meter->customer_id,
+                'concentrator_id' => $meter->concentrator->concentrator_id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
