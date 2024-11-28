@@ -312,14 +312,14 @@ class GenerateMeterTokenJob implements ShouldQueue
 
     private function handleFailedTokenSend(Meter $meter, string $token): void
     {
+        $meter->loadMissing('concentrator');
         Log::warning('Failed to send token to concentrator, attempting meter re-registration', [
             'meter_number' => $meter->number,
-            'concentrator_id' => $meter->concentrator_id,
+            'concentrator_id' => $meter->concentrator->concentrator_id,
             'customer_id' => $meter->customer_id
         ]);
 
         try {
-            $meter->loadMissing('concentrator');
             $this->concentratorService->registerMeterWithConcentrator(
                 $meter->number,
                 $meter->number,
