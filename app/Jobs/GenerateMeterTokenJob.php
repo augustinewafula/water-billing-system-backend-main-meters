@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\MeterCategory;
+use App\Models\Concentrator;
 use App\Models\Meter;
 use App\Models\MeterToken;
 use App\Services\ConcentratorService;
@@ -318,10 +319,11 @@ class GenerateMeterTokenJob implements ShouldQueue
         ]);
 
         try {
+            $meter->loadMissing('concentrator');
             $this->concentratorService->registerMeterWithConcentrator(
                 $meter->number,
                 $meter->number,
-                $meter->concentrator_id
+                $meter->concentrator->concentrator_id
             );
 
             Log::info('Meter re-registration successful, retrying token send', [
