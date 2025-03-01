@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\MpesaTransaction;
@@ -16,7 +15,7 @@ class GenerateTokenCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'generate:token {user_id}';
+    protected $signature = 'generate:token {user_id} {--dry-run : Simulate the token generation without dispatching the job}';
 
     /**
      * The console command description.
@@ -33,6 +32,7 @@ class GenerateTokenCommand extends Command
     public function handle(): int
     {
         $userId = $this->argument('user_id');
+        $dryRun = $this->option('dry-run');
         $user = User::with('meter')->findOrFail($userId);
 
         if ($user->account_balance < 0) {
@@ -50,15 +50,25 @@ class GenerateTokenCommand extends Command
             ->latest()
             ->first();
 
-        GenerateMeterTokenJob::dispatch(
-            $user->meter->id,
-            $mpesaTransaction,
-            $deductions,
-            $user->account_balance,
-            $user
-        );
+        if ($dryRun) {
+            $this->info('Dry run mode: Token generation simulation');
+            $this->line('User ID: ' . $user->id);
+            $this->line('Meter ID: ' . $user->meter->id);
+            $this->line('Mpesa Transaction ID: ' . optional($mpesaTransaction)->id);
+            $this->line('Deductions: ' . json_encode($deductions->toArray()));
+            $this->line('Account Balance: ' . $user->account_balance);
+        } else {
+            GenerateMeterTokenJob::dispatch(
+                $user->meter->id,
+                $mpesaTransaction,
+                $deductions,
+                $user->account_balance,
+                $user
+            );
 
-        $this->info('Token generation initiated successfully.');
+            $this->info('Token generation initiated successfully.');
+        }
+
         return Command::SUCCESS;
     }
 }
