@@ -235,11 +235,12 @@ class GenerateMeterTokenJob implements ShouldQueue
             'token' => $token,
             'units' => $units,
             'service_fee' => $serviceFee,
-            'monthly_service_charge_deducted' => $this->deductions->monthly_service_charge_deducted,
-            'connection_fee_deducted' => $this->deductions->connection_fee_deducted,
-            'unaccounted_debt_deducted' => $this->deductions->unaccounted_debt_deducted,
+            'monthly_service_charge_deducted' => $this->deductions->monthly_service_charge_deducted ?? 0,
+            'connection_fee_deducted' => $this->deductions->connection_fee_deducted ?? 0,
+            'unaccounted_debt_deducted' => $this->deductions->unaccounted_debt_deducted ?? 0,
             'meter_id' => $this->user->meter_id,
         ]);
+
     }
 
     private function updateUserBalance(): void
