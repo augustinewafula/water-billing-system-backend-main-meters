@@ -55,7 +55,7 @@ class GenerateTokenCommand extends Command
             $this->line('User ID: ' . $user->id);
             $this->line('Meter ID: ' . $user->meter->id);
             $this->line('Mpesa Transaction ID: ' . optional($mpesaTransaction)->id);
-            $this->line('Deductions: ' . json_encode($deductions->toArray()));
+            $this->line('Deductions: ' . json_encode($deductions, JSON_THROW_ON_ERROR));
             $this->line('Account Balance: ' . $user->account_balance);
         } else {
             GenerateMeterTokenJob::dispatch(
