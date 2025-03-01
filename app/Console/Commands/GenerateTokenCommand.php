@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\MpesaTransaction;
 use App\Jobs\GenerateMeterTokenJob;
+use stdClass;
 
 class GenerateTokenCommand extends Command
 {
@@ -41,7 +41,7 @@ class GenerateTokenCommand extends Command
             return Command::FAILURE;
         }
 
-        $deductions = new Collection();
+        $deductions = new stdClass();
         $deductions->monthly_service_charge_deducted = 0;
         $deductions->unaccounted_debt_deducted = 0;
         $deductions->connection_fee_deducted = 0;
