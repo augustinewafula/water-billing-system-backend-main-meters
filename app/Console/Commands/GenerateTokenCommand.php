@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\MpesaTransaction;
@@ -40,11 +41,10 @@ class GenerateTokenCommand extends Command
             return Command::FAILURE;
         }
 
-        $deductions = collect([
-            'monthly_service_charge_deducted' => 0,
-            'unaccounted_debt_deducted' => 0,
-            'connection_fee_deducted' => 0,
-        ]);
+        $deductions = new Collection();
+        $deductions->monthly_service_charge_deducted = 0;
+        $deductions->unaccounted_debt_deducted = 0;
+        $deductions->connection_fee_deducted = 0;
 
         $mpesaTransaction = MpesaTransaction::where('BillRefNumber', $user->account_number)
             ->latest()
