@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClearMeterTokenRequest;
 use App\Http\Requests\CreateMeterTokenRequest;
 use App\Http\Requests\SendClearTokenMessageRequest;
+use App\Jobs\GenerateMeterTokenJob;
 use App\Jobs\SendSMS;
 use App\Models\Meter;
 use App\Models\MeterToken;
@@ -222,6 +223,32 @@ class MeterTokenController extends Controller
         $user = User::find($user->id);
         $this->notifyUser((object)['message' => $message], $user, 'meter tokens');
         return response()->json('sent');
+    }
+
+    public function generateToken(Request $request): JsonResponse
+    {
+        $user = User::with('meter')->findOrFail($request->user_id);
+        if ($user->account_balance < 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account balance is insufficient.',
+            ], 400);
+        }
+        $deductions = collect([
+            'monthly_service_charge_deducted' => 0,
+            'unaccounted_debt_deducted' => 0,
+            'connection_fee_deducted' => 0,
+        ]);
+        $mpesa_transaction = MpesaTransaction::where('BillRefNumber', $user->account_number)
+            ->latest()
+            ->first();
+
+        GenerateMeterTokenJob::dispatch($user->meter->id, $mpesa_transaction, $deductions, $user->account_balance, $user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token generation initiated successfully.',
+        ], 200);
     }
 
 }

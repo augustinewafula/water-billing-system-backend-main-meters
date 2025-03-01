@@ -130,6 +130,7 @@ Route::prefix('v1')->group(function () {
         Route::post('users-account/credit', [TransactionController::class, 'creditAccount']);
         Route::post('users-account/debit', [TransactionController::class, 'debitAccount']);
         Route::post('transfer-transaction', [TransactionController::class, 'transfer']);
+        Route::post('generate-meter-token', [MeterTokenController::class, 'generateToken']);
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
