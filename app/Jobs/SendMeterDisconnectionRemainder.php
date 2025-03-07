@@ -2,15 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Enums\PaymentStatus;
 use App\Enums\ValveStatus;
-use App\Models\Meter;
 use App\Models\MeterReading;
 use App\Traits\CalculatesUserAmount;
 use App\Traits\NotifiesUser;
 use Carbon\Carbon;
-use DB;
-use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -23,61 +19,53 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CalculatesUserAmount, NotifiesUser;
 
-    public $tries = 2;
+    public int $tries = 2;
     public $failOnTimeout = true;
+
+    protected MeterReading $meterReading;
 
     /**
      * Create a new job instance.
      *
-     * @return void
+     * @param MeterReading $meterReading
      */
-    public function __construct()
+    public function __construct(MeterReading $meterReading)
     {
-        //
+        $this->meterReading = $meterReading;
     }
 
     /**
      * Execute the job.
      *
      * @return void
+     * @throws Throwable
      */
-    public function handle()
+    public function handle(): void
     {
-        $unpaid_meters = MeterReading::with('meter')
-            ->where('disconnection_remainder_sms_sent', false)
-            ->where('bill_due_at', '<=', now())
-            ->where(function ($query) {
-                $query->whereStatus(PaymentStatus::NOT_PAID)
-                    ->orWhere('status', PaymentStatus::PARTIALLY_PAID);
-            })
-            ->take(15)
-            ->get();
-        foreach ($unpaid_meters as $unpaid_meter) {
-            try {
-                if (!$unpaid_meter->meter) {
-                    continue;
-                }
-                if ($unpaid_meter->meter->valve_status === ValveStatus::CLOSED) {
-                    continue;
-                }
-                $meter = Meter::with('user', 'station')->findOrFail($unpaid_meter->meter->id);
-                if (!$meter->user) {
-                    continue;
-                }
-                $paybill_number = $meter->station->paybill_number;
-                $account_number = $meter->user->account_number;
-                $first_name = explode(' ', trim($meter->user->name))[0];
-                $total_debt_formatted = number_format($this->calculateUserMeterReadingDebt($unpaid_meter->meter->id));
-                $tell_user_meter_disconnection_on = Carbon::createFromFormat('Y-m-d  H:i:s', $unpaid_meter->tell_user_meter_disconnection_on)->toFormattedDateString();
-
-                $message = "Hello $first_name, your water bill is passed due date. Your meter shall be disconnected by $tell_user_meter_disconnection_on. Please pay your total debt of Ksh $total_debt_formatted to avoid disconnection.\nPay via paybill number $paybill_number, account number $account_number";
-
-                $this->notifyUser((object)['message' => $message, 'title' => 'Water bill debt'], $meter->user, 'general');
-                $meter_reading = MeterReading::find($unpaid_meter->id);
-                $meter_reading->update(['disconnection_remainder_sms_sent' => true]);
-            } catch (Throwable $th) {
-                Log::error($th);
+        try {
+            $meter = $this->meterReading->meter;
+            if (!$meter || !$meter->user || $meter->valve_status === ValveStatus::CLOSED) {
+                return;
             }
+
+            $paybillNumber = $meter->station->paybill_number;
+            $accountNumber = $meter->user->account_number;
+            $firstName = explode(' ', trim($meter->user->name))[0];
+            $totalDebt = number_format($this->calculateUserMeterReadingDebt($meter->id));
+            $disconnectionDate = Carbon::createFromFormat('Y-m-d H:i:s', $this->meterReading->tell_user_meter_disconnection_on)
+                ->toFormattedDateString();
+
+            $message = "Hello $firstName, your water bill is past due. Your meter shall be disconnected by $disconnectionDate. " .
+                "Please pay your total debt of Ksh $totalDebt to avoid disconnection. " .
+                "Pay via paybill number $paybillNumber, account number $accountNumber.";
+
+            $this->notifyUser((object)['message' => $message, 'title' => 'Water bill debt'], $meter->user, 'general');
+
+            $this->meterReading->update(['disconnection_remainder_sms_sent' => true]);
+
+        } catch (Throwable $th) {
+            Log::error($th);
+            throw $th;
         }
     }
 }
