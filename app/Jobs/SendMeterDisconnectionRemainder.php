@@ -45,7 +45,7 @@ class SendMeterDisconnectionRemainder implements ShouldQueue
     {
         $unpaid_meters = MeterReading::with('meter')
             ->where('disconnection_remainder_sms_sent', false)
-            ->whereDate('bill_due_at', '<=', now())
+            ->where('bill_due_at', '<=', now())
             ->where(function ($query) {
                 $query->whereStatus(PaymentStatus::NOT_PAID)
                     ->orWhere('status', PaymentStatus::PARTIALLY_PAID);
