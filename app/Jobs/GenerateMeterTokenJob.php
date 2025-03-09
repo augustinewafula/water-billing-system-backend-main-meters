@@ -121,7 +121,8 @@ class GenerateMeterTokenJob implements ShouldQueue
         Meter $meter,
         float $amount,
         float $costPerUnit,
-        float $units
+        float $units,
+        bool $usePrismVend2 = false
     ): string {
         Log::debug('Attempting token generation with parameters', [
             'meter_number' => $meter->number,
@@ -129,7 +130,8 @@ class GenerateMeterTokenJob implements ShouldQueue
             'cost_per_unit' => $costPerUnit,
             'units' => $units,
             'meter_type' => $meter->prepaid_meter_type,
-            'use_prism_vend' => $meter->use_prism_vend
+            'use_prism_vend' => $meter->use_prism_vend,
+            'use_prism_vend2' => $usePrismVend2
         ]);
 
         $token = $this->prepaidMeterService->generateMeterToken(
@@ -139,7 +141,8 @@ class GenerateMeterTokenJob implements ShouldQueue
             $costPerUnit,
             $meter->prepaid_meter_type,
             $units,
-            $meter->use_prism_vend
+            $meter->use_prism_vend,
+            $usePrismVend2
         );
 
         Log::debug('Token generation attempt result', [
@@ -151,6 +154,9 @@ class GenerateMeterTokenJob implements ShouldQueue
         return $token;
     }
 
+    /**
+     * @throws \JsonException
+     */
     private function generateAndValidateToken(Meter $meter): string
     {
         $units = $this->calculateUnits($this->userTotalAmount, $this->user);
@@ -167,7 +173,10 @@ class GenerateMeterTokenJob implements ShouldQueue
             'amount_after_fees' => $amountAfterFees
         ]);
 
-        $token = $this->attemptTokenGeneration($meter, $amountAfterFees, $costPerUnit, $units);
+        // Check if we should use the secondary Prism vend server
+        $usePrismVend2 = $meter->use_prism_vend && $this->attempts() >= 2;
+
+        $token = $this->attemptTokenGeneration($meter, $amountAfterFees, $costPerUnit, $units, $usePrismVend2);
 
         if ($this->isInvalidToken($token)) {
             Log::warning('Invalid token received, attempting meter registration', [
@@ -177,7 +186,7 @@ class GenerateMeterTokenJob implements ShouldQueue
             ]);
 
             $this->registerMeterAndRetry($meter);
-            $token = $this->attemptTokenGeneration($meter, $amountAfterFees, $costPerUnit, $units);
+            $token = $this->attemptTokenGeneration($meter, $amountAfterFees, $costPerUnit, $units, $usePrismVend2);
 
             if ($this->isInvalidToken($token)) {
                 Log::error('Token generation failed after meter registration', [

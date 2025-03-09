@@ -262,10 +262,10 @@ class PrepaidMeterService
     /**
      * @throws JsonException
      */
-    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH, ? float $units = null, $usePrismVend = false): ?string
+    public function generateMeterToken(string $meter_number, float $amount, int $meterCategory, int $cost_per_unit, int $meterType = PrepaidMeterType::SH, ? float $units = null, $usePrismVend = false, $usePrismVend2 = false): ?string
     {
         if ($usePrismVend) {
-            return $this->generatePrismToken($meter_number, $amount, $units, MeterCategory::fromValue($meterCategory));
+            return $this->generatePrismToken($meter_number, $amount, $units, MeterCategory::fromValue($meterCategory), $usePrismVend2);
         }
         if ($meterCategory === MeterCategory::WATER) {
             $response = '';
@@ -444,19 +444,24 @@ class PrepaidMeterService
         return null;
     }
 
-    private function generatePrismToken(string $meter_number, float $amount, float $units, MeterCategory $meterCategory): ?string
+    private function generatePrismToken(string $meter_number, float $amount, float $units, MeterCategory $meterCategory, bool $usePrismVend2 = false): ?string
     {
         $subclass = $meterCategory->value === MeterCategory::ENERGY ? '0' : '1';
 
         // Calculate the value: 1 unit = 10,000 values
         $value = $units * 10000;
 
+        $url = $usePrismVend2
+            ? 'http://197.232.113.169/stsvend/VendCredit.xml' // URL for PrismVend2
+            : 'http://41.209.60.94:8080/stsvend/VendCredit.xml'; // Default URL
+
         Log::info('Prism vending calculation:', [
             'meterId' => $meter_number,
             'units' => $units,
             'calculatedValue' => $value,
             'subclass' => $subclass,
-            'meter category' => $meterCategory->description
+            'meter category' => $meterCategory->description,
+            'url' => $url
         ]);
 
         try {
@@ -465,20 +470,20 @@ class PrepaidMeterService
                 ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
                 ->acceptJson()
                 ->asForm()
-                ->post('http://41.209.60.94:8080/stsvend/VendCredit.xml', [
+                ->post($url, [
                     'meterId' => $meter_number,
                     'subclass' => $subclass,
                     'value' => $value, // Use the calculated value instead of units
                 ]);
 
-            // Log the response regardless of the status
-            \Illuminate\Support\Facades\Log::info('Prism vending response:', [
+            Log::info('Prism vending response:', [
                 'meterId' => $meter_number,
+                'url' => $url,
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
 
-            $response->throw();  // This will throw an exception for non-2xx responses
+            $response->throw();
 
             if ($response->successful()) {
                 $xml = simplexml_load_string($response->body());
@@ -490,14 +495,12 @@ class PrepaidMeterService
                 return $formattedToken;
             }
         } catch (\Illuminate\Http\Client\RequestException $e) {
-            // Log the full exception details
-            \Illuminate\Support\Facades\Log::error('Prism vending error:', [
+            Log::error('Prism vending error:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'response' => $e->response?->body(),
+                'url' => $url
             ]);
-
-            // You might want to rethrow the exception or handle it in some way
             throw $e;
         }
 
