@@ -452,7 +452,7 @@ class PrepaidMeterService
         $value = $units * 10000;
 
         $url = $usePrismVend2
-            ? 'http://197.232.113.169/stsvend/VendCredit.xml' // URL for PrismVend2
+            ? 'http://197.232.113.169:8080/stsvend/VendCredit.xml' // URL for PrismVend2
             : 'http://41.209.60.94:8080/stsvend/VendCredit.xml'; // Default URL
 
         Log::info('Prism vending calculation:', [
