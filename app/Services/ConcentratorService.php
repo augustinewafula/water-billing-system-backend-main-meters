@@ -61,37 +61,42 @@ class ConcentratorService
     public function sendCalinMeterToken(string $meterNumber, string $token): bool
     {
         try {
+            $requestData = [
+                'CompanyName' => env('CALIN_CONCENTRATOR_COMPANY'),
+                'UserName' => env('CALIN_CONCENTRATOR_USERNAME'),
+                'PassWord' => env('CALIN_CONCENTRATOR_PASSWORD'),
+                'MeterNo' => $meterNumber,
+                'Token' => $token,
+            ];
+
+            // Log the request payload
+            Log::info('Sending request to Calin concentrator:', $requestData);
+
             $response = Http::timeout(80)
                 ->retry(3, 150)
-                ->post('http://47.90.189.157:6001/api/COMM_RemoteToken', [
-                    'CompanyName' => env('CALIN_CONCENTRATOR_COMPANY'),
-                    'UserName' => env('CALIN_CONCENTRATOR_USERNAME'),
-                    'PassWord' => env('CALIN_CONCENTRATOR_PASSWORD'),
-                    'MeterNo' => $meterNumber,
-                    'Token' => $token,
-                ]);
+                ->post('http://47.90.189.157:6001/api/COMM_RemoteToken', $requestData);
 
             $responseBody = $response->body();
-            Log::info('calin concentrator send meter token response:' . $responseBody);
+            Log::info('Calin concentrator response:', ['response' => $responseBody]);
 
             // Check both HTTP status and response message
             if (!$response->successful()) {
-                Log::error('HTTP request failed with status: ' . $response->status());
+                Log::error('HTTP request failed with status: ' . $response->status(), ['response' => $responseBody]);
                 return false;
             }
 
             // Check for error messages in the response body
-            $errorMessages = ['Recharge failed!', 'Failed', 'Error']; // Add other error messages as needed
+            $errorMessages = ['Recharge failed!', 'Failed', 'Error'];
             foreach ($errorMessages as $errorMessage) {
                 if (str_contains($responseBody, $errorMessage)) {
-                    Log::error('Token sending failed with message: ' . $responseBody);
+                    Log::error('Token sending failed with message:', ['response' => $responseBody]);
                     return false;
                 }
             }
 
             return true;
         } catch (\Exception $e) {
-            Log::error('Exception while sending calin meter token: ' . $e->getMessage());
+            Log::error('Exception while sending Calin meter token:', ['error' => $e->getMessage()]);
             return false;
         }
     }
