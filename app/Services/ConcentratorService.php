@@ -64,9 +64,9 @@ class ConcentratorService
             $response = Http::timeout(80)
                 ->retry(3, 150)
                 ->post('http://47.90.189.157:6001/api/COMM_RemoteToken', [
-                    'CompanyName' => env('CONCENTRATOR_COMPANY'),
-                    'UserName' => env('CONCENTRATOR_USERNAME'),
-                    'PassWord' => env('CONCENTRATOR_PASSWORD'),
+                    'CompanyName' => env('CALIN_CONCENTRATOR_COMPANY'),
+                    'UserName' => env('CALIN_CONCENTRATOR_USERNAME'),
+                    'PassWord' => env('CALIN_CONCENTRATOR_PASSWORD'),
                     'MeterNo' => $meterNumber,
                     'Token' => $token,
                 ]);
