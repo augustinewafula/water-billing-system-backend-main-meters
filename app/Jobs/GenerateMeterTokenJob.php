@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\MeterCategory;
+use App\Enums\PrepaidMeterType;
 use App\Models\Concentrator;
 use App\Models\Meter;
 use App\Models\MeterToken;
@@ -308,7 +309,15 @@ class GenerateMeterTokenJob implements ShouldQueue
             'concentrator_id' => $meter->concentrator_id
         ]);
 
-        $sendResult = $this->concentratorService->sendMeterToken($meter->number, $token);
+        if (!$meter->concentrator) {
+            Log::warning('Concentrator not found for meter', [
+                'meter_number' => $meter->number,
+                'concentrator_id' => $meter->concentrator_id
+            ]);
+            return;
+        }
+
+        $sendResult = $this->concentratorService->sendMeterToken($meter, $token);
 
         if (!$sendResult) {
             $this->handleFailedTokenSend($meter, $token);
