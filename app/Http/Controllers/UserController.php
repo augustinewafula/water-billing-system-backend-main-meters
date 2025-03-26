@@ -63,7 +63,7 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $users = User::withDisabled()();
+        $users = User::withDisabled();
         $users->with('meter');
         $users = $this->filterQuery($request, $users);
         $users = $users->role('user');
