@@ -73,6 +73,7 @@ Route::prefix('v1')->group(function () {
             Route::get('monthly-revenue', [TransactionStatisticsController::class, 'monthlyRevenueStatistics']);
             Route::get('revenue-years', [TransactionStatisticsController::class, 'revenueYears']);
         });
+        Route::put('/users/{userId}/toggle-status', [UserController::class, 'toggleStatus']);
         Route::apiResource('concentrators', ConcentratorController::class);
         Route::apiResource('meters', MeterController::class);
         Route::apiResource('meter-readings', MeterReadingController::class);

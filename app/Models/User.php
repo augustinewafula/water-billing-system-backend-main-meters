@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\DisableableTrait;
 use App\Traits\HasUuid;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,7 @@ use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, SoftDeletes, MassPrunable, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, HasUuid, HasRoles, SoftDeletes, MassPrunable, LogsActivity, DisableableTrait;
 
     public $incrementing = false;
 
@@ -92,7 +93,8 @@ class User extends Authenticatable
         'number_of_months_to_pay_connection_fee',
         'use_custom_charges_for_service_charge',
         'service_charge',
-        'should_notify_user'
+        'should_notify_user',
+        'is_disabled'
     ];
 
     /**
@@ -113,7 +115,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'first_monthly_service_fee_on' => 'datetime',
-        'communication_channels' => 'array'
+        'communication_channels' => 'array',
+        'is_disabled' => 'boolean',
     ];
 
     /**

@@ -63,7 +63,7 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $users = User::query();
+        $users = User::withDisabled()();
         $users->with('meter');
         $users = $this->filterQuery($request, $users);
         $users = $users->role('user');
@@ -115,7 +115,8 @@ class UserController extends Controller
     public function download(Request $request): JsonResponse
     {
         $stationId = $request->query('station_id');
-        $users = User::role('user')
+        $users = User::withDisabled()
+            ->role('user')
             ->select('users.name as Name', 'users.phone as Contact', 'users.account_number as Account Number', 'meters.last_reading as Previous Reading', )
             ->join('meters', 'meters.id', 'users.meter_id');
 
@@ -218,7 +219,8 @@ class UserController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $user = User::with('meter.type', 'unaccounted_debts')
+        $user = User::withDisabled()
+            ->with('meter.type', 'unaccounted_debts')
             ->withCount('unaccounted_debts')
             ->where('id', $id)
             ->firstOrFail();
@@ -232,7 +234,8 @@ class UserController extends Controller
     {
         $year = $request->query('year');
         return response()->json(
-            User::select('meter_billing_reports.*')
+            User::withDisabled()
+                ->select('meter_billing_reports.*')
                 ->join('meters', 'meters.id', 'users.meter_id')
                 ->join('meter_billing_reports', 'meter_billing_reports.meter_id', 'meters.id')
                 ->where('meter_billing_reports.year', $year)
@@ -244,7 +247,8 @@ class UserController extends Controller
     public function billing_report_years($user_id): JsonResponse
     {
         return response()->json(
-            User::select('meter_billing_reports.year as text')
+            User::withDisabled()
+                ->select('meter_billing_reports.year as text')
                 ->join('meters', 'meters.id', 'users.meter_id')
                 ->join('meter_billing_reports', 'meter_billing_reports.meter_id', 'meters.id')
                 ->where('users.id', $user_id)
@@ -355,6 +359,51 @@ class UserController extends Controller
             })
             ->orderBy('created_at', 'ASC')
             ->get();
+    }
+
+    /**
+     * Toggle user account status (enable/disable)
+     *
+     * @param Request $request
+     * @param int $userId
+     * @return JsonResponse
+     */
+    public function toggleStatus(Request $request, $userId): JsonResponse
+    {
+        // Validate input
+        $request->validate([
+            'status' => 'required|boolean'
+        ]);
+        Log::info('Received status: ' . ($request->input('status') ? 'true' : 'false'));
+
+        // Find the user
+        $user = User::withDisabled()->findOrFail($userId);
+
+        try {
+            // Toggle user status
+            if ($request->input('status')) {
+                $user->enable();
+                $message = 'User account enabled successfully';
+            } else {
+                $user->disable();
+                $message = 'User account disabled successfully';
+            }
+
+            return response()->json([
+                'message' => $message,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'is_disabled' => $user->is_disabled
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update user status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
