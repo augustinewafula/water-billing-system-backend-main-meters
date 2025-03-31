@@ -71,6 +71,16 @@ return [
             //'sharedFolderId' => env('GOOGLE_DRIVE_SHARED_FOLDER_ID'),
         ],
 
+        'hexing_server' => [
+            'driver' => 'sftp',
+            'host' => env('HEXING_SERVER_HOST'),
+            'username' => env('HEXING_SERVER_USERNAME'),
+            'password' => env('HEXING_SERVER_PASSWORD'),
+            'port' => (int) env('HEXING_SERVER_PORT', 22),
+            'root' => env('HEXING_SERVER_ROOT', '/'),
+            'timeout' => 30,
+        ],
+
     ],
 
     /*

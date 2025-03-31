@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Actions\GenerateUnreadMeters;
+use App\Actions\GetHexingMeterReadings;
 use App\Http\Requests\CreateDailyMeterReadingRequest;
 use App\Http\Requests\CreateMeterReadingRequest;
 use App\Models\Meter;
@@ -76,6 +77,29 @@ class GetMeterReadings implements ShouldQueue
                 ];
                 $this->saveMeterReading($meter_details);
             }
+        }
+        try {
+            $getHexingMeterReadings = app(GetHexingMeterReadings::class);
+            $hexingMeters = $getHexingMeterReadings->execute();
+
+            foreach ($hexingMeters as $meter) {
+                $last_communication_date = Carbon::parse($meter['timestamp'])
+                    ->setTimezone('Africa/Nairobi');
+
+                $meter_details = (object)[
+                    'meter_number' => $meter['meter_number'],
+                    'meter_reading' => (int)($meter['current_cumulative_flow'] ?? 0),
+                    'meter_voltage' => $meter['battery_voltage'] ?? null,
+                    'signal_intensity' => null,
+                    'last_communication_date' => $last_communication_date
+                ];
+
+                $this->saveMeterReading($meter_details);
+            }
+        } catch (Throwable $e) {
+            Log::error('Failed to process Hexing meters: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
         }
         (new GenerateUnreadMeters())->execute(now());
     }
