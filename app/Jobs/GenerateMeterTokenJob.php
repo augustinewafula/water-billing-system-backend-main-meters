@@ -124,7 +124,7 @@ class GenerateMeterTokenJob implements ShouldQueue
         float $costPerUnit,
         float $units,
         bool $usePrismVend2 = false
-    ): string {
+    ): ?string {
         Log::debug('Attempting token generation with parameters', [
             'meter_number' => $meter->number,
             'amount' => $amount,
