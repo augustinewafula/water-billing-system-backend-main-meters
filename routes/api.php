@@ -140,6 +140,7 @@ Route::prefix('v1')->group(function () {
     Route::post('transaction-validation', [MeterBillingController::class, 'mpesaValidation']);
     Route::post('query-transaction-status-result-callback', [TransactionController::class, 'queryTransactionStatusResultCallback']);
     Route::post('query-transaction-status-queue-timeout-callback', [TransactionController::class, 'queryTransactionStatusQueueTimeoutCallback']);
+    Route::post('pull-transaction-confirmation', [TransactionController::class, 'pullTransactionConfirmation']);
     Route::fallback(static function () {
         return response()->json([
             'message' => 'Page Not Found. If error persists, contact the website administrator'], 404);

@@ -21,6 +21,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Str;
 use DB;
 use Throwable;
@@ -47,6 +49,18 @@ class TransactionController extends Controller
         \Log::info('Query transaction status queue timeout callback: '. $request);
         $mpesaService->handleTransactionStatusQueueTimeout($request);
         return response()->json('ok');
+    }
+
+    public function pullTransactionConfirmation(Request $request): Response
+    {
+        Log::info(['pull transaction confirmation request' => $request->all()]);
+
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml; charset=utf-8');
+        $response->setContent(json_encode(['PullTransactionConfirmationResult' => 'Success'], JSON_THROW_ON_ERROR));
+
+        return $response;
+
     }
 
     /**

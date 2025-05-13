@@ -8,15 +8,18 @@ use App\Jobs\ProcessTransaction;
 use App\Models\Meter;
 use App\Models\MeterStation;
 use App\Models\MpesaTransaction;
+use App\Models\PaybillCredential;
 use App\Models\UnverifiedMpesaTransaction;
 use App\Models\User;
 use App\Traits\CalculatesBill;
 use App\Traits\NotifiesUser;
+use Exception;
 use Http;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use JsonException;
 use Log;
 use Spatie\WebhookServer\WebhookCall;
@@ -250,25 +253,77 @@ class MpesaService
         return $response;
     }
 
-    /**
-     * @throws JsonException
-     */
-    public function generateAccessToken()
+    public function pullTransactions(string $shortCode, string $startDate, string $endDate, int $offsetValue = 0): array
     {
-        $consumer_key=env('MPESA_CONSUMER_KEY');
-        $consumer_secret=env('MPESA_CONSUMER_SECRET');
-        $credentials = base64_encode($consumer_key. ':' .$consumer_secret);
-        $url = 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+        $accessToken = $this->generateAccessToken($shortCode);
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Basic '.$credentials,
-            'Content-Type' => 'application/json'
-        ])->get($url);
-        if ($response->successful()) {
-            Log::info('generateAccessToken response'.$response->body());
-            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->access_token;
+        $payload = [
+            'ShortCode' => $shortCode,
+            'StartDate' => $startDate,
+            'EndDate' => $endDate,
+            'OffSetValue' => (string) $offsetValue,
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $accessToken,
+                'Content-Type' => 'application/json',
+            ])->post('https://api.safaricom.co.ke/pulltransactions/v1/query', $payload);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to pull transactions: ' . $response->body());
+            }
+
+            return json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (Exception $e) {
+            Log::error('Error pulling M-Pesa transactions', [
+                'shortcode' => $shortCode,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to pull transactions. Please try again later.',
+            ];
         }
-        return null;
+    }
+
+    public function generateAccessToken(string $shortCode): ?string
+    {
+        $paybill = PaybillCredential::where('shortcode', $shortCode)->first();
+
+        throw_if(!$paybill, new \InvalidArgumentException("No credentials found for shortcode {$shortCode}"));
+
+        $consumerKey = $paybill->consumer_key;
+        $consumerSecret = $paybill->consumer_secret;
+
+        $cacheKey = "mpesa_access_token_{$shortCode}";
+
+        return Cache::remember($cacheKey, now()->addSeconds(3500), function () use ($consumerKey, $consumerSecret) {
+            $auth = base64_encode("{$consumerKey}:{$consumerSecret}");
+            $url = 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic ' . $auth,
+                'Content-Type' => 'application/json',
+            ])->get($url);
+
+            if (!$response->successful()) {
+                Log::error('Failed to retrieve Mpesa access token', ['response' => $response->body()]);
+                return null;
+            }
+
+            return json_decode($response->body(), false, 512, JSON_THROW_ON_ERROR)->access_token;
+        });
+    }
+
+    public function pullTransactionsWithDefault(string $startDate, string $endDate, int $offsetValue = 0): array
+    {
+        $default = PaybillCredential::where('is_default', true)->first();
+
+        throw_if(!$default, new \RuntimeException('No default Mpesa shortcode configured.'));
+
+        return $this->pullTransactions($default->shortcode, $startDate, $endDate, $offsetValue);
     }
 
 }
