@@ -31,6 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('meter-readings:get --type=monthly')->monthlyOn($this->meterReadingOn());
         $schedule->command('users:debit-connection-fee')->daily();
         $schedule->command('connection-fees:send-bill-remainder')->daily();
+        $schedule->command('mpesa:pull-transactions')->everyFiveMinutes();
 //        $schedule->command('monthly-service-charge:generate')->monthly();
         $schedule->command('backup:clean')->dailyAt('01:00');
         $schedule->command('backup:run')->daily();
