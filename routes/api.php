@@ -11,6 +11,7 @@ use App\Http\Controllers\MeterReadingController;
 use App\Http\Controllers\MeterStationController;
 use App\Http\Controllers\MeterTokenController;
 use App\Http\Controllers\MonthlyServiceChargeController;
+use App\Http\Controllers\PaybillCredentialController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SmsController;
