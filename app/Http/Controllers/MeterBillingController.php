@@ -10,6 +10,7 @@ use App\Services\MpesaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use JsonException;
 use Throwable;
 
@@ -55,6 +56,7 @@ class MeterBillingController extends Controller
 
     public function mspaceMpesaConfirmation(Request $request): JsonResponse
     {
+        Log::info('mspaceMpesaConfirmation', ['request' => $request->all()]);
         $request->validate([
             'transID' => 'unique:mpesa_transactions'
         ]);
