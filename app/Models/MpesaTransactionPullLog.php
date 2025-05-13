@@ -12,7 +12,7 @@ class MpesaTransactionPullLog extends Model
 {
     use HasFactory, HasUuid, Prunable;
 
-    protected $fillable = ['last_pulled_at'];
+    protected $fillable = ['last_pulled_at', 'shortcode'];
 
     protected $casts = [
         'last_pulled_at' => 'datetime',

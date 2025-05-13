@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Requests\MpesaPaymentRequest;
 use App\Http\Requests\MpesaTransactionRequest;
-use App\Models\MpesaPayment;
 use App\Models\MpesaTransaction;
 use App\Models\MpesaTransactionPullLog;
+use App\Models\PaybillCredential;
 use App\Services\MpesaService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -14,211 +13,161 @@ use Illuminate\Support\Facades\Log;
 
 class PullMpesaTransactions extends Command
 {
-    protected $signature = 'mpesa:pull-transactions {--start-date= : The start date for pulling transactions (format: Y-m-d H:i:s)}';
-    protected $description = 'Pull transactions from M-Pesa and reconcile payments';
+    protected $signature = 'mpesa:pull-transactions {--start-date= : Optional start date (Y-m-d H:i:s)}';
+    protected $description = 'Pull and reconcile M-Pesa transactions for all registered Paybill shortcodes';
 
     public function __construct(private MpesaService $mpesaService)
     {
         parent::__construct();
     }
 
-    /**
-     * @throws \JsonException
-     */
     public function handle(): void
     {
         if (!config('features.mpesa_pull_transactions')) {
-            $this->info('This feature is disabled.');
+            $this->info('M-Pesa pull feature is disabled.');
             return;
         }
 
-        // Retrieve the start date from the option or fallback to the last pull log or 6 hours ago
-        $startDateOption = $this->option('start-date');
-        $startDate = $startDateOption
-            ? Carbon::createFromFormat('Y-m-d H:i:s', $startDateOption)
-            : $this->getDefaultStartDate();
+        $paybills = PaybillCredential::all();
 
-        $endDate = now();
-
-        // Ensure startDate does not exceed the 48-hour restriction
-        if ($startDate->lt(now()->subHours(48))) {
-            $startDate = now()->subHours(48);
-        }
-
-        $startDateFormatted = $startDate->format('Y-m-d H:i:s');
-        $endDateFormatted = $endDate->format('Y-m-d H:i:s');
-
-        $this->logInfo("Pulling transactions from {$startDateFormatted} to {$endDateFormatted}");
-
-        $response = $this->mpesaService->pullTransactions($startDateFormatted, $endDateFormatted);
-
-        if (!isset($response['ResponseCode'])) {
-            $this->logError("Invalid response received from the M-Pesa API.");
+        if ($paybills->isEmpty()) {
+            $this->error('No Paybill credentials configured.');
             return;
         }
 
-        $this->processResponse($response, $endDate);
+        $customStartDate = $this->option('start-date');
+        $startDateOption = $customStartDate
+            ? Carbon::createFromFormat('Y-m-d H:i:s', $customStartDate)
+            : null;
+
+        foreach ($paybills as $paybill) {
+            $shortcode = $paybill->shortcode;
+
+            $startDate = $startDateOption ?? $this->getStartDateForShortcode($shortcode);
+            $endDate = now();
+
+            // Enforce 48-hour limit
+            if ($startDate->lt(now()->subHours(48))) {
+                $startDate = now()->subHours(48);
+            }
+
+            $startFormatted = $startDate->format('Y-m-d H:i:s');
+            $endFormatted = $endDate->format('Y-m-d H:i:s');
+
+            $this->logInfo("Pulling transactions for shortcode {$shortcode} from {$startFormatted} to {$endFormatted}");
+
+            $response = $this->mpesaService->pullTransactions($shortcode, $startFormatted, $endFormatted);
+
+            if (!isset($response['ResponseCode'])) {
+                $this->logError("Invalid response for shortcode {$shortcode}.");
+                continue;
+            }
+
+            $this->processResponse($shortcode, $response, $endDate);
+        }
     }
 
-    private function getDefaultStartDate(): Carbon
+    private function getStartDateForShortcode(string $shortcode): Carbon
     {
-        $lastPullLog = MpesaTransactionPullLog::latest('last_pulled_at')->first();
+        $lastLog = MpesaTransactionPullLog::where('shortcode', $shortcode)
+            ->latest('last_pulled_at')
+            ->first();
 
-        if ($lastPullLog) {
-            return Carbon::parse($lastPullLog->last_pulled_at)->subMinute(); // Subtract 1 minute for safe overlap
-        }
-
-        return now()->subHours(6);
+        return $lastLog
+            ? Carbon::parse($lastLog->last_pulled_at)->subMinute()
+            : now()->subHours(6);
     }
 
-
-    /**
-     * Process the response from the M-Pesa API.
-     *
-     * @param array $response
-     * @param Carbon $endDate
-     * @return void
-     */
-    private function processResponse(array $response, Carbon $endDate): void
+    private function processResponse(string $shortcode, array $response, Carbon $endDate): void
     {
         $responseCode = $response['ResponseCode'];
 
         switch ($responseCode) {
             case '1000': // Success
                 $transactions = $response['Response'] ?? [];
-                $flattenedTransactions = $this->flattenTransactions($transactions);
+                $flattened = $this->flattenTransactions($transactions);
 
-                $transactionCount = count($flattenedTransactions);
-                $this->logInfo("Total transactions pulled: {$transactionCount}");
+                $this->logInfo("Shortcode {$shortcode} - Pulled " . count($flattened) . " transactions.");
 
-                if ($transactionCount > 0) {
-                    $transactionIds = array_column($flattenedTransactions, 'transactionId');
-                    $this->logInfo("Transaction IDs: " . implode(', ', $transactionIds));
-                }
+                $missing = $this->reconcileTransactions($flattened);
+                $this->logInfo("Shortcode {$shortcode} - Missing transactions: " . count($missing));
 
-                $missingTransactions = $this->reconcileTransactions($flattenedTransactions);
-                $this->logInfo("Total missing transactions: " . count($missingTransactions));
-
-                $this->handleMissingTransactions($missingTransactions);
+                $this->handleMissingTransactions($shortcode, $missing);
                 break;
 
-            case '1001': // Null, no transactions
-                $this->logInfo("No transactions available for the selected time period.");
+            case '1001': // No transactions
+                $this->logInfo("Shortcode {$shortcode} - No transactions in the time range.");
                 break;
 
-            case '500': // Failure
-                $this->logError("Failed to retrieve transactions. Please check the short code configuration.");
+            case '500':
+                $this->logError("Shortcode {$shortcode} - API failure. Check credentials.");
                 break;
 
             default:
-                $this->logError("Unexpected response code received: {$responseCode}");
+                $this->logError("Shortcode {$shortcode} - Unexpected response code: {$responseCode}");
         }
 
         if (in_array($responseCode, ['1000', '1001'], true)) {
-            MpesaTransactionPullLog::create(['last_pulled_at' => $endDate]);
-            $this->logInfo('Transaction pull completed successfully.');
+            MpesaTransactionPullLog::updateOrCreate(
+                ['shortcode' => $shortcode],
+                ['last_pulled_at' => $endDate]
+            );
+
+            $this->logInfo("Shortcode {$shortcode} - Pull log updated.");
         }
     }
 
-
-    /**
-     * Handles missing transactions by calling the acceptPayment method.
-     *
-     * @param array $missingTransactions
-     * @return void
-     */
-    private function handleMissingTransactions(array $missingTransactions): void
+    private function reconcileTransactions(array $transactions): array
     {
-        $shortCode = config('services.mpesa.shortcode');
-        foreach ($missingTransactions as $transaction) {
+        return collect($transactions)
+            ->reject(fn($txn) => MpesaTransaction::where('TransID', $txn['transactionId'])->exists())
+            ->values()
+            ->all();
+    }
+
+    private function handleMissingTransactions(string $shortcode, array $transactions): void
+    {
+        foreach ($transactions as $txn) {
             try {
-                // Create an MpesaPaymentRequest object
-                $paymentRequest = new MpesaTransactionRequest([
-                    'TransactionType' => $transaction['transactiontype'] ?? null,
-                    'TransID' => $transaction['transactionId'],
-                    'TransTime' => isset($transaction['trxDate']) ? Carbon::parse($transaction['trxDate'])->format('YmdHis') : null,
-                    'TransAmount' => $transaction['amount'] ?? null,
-                    'BusinessShortCode' => $shortCode,
-                    'BillRefNumber' => $transaction['billreference'] ?? null,
+                $request = new MpesaTransactionRequest([
+                    'TransactionType' => $txn['transactiontype'] ?? null,
+                    'TransID' => $txn['transactionId'],
+                    'TransTime' => isset($txn['trxDate']) ? Carbon::parse($txn['trxDate'])->format('YmdHis') : null,
+                    'TransAmount' => $txn['amount'] ?? null,
+                    'BusinessShortCode' => $shortcode,
+                    'BillRefNumber' => $txn['billreference'] ?? null,
                     'InvoiceNumber' => null,
                     'OrgAccountBalance' => null,
                     'ThirdPartyTransID' => null,
-                    'MSISDN' => $transaction['msisdn'] ?? null,
+                    'MSISDN' => $txn['msisdn'] ?? null,
                     'FirstName' => null,
                     'MiddleName' => null,
                     'LastName' => null,
                 ]);
 
-                // Call the acceptPayment method
-                $this->mpesaService->acceptTransaction($paymentRequest);
+                $this->mpesaService->acceptTransaction($request);
+                $this->logInfo("Shortcode {$shortcode} - Processed transaction: {$txn['transactionId']}");
 
-                // Log the successful handling of the transaction
-                $this->logInfo("Processed missing transaction: {$transaction['transactionId']}");
-            } catch (\Exception $e) {
-                // Log errors during processing
-                $this->logError("Error processing missing transaction {$transaction['transactionId']}: {$e->getMessage()}");
+            } catch (\Throwable $e) {
+                $this->logError("Shortcode {$shortcode} - Failed processing {$txn['transactionId']}: {$e->getMessage()}");
             }
         }
     }
 
-    /**
-     * Reconciles the pulled transactions with the MpesaPayment records.
-     *
-     * @param array $transactions
-     * @return array List of missing transactions.
-     */
-    private function reconcileTransactions(array $transactions): array
-    {
-        $missingTransactions = [];
-
-        foreach ($transactions as $transaction) {
-            $exists = MpesaTransaction::where('TransID', $transaction['transactionId'])->exists();
-
-            if (!$exists) {
-                $missingTransactions[] = $transaction;
-            }
-        }
-
-        return $missingTransactions;
-    }
-
-    /**
-     * Flattens the nested structure of the transactions response.
-     *
-     * @param array $transactions
-     * @return array Flattened list of transactions.
-     */
     private function flattenTransactions(array $transactions): array
     {
-        $flattened = [];
-
-        foreach ($transactions as $batch) {
-            foreach ($batch as $transaction) {
-                $flattened[] = $transaction; // Add each transaction to the flat list
-            }
-        }
-
-        return $flattened;
+        return collect($transactions)
+            ->flatMap(fn($batch) => $batch)
+            ->values()
+            ->all();
     }
 
-    /**
-     * Logs and displays informational messages.
-     *
-     * @param string $message
-     * @return void
-     */
     private function logInfo(string $message): void
     {
         $this->info($message);
         Log::info($message);
     }
 
-    /**
-     * Logs and displays error messages.
-     *
-     * @param string $message
-     * @return void
-     */
     private function logError(string $message): void
     {
         $this->error($message);
