@@ -20,7 +20,7 @@ trait SendsSms
     public function initiateSendSms(
         string $to,
         string $message,
-        string $user_id,
+        ?string $user_id = null,
         string $initiator = 'system',
         ?string $station_id = null,
         bool $isMasked = false
@@ -55,7 +55,7 @@ trait SendsSms
         string $maskedNumber,
         string $senderId,
         string $phoneNumbers, // Ensure this is an array of phone numbers
-        string $user_id,
+        ?string $user_id = null,
         string $initiator = 'system',
         ?string $station_id = null,
         string $telco = 'Safaricom'
