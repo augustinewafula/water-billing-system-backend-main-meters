@@ -39,7 +39,7 @@ class ForgotPasswordController extends Controller
     }
 
     /**
-     * Send a reset link to the given user.
+     * Send a reset link to the given user without revealing if the email exists.
      *
      * @param Request $request
      * @return JsonResponse
@@ -48,36 +48,59 @@ class ForgotPasswordController extends Controller
     public function getResetToken(Request $request): JsonResponse
     {
         $rules = [
-            'email' => 'required|email|exists:users|max:255',
+            'email' => 'required|email|max:255',
         ];
+
         $customMessages = [
             'required' => 'The :attribute field is required.',
             'email' => 'Invalid email address',
-            'exists' => 'There is no user registered with this email'
         ];
+
         $this->validate($request, $rules, $customMessages);
+
+        $email = $request->input('email');
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            // Log attempt for auditing/security purposes
+            Log::warning('Password reset requested for non-existent email.', [
+                'email' => $request->email,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+            ]);
+            // Always return the same response
+            return response()->json([
+                'message' => 'If we have an account associated with this email, you’ll receive a password reset link shortly.'
+            ]);
+        }
+
+        // Delete any existing reset tokens for the same email
+        DB::table('password_resets')->where('email', $email)->delete();
 
         $token = Str::random(64);
 
         DB::table('password_resets')->insert([
-            'email' => $request->email,
+            'email' => $email,
             'token' => $token,
             'created_at' => Carbon::now()
         ]);
 
         try {
-            Mail::send('emails.forgetPassword', ['token' => $token, 'email' => $request->email], static function ($message) use ($request) {
-                $message->to($request->email);
+            Mail::send('emails.forgetPassword', ['token' => $token, 'email' => $email], static function ($message) use ($email) {
+                $message->to($email);
                 $message->subject('Reset Password');
             });
-            $response = ['message' => 'Instructions on how to reset your password have been sent to your email.'];
-            return response()->json($response);
         } catch (Throwable $th) {
             Log::error($th);
-            $response = ['message' => 'Something went wrong.','errors' =>['email'=>['Unable to send password reset link']]];
-            return response()->json($response, 422);
+            // Still return a generic response for security
+            return response()->json([
+                'message' => 'If we have an account associated with this email, you’ll receive a password reset link shortly.'
+            ]);
         }
 
+        return response()->json([
+            'message' => 'If we have an account associated with this email, you’ll receive a password reset link shortly.'
+        ]);
     }
 
     public function showResetPasswordForm(Request $request, $token)
