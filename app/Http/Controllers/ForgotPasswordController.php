@@ -86,10 +86,7 @@ class ForgotPasswordController extends Controller
         ]);
 
         try {
-            Mail::send('emails.forgetPassword', ['token' => $token, 'email' => $email], static function ($message) use ($email) {
-                $message->to($email);
-                $message->subject('Reset Password');
-            });
+            Mail::queue(new \App\Mail\PasswordResetMail($token, $email));
         } catch (Throwable $th) {
             Log::error($th);
             // Still return a generic response for security
