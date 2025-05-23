@@ -22,38 +22,8 @@ class MeterChargeSeeder extends Seeder
         ]);
         ServiceCharge::create([
             'from' => 1,
-            'to' => 499,
-            'amount' => 30,
-            'meter_charge_id' => $meter_charge->id
-        ]);
-        ServiceCharge::create([
-            'from' => 500,
-            'to' => 999,
-            'amount' => 25,
-            'meter_charge_id' => $meter_charge->id
-        ]);
-        ServiceCharge::create([
-            'from' => 1000,
-            'to' => 2999,
-            'amount' => 20,
-            'meter_charge_id' => $meter_charge->id
-        ]);
-        ServiceCharge::create([
-            'from' => 3000,
-            'to' => 5999,
-            'amount' => 15,
-            'meter_charge_id' => $meter_charge->id
-        ]);
-        ServiceCharge::create([
-            'from' => 6000,
-            'to' => 9999,
-            'amount' => 8,
-            'meter_charge_id' => $meter_charge->id
-        ]);
-        ServiceCharge::create([
-            'from' => 10000,
-            'to' => 99999,
-            'amount' => 5,
+            'to' => 500000,
+            'amount' => 0,
             'meter_charge_id' => $meter_charge->id
         ]);
 
@@ -65,7 +35,7 @@ class MeterChargeSeeder extends Seeder
         ServiceCharge::create([
             'from' => 1,
             'to' => 500000,
-            'amount' => 200,
+            'amount' => 0,
             'meter_charge_id' => $meter_charge->id
         ]);
     }

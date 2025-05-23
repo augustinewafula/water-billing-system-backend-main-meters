@@ -79,10 +79,7 @@ trait ProcessesPostPaidTransaction
         \Log::info('Pending meter readings count: '. $pending_meter_readings->count());
 
         if ($pending_meter_readings->count() === 0) {
-            if ($request->deductions->monthly_service_charge_deducted === 0 && $request->deductions->connection_fee_deducted === 0) {
-                $user_remaining_amount = $request->amount_paid - $request->deductions->unaccounted_debt_deducted;
-                $this->creditUserAccount($user, $user_remaining_amount, $mpesa_transaction_id, $user_total_amount);
-            }
+            $this->creditUserAccount($user, $request->amount_paid, $mpesa_transaction_id, $user_total_amount);
             return response()->json('Meter reading not found', 422);
         }
 

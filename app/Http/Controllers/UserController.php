@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GenerateMonthlyServiceChargeAction;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\CreateSystemUserRequest;
 use App\Http\Requests\CreateUserRequest;
@@ -9,6 +10,7 @@ use App\Http\Requests\CreditAccountRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\MeterReading;
 use App\Models\MeterStation;
+use App\Models\MonthlyServiceCharge;
 use App\Models\User;
 use App\Services\ConnectionFeeService;
 use App\Services\MpesaService;
@@ -161,6 +163,14 @@ class UserController extends Controller
             if ($user->should_pay_connection_fee) {
                 $connectionFeeService->generate($user);
             }
+            if ($user->should_pay_monthly_service_charge) {
+                $monthly_service_charge = [
+                    'user_id' => $user->id,
+                    'service_charge' => $request->monthly_service_charge,
+                    'month' => Carbon::now()->startOfMonth(),
+                ];
+                (new GenerateMonthlyServiceChargeAction())->execute($monthly_service_charge);
+            }
 
             if (!empty($request->credit) && $request->credit > 0) {
                 $this->creditAmountToUserAccount($user, $request->credit, $mpesaService);
@@ -289,6 +299,21 @@ class UserController extends Controller
 
             if (!$shouldUpdateConnectionFee){
                 $user->update($data);
+            }
+            if ($user->should_pay_monthly_service_charge) {
+                $month= Carbon::now()->startOfMonth();
+                if ($monthly_service_charge = MonthlyServiceCharge::where('user_id', $user->id)->whereDate('month', $month)->first()) {
+                    $monthly_service_charge->service_charge = $request->monthly_service_charge;
+                    $monthly_service_charge->save();
+                } else {
+                    $monthly_service_charge = [
+                        'user_id' => $user->id,
+                        'service_charge' => $request->monthly_service_charge,
+                        'month' => $month,
+                    ];
+                    (new GenerateMonthlyServiceChargeAction())->execute($monthly_service_charge);
+                }
+
             }
             $user->refresh();
             if ($shouldUpdateConnectionFee && !$this->userHasFundsInAccount($user)){
@@ -544,6 +569,8 @@ class UserController extends Controller
             'number_of_months_to_pay_connection_fee' => $request->number_of_months_to_pay_connection_fee,
             'use_custom_charges_for_service_charge' => $request->use_custom_charges_for_service_charge,
             'service_charge' => $request->service_charge,
+            'should_pay_monthly_service_charge' => $request->should_pay_monthly_service_charge,
+            'monthly_service_charge' => $request->monthly_service_charge,
         ];
         if ($action === 'save'){
             $password = $this->generatePassword(10);

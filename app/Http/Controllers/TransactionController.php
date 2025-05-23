@@ -121,10 +121,33 @@ class TransactionController extends Controller
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
         $credit_account_transactions = $this->filterQuery($credit_account_transactions, $request);
 
+        $monthly_service_charge_transactions = MpesaTransaction::with('creditedBy')->select(
+            'mpesa_transactions.id',
+            'mpesa_transactions.TransID as transaction_reference',
+            'mpesa_transactions.TransTime as transaction_number',
+            'mpesa_transactions.TransAmount as amount',
+            $hashedPhoneSelect,
+            'mpesa_transactions.created_at as transaction_time',
+            'mpesa_transactions.credited',
+            'mpesa_transactions.credited_by',
+            'mpesa_transactions.reason_for_crediting',
+            'users.name',
+            'users.account_number'
+        )
+            ->join('monthly_service_charge_payments', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
+            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+            ->join('users', 'users.id', 'monthly_service_charges.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id');
+
+        $monthly_service_charge_transactions = $this->filterQuery($monthly_service_charge_transactions, $request);
+
+
         $prepaid_transactions->union($postpaid_transactions);
         $prepaid_transactions->union($unaccounted_debt_transactions);
         $prepaid_transactions->union($connection_fee_transactions);
         $prepaid_transactions->union($credit_account_transactions);
+        $prepaid_transactions->union($monthly_service_charge_transactions);
         $sum = $prepaid_transactions->sum('amount');
 
         if ($sortBy !== 'undefined') {

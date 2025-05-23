@@ -40,6 +40,8 @@ class CreateUserRequest extends FormRequest
             'credit' => ['nullable', 'numeric'],
             'use_custom_charges_for_service_charge' => ['required', 'boolean'],
             'service_charge' => ['required_if:use_custom_charges_for_service_charge,true', 'nullable', 'numeric'],
+            'should_pay_monthly_service_charge' => ['nullable', 'boolean'],
+            'monthly_service_charge' => ['required_if:should_pay_monthly_service_charge,true', 'nullable', 'numeric'],
         ];
     }
 }

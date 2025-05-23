@@ -4,11 +4,11 @@ namespace App\Traits;
 
 use App\Models\MonthlyServiceCharge;
 use App\Models\MpesaTransaction;
+use App\Services\MonthlyServiceChargeService;
 use Carbon\Carbon;
 
 trait GeneratesMonthlyServiceCharge
 {
-    use ProcessesMonthlyServiceChargeTransaction;
 
     /**
      * @throws \Throwable
@@ -31,9 +31,10 @@ trait GeneratesMonthlyServiceCharge
             }
             $monthToGenerate->add(1, 'month');
         }
-        if ($user->account_balance > 0 && $this->hasMonthlyServiceChargeDebt($user->id)) {
+        $monthlyServiceChargeService = new MonthlyServiceChargeService();
+        if ($user->account_balance > 0 && $monthlyServiceChargeService->hasMonthlyServiceChargeDebt($user->id)) {
             $mpesa_transaction = MpesaTransaction::find($user->last_mpesa_transaction_id);
-            $this->storeMonthlyServiceCharge($user->id, $mpesa_transaction, 0);
+            $monthlyServiceChargeService->storeMonthlyServiceCharge($user->id, $mpesa_transaction, 0);
         }
     }
 

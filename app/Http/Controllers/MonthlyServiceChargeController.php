@@ -25,7 +25,7 @@ class MonthlyServiceChargeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $monthly_service_charges = MonthlyServiceCharge::with('user');
+        $monthly_service_charges = MonthlyServiceCharge::with('monthlyServiceChargePayments');
         $monthly_service_charges = $this->filterQuery($request, $monthly_service_charges);
         return response()->json(
             $monthly_service_charges->paginate(10));

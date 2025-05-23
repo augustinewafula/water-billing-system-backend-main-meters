@@ -6,6 +6,7 @@ use App\Enums\UnresolvedMpesaTransactionReason;
 use App\Models\MpesaTransaction;
 use App\Models\UnresolvedMpesaTransaction;
 use App\Models\User;
+use App\Services\MonthlyServiceChargeService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -18,7 +19,6 @@ trait ProcessesMpesaTransaction
 {
     use ProcessesPrepaidMeterTransaction,
         ProcessesPostPaidTransaction,
-        ProcessesMonthlyServiceChargeTransaction,
         ProcessConnectionFeeTransaction,
         ProcessUnaccountedDebt,
         initializesDeductionsAmount,
@@ -63,10 +63,15 @@ trait ProcessesMpesaTransaction
             Log::info("Unaccounted debt deducted: {$unaccounted_debt_deducted}");
         }
 
-//        if ($this->hasMonthlyServiceChargeDebt($user->id)) {
-//            $monthly_service_charge_deducted = $this->storeMonthlyServiceCharge($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount);
-//                $deductions->monthly_service_charge = $monthly_service_charge_deducted;
-//        }
+        $monthlyServiceChargeService = new MonthlyServiceChargeService();
+        if ($monthlyServiceChargeService->hasMonthlyServiceChargeDebt($user->id)) {
+            Log::info('Has monthly service charge debt', [
+                'user_id' => $user->id,
+                'name' => $user->name
+            ]);
+            $monthly_service_charge_deducted = $monthlyServiceChargeService->storeMonthlyServiceCharge($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount);
+            $deductions->monthly_service_charge_deducted = $monthly_service_charge_deducted;
+        }
 
         if ($user->should_pay_connection_fee && (($deductions->unaccounted_debt_deducted + $deductions->monthly_service_charge_deducted) < $mpesa_transaction->TransAmount) && $this->hasMonthlyConnectionFeeDebt($user->id)) {
             $connection_fee_deducted = $this->storeConnectionFeeBill($user->id, $mpesa_transaction, $mpesa_transaction->TransAmount, $deductions);

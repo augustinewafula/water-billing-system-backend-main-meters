@@ -38,9 +38,10 @@ trait ProcessesPrepaidMeterTransaction
 
         $user_total_amount = $this->calculateUserTotalAmount($user->account_balance, $mpesa_transaction->TransAmount, $deductions);
 
-
+        Log::info('User total amount after deductions: '. $user_total_amount, [
+            'user_id' => $user->id,
+            'account_number' => $user->account_number ]);
         if ($user_total_amount <= 0) {
-            $this->updateUserAccountBalance($user, $user_total_amount, $deductions, $mpesa_transaction_id);
             $message = $this->constructNotEnoughAmountMessage($this->userTotalDebt($user), $deductions);
             $this->notifyUser(
                 (object)['message' => $message, 'title' => 'Insufficient amount'],
@@ -51,7 +52,6 @@ trait ProcessesPrepaidMeterTransaction
 
             return;
         }
-        Log::info('User total amount after deductions: '. $user_total_amount);
         $units = $this->calculateUnits($user_total_amount, $user);
         Log::info("$units: $units");
         if ($units < 0) {

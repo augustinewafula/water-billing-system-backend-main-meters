@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use App\Traits\HasUuid;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,15 +24,10 @@ class MonthlyServiceCharge extends Model
 
     protected $fillable = ['user_id', 'service_charge', 'status', 'month'];
 
-    public function setMonthAttribute(string $value): void
-    {
-        $this->attributes['month'] = Carbon::parse($value)->format('Y-m-d');
-    }
-
-    public function getMonthAttribute(string $value): string
-    {
-        return Carbon::parse($value)->format('Y-m');
-    }
+    protected $casts = [
+        'month' => 'date:Y-m-d',
+    ];
+    protected $appends = ['total_amount_paid'];
 
     /**
      * Get user that owns the user reading
@@ -48,10 +42,21 @@ class MonthlyServiceCharge extends Model
      * Get the monthly service charge payments for the monthly service charge.
      * @return HasMany
      */
-    public function monthly_service_charge_payments(): HasMany
+    public function monthlyServiceChargePayments(): HasMany
     {
-        return $this->hasMany(MonthlyServiceChargePayment::class)->latest();
+        return $this->hasMany(MonthlyServiceChargePayment::class);
     }
+
+    /**
+     * Get total amount paid for this service charge.
+     *
+     * @return float
+     */
+    public function getTotalAmountPaidAttribute(): float
+    {
+        return $this->monthlyServiceChargePayments->sum('amount_paid');
+    }
+
 
     /**
      * Get the prunable model query.

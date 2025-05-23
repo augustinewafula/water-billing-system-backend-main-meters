@@ -7,6 +7,7 @@ use App\Models\CreditAccount;
 use App\Models\MeterBilling;
 use App\Models\MeterStation;
 use App\Models\MeterToken;
+use App\Models\MonthlyServiceChargePayment;
 use App\Models\MpesaTransaction;
 use App\Models\UnaccountedDebt;
 use Carbon\Carbon;
@@ -32,7 +33,7 @@ class TransactionStatisticsService {
         return $stationsRevenue;
     }
 
-    public function calculateRevenue(?string $from, ?string $to, MeterStation $meterStation = null): Float
+    public function calculateRevenue(?string $from, ?string $to, MeterStation $meterStation = null, bool $withBreakdown = false): float|array
     {
         $meterBilling = MeterBilling::select('mpesa_transactions.id as id', 'meter_stations.id as meter_station_id', 'mpesa_transactions.TransAmount as amount')
             ->join('mpesa_transactions', 'meter_billings.mpesa_transaction_id', 'mpesa_transactions.id')
@@ -94,23 +95,80 @@ class TransactionStatisticsService {
                 return $query->where('meter_stations.id', $meterStation->id);
             });
 
+        $monthlyServiceChargePayment = MonthlyServiceChargePayment::select(
+            'mpesa_transactions.id as id',
+            'meter_stations.id as meter_station_id',
+            'mpesa_transactions.TransAmount as amount'
+        )
+            ->join('mpesa_transactions', 'monthly_service_charge_payments.mpesa_transaction_id', 'mpesa_transactions.id')
+            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+            ->join('users', 'users.id', 'monthly_service_charges.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->when($from !== null && $to !== null, function ($query) use ($from, $to) {
+                return $query->whereBetween('mpesa_transactions.created_at', [$from, $to]);
+            })
+            ->when($meterStation !== null, function ($query) use ($meterStation) {
+                return $query->where('meter_stations.id', $meterStation->id);
+            });
+
+        $monthlyServiceChargePaymentQuery = clone $monthlyServiceChargePayment;
+
         $meterBilling->union($meterToken);
         $meterBilling->union($connectionFeePayment);
         $meterBilling->union($creditAccount);
         $meterBilling->union($unaccountedDebt);
+        $meterBilling->union($monthlyServiceChargePayment);
 
-        return $meterBilling->sum('amount');
+        $total = $meterBilling->sum('amount');
+
+        if ($withBreakdown) {
+            $monthlyServiceChargeTotal = $monthlyServiceChargePaymentQuery->sum('amount');
+            return [
+                'total' => $total,
+                'monthly_service_charge' => $monthlyServiceChargeTotal,
+                'meter_billing' => $total - $monthlyServiceChargeTotal
+            ];
+        }
+
+        return $total;
     }
 
-    public function  getMonthlyRevenueStatistics(string $meterStationId = null, int $year = null): array
+    public function getMonthlyRevenueStatistics(string $meterStationId = null, int $year = null): array
     {
         if ($year === null) {
             $year = (int) date('Y');
         }
-        $monthWiseTransactionDetails = $this->getMonthWiseTransactionDetails($year, $meterStationId);
-        $revenueSum = $this->calculateRevenueSum($monthWiseTransactionDetails);
 
-        return $this->sortRevenueMonths($revenueSum);
+        $monthWiseTransactionDetails = $this->getMonthWiseTransactionDetails($year, $meterStationId);
+
+        // Split by category
+        $monthlyRevenueData = [];
+        $totalGrouped = [];
+        $mscGrouped = [];
+
+        foreach ($monthWiseTransactionDetails as $item) {
+            $month = $item->name;
+            $totalGrouped[$month] = ($totalGrouped[$month] ?? 0) + $item->total;
+
+            // MonthlyServiceCharge detection
+            $isMSC = MonthlyServiceChargePayment::where('mpesa_transaction_id', $item->id)->exists();
+            if ($isMSC) {
+                $mscGrouped[$month] = ($mscGrouped[$month] ?? 0) + $item->total;
+            }
+        }
+
+        foreach ($totalGrouped as $month => $total) {
+            $monthlyServiceChargeTotal = $mscGrouped[$month] ?? 0;
+            $monthlyRevenueData[] = [
+                'name' => $month,
+                'total' => $total,
+                'monthly_service_charge' => $monthlyServiceChargeTotal,
+                'meter_billing' => $total - $monthlyServiceChargeTotal
+            ];
+        }
+
+        return $this->sortRevenueMonths($monthlyRevenueData);
     }
 
     public function getRevenueYears(): array
@@ -144,29 +202,30 @@ class TransactionStatisticsService {
     {
         $stationsRevenue = new Collection();
         $commonMonths = new Collection();
+
         if ($year === null) {
             $year = (int) date('Y');
         }
+
         foreach ($stations as $station) {
             $monthlyRevenueStatistics = $this->getMonthlyRevenueStatistics($station->id, $year);
             $stationsRevenue->push([
                 'name' => $station->name,
                 'data' => $monthlyRevenueStatistics
-            ]) ;
+            ]);
 
-            foreach ($monthlyRevenueStatistics as $monthlyRevenueStatistic) {
-                $commonMonths->push([
-                    'name' => $monthlyRevenueStatistic['name']
-                ]);
+            foreach ($monthlyRevenueStatistics as $stat) {
+                $commonMonths->push(['name' => $stat['name']]);
             }
         }
+
         $commonMonths = $commonMonths->unique('name');
-        $stationsRevenue = $this->initializeMissingMonths($stationsRevenue, $commonMonths);
+        $stationsRevenue = $this->initializeMissingMonths($stationsRevenue, $commonMonths, ['total', 'monthly_service_charge']);
 
         return $stationsRevenue->toArray();
     }
 
-    private function initializeMissingMonths($stationsRevenue, $commonMonths): Collection
+    private function initializeMissingMonths($stationsRevenue, $commonMonths, array $fields = ['total']): Collection
     {
         $collection = new Collection();
         foreach ($stationsRevenue as $stationRevenue) {
@@ -178,13 +237,16 @@ class TransactionStatisticsService {
                         break;
                     }
                 }
+
                 if (!$monthExists) {
-                    $stationRevenue['data'][] = [
-                        'name' => $commonMonth['name'],
-                        'value' => 0.00
-                    ];
+                    $missingMonth = ['name' => $commonMonth['name']];
+                    foreach ($fields as $field) {
+                        $missingMonth[$field] = 0.00;
+                    }
+                    $stationRevenue['data'][] = $missingMonth;
                 }
             }
+
             $stationRevenue['data'] = $this->sortRevenueMonths($stationRevenue['data']);
             $collection->push($stationRevenue);
         }
@@ -192,9 +254,13 @@ class TransactionStatisticsService {
         return $collection;
     }
 
+
     public function getMonthWiseTransactionDetails(string $year, string $meterStationId = null)
     {
-        $meterBilling = MeterBilling::select('mpesa_transactions.id as id', 'mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+        $meterBilling = MeterBilling::select(
+            'mpesa_transactions.id as id',
+            'mpesa_transactions.TransAmount as total',
+            DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_billings.mpesa_transaction_id')
             ->join('meter_readings', 'meter_readings.id', 'meter_billings.meter_reading_id')
             ->join('meters', 'meters.id', 'meter_readings.meter_id')
@@ -204,7 +270,10 @@ class TransactionStatisticsService {
                 return $query->where('meter_stations.id', $meterStationId);
             });
 
-        $meterToken = MeterToken::select('mpesa_transactions.id as id', 'mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+        $meterToken = MeterToken::select(
+            'mpesa_transactions.id as id',
+            'mpesa_transactions.TransAmount as total',
+            DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'meter_tokens.mpesa_transaction_id')
             ->join('meters', 'meters.id', 'meter_tokens.meter_id')
             ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
@@ -213,7 +282,10 @@ class TransactionStatisticsService {
                 return $query->where('meter_stations.id', $meterStationId);
             });
 
-        $connectionFeePayment = ConnectionFeePayment::select('mpesa_transactions.id as id', 'mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+        $connectionFeePayment = ConnectionFeePayment::select(
+            'mpesa_transactions.id as id',
+            'mpesa_transactions.TransAmount as total',
+            DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'connection_fee_payments.mpesa_transaction_id')
             ->join('connection_fees', 'connection_fees.id', 'connection_fee_payments.connection_fee_id')
             ->join('users', 'users.id', 'connection_fees.user_id')
@@ -224,7 +296,10 @@ class TransactionStatisticsService {
                 return $query->where('meter_stations.id', $meterStationId);
             });
 
-        $creditAccount = CreditAccount::select('mpesa_transactions.id as id', 'mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+        $creditAccount = CreditAccount::select(
+            'mpesa_transactions.id as id',
+            'mpesa_transactions.TransAmount as total',
+            DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'credit_accounts.mpesa_transaction_id')
             ->join('users', 'users.id', 'credit_accounts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
@@ -234,7 +309,10 @@ class TransactionStatisticsService {
                 return $query->where('meter_stations.id', $meterStationId);
             });
 
-        $unaccountedDebt = UnaccountedDebt::select('mpesa_transactions.id as id', 'mpesa_transactions.TransAmount as total', DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
+        $unaccountedDebt = UnaccountedDebt::select(
+            'mpesa_transactions.id as id',
+            'mpesa_transactions.TransAmount as total',
+            DB::raw('MONTHNAME(mpesa_transactions.created_at) as name'))
             ->join('mpesa_transactions', 'mpesa_transactions.id', 'unaccounted_debts.mpesa_transaction_id')
             ->join('users', 'users.id', 'unaccounted_debts.user_id')
             ->join('meters', 'meters.id', 'users.meter_id')
@@ -244,10 +322,27 @@ class TransactionStatisticsService {
                 return $query->where('meter_stations.id', $meterStationId);
             });
 
+        $monthlyServiceChargePayment = MonthlyServiceChargePayment::select(
+            'mpesa_transactions.id as id',
+            'mpesa_transactions.TransAmount as total',
+            DB::raw('MONTHNAME(mpesa_transactions.created_at) as name')
+        )
+            ->join('mpesa_transactions', 'mpesa_transactions.id', 'monthly_service_charge_payments.mpesa_transaction_id')
+            ->join('monthly_service_charges', 'monthly_service_charges.id', 'monthly_service_charge_payments.monthly_service_charge_id')
+            ->join('users', 'users.id', 'monthly_service_charges.user_id')
+            ->join('meters', 'meters.id', 'users.meter_id')
+            ->join('meter_stations', 'meter_stations.id', 'meters.station_id')
+            ->whereYear('mpesa_transactions.created_at', $year)
+            ->when($meterStationId !== null, function ($query) use ($meterStationId) {
+                return $query->where('meter_stations.id', $meterStationId);
+            });
+
+
         $meterBilling->union($meterToken);
         $meterBilling->union($connectionFeePayment);
         $meterBilling->union($creditAccount);
         $meterBilling->union($unaccountedDebt);
+        $meterBilling->union($monthlyServiceChargePayment);
 
         return $meterBilling->get();
 
@@ -273,7 +368,7 @@ class TransactionStatisticsService {
         foreach ($monthWiseRevenue as $key => $value) {
             $stationsRevenue[] = [
                 'name' => $key,
-                'value' => $value
+                'total' => $value
             ];
         }
         return $stationsRevenue;
