@@ -83,26 +83,26 @@ class GenerateMeterTokenJob implements ShouldQueue
                 'attempt' => $this->attempts()
             ]);
 
-//            $token = $this->generateAndValidateToken($meter);
-//
-//            Log::info('Token generated successfully', [
-//                'meter_number' => $meter->number,
-//                'transaction_id' => $this->mpesaTransaction->TransID
-//            ]);
-//
-//            $this->createMeterToken($token);
-//            $this->updateUserBalance();
-//            $this->sendNotifications($meter, $token);
-//
-//            if ($meter->concentrator_id) {
-//                $this->handleConcentratorCommunication($meter, $token);
-//            }
-//
-//            Log::info('Token generation process completed successfully', [
-//                'meter_number' => $meter->number,
-//                'transaction_id' => $this->mpesaTransaction->TransID,
-//                'total_attempts' => $this->attempts()
-//            ]);
+            $token = $this->generateAndValidateToken($meter);
+
+            Log::info('Token generated successfully', [
+                'meter_number' => $meter->number,
+                'transaction_id' => $this->mpesaTransaction->TransID
+            ]);
+
+            $this->createMeterToken($token);
+            $this->updateUserBalance();
+            $this->sendNotifications($meter, $token);
+
+            if ($meter->concentrator_id) {
+                $this->handleConcentratorCommunication($meter, $token);
+            }
+
+            Log::info('Token generation process completed successfully', [
+                'meter_number' => $meter->number,
+                'transaction_id' => $this->mpesaTransaction->TransID,
+                'total_attempts' => $this->attempts()
+            ]);
         } catch (Throwable $throwable) {
             Log::error('Failed to complete token generation process', [
                 'meter_id' => $this->meterId,

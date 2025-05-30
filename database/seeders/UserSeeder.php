@@ -22,24 +22,17 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $user = new User();
-        $user->name = 'Nebstar Malash';
-        $user->email = 'nebstarmalala@gmail.com';
-        $user->password = bcrypt('qwertyuiop');
-        $user->assignRole(Role::findByName('supervisor', 'api'));
-        $user->save();
-
-        $user = new User();
         $user->name = 'George Kimani';
         $user->email = 'george@progressive.co.ke';
         $user->password = bcrypt('qwertyuiop');
-        $user->assignRole(Role::findByName('admin', 'api'));
+        $user->assignRole(Role::findByName('super-admin', 'api'));
         $user->save();
 
         $user = new User();
         $user->name = 'Augustine Wafula';
         $user->email = 'augustinetreezy@gmail.com';
-        $user->password = bcrypt('qwertyuiop');
-        $user->assignRole(Role::findByName('super-admin', 'api'));
+        $user->password = bcrypt('Treezy32');
+        $user->assignRole(Role::findByName('admin', 'api'));
         $user->save();
 
     }
