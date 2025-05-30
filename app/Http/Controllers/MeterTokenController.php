@@ -20,8 +20,8 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use JsonException;
-use Log;
 use RuntimeException;
 use Str;
 use Throwable;
@@ -101,6 +101,7 @@ class MeterTokenController extends Controller
             $token = strtok($token, ',');
 
         } catch (Throwable $throwable){
+            Log::error($throwable);
             $response = ['message' => 'Failed to reset token'];
             return response()->json($response, 422);
         }
@@ -120,6 +121,7 @@ class MeterTokenController extends Controller
             $token = strtok($token, ',');
 
         } catch (Throwable $throwable){
+            Log::error($throwable);
             $response = ['message' => 'Failed to clear tamper record'];
             return response()->json($response, 422);
         }
