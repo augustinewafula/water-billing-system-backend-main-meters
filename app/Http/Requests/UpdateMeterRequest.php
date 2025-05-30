@@ -42,6 +42,7 @@ class UpdateMeterRequest extends FormRequest
             'category' => ['required', new EnumValue(MeterCategory::class, false)],
             'prepaid_meter_type' => ['required_if:is_prepaid_meter,1', new EnumValue(PrepaidMeterType::class, false)],
             'concentrator_id' => ['nullable', 'exists:concentrators,id'],
+            'use_prism_vend' => ['nullable', 'boolean'],
         ];
     }
 
