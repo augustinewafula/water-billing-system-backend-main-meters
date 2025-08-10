@@ -8,8 +8,8 @@
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../docs/css/theme-default.style.css" media="screen">
-    <link rel="stylesheet" href="../docs/css/theme-default.print.css" media="print">
+    <link rel="stylesheet" href="{{ asset("/vendor/scribe/css/theme-default.style.css") }}" media="screen">
+    <link rel="stylesheet" href="{{ asset("/vendor/scribe/css/theme-default.print.css") }}" media="print">
 
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
 
@@ -32,9 +32,9 @@
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
-    <script src="../docs/js/tryitout-4.31.0.js"></script>
+    <script src="{{ asset("/vendor/scribe/js/tryitout-4.31.0.js") }}"></script>
 
-    <script src="../docs/js/theme-default-4.31.0.js"></script>
+    <script src="{{ asset("/vendor/scribe/js/theme-default-4.31.0.js") }}"></script>
 
 </head>
 
@@ -43,7 +43,7 @@
 <a href="#" id="nav-button">
     <span>
         MENU
-        <img src="../docs/images/navbar.png" alt="navbar-image"/>
+        <img src="{{ asset("/vendor/scribe/images/navbar.png") }}" alt="navbar-image"/>
     </span>
 </a>
 <div class="tocify-wrapper">
@@ -99,8 +99,8 @@
             </div>
 
     <ul class="toc-footer" id="toc-footer">
-                    <li style="padding-bottom: 5px;"><a href="../docs/collection.json">View Postman collection</a></li>
-                            <li style="padding-bottom: 5px;"><a href="../docs/openapi.yaml">View OpenAPI spec</a></li>
+                    <li style="padding-bottom: 5px;"><a href="{{ route("scribe.postman") }}">View Postman collection</a></li>
+                            <li style="padding-bottom: 5px;"><a href="{{ route("scribe.openapi") }}">View OpenAPI spec</a></li>
                 <li><a href="http://github.com/knuckleswtf/scribe">Documentation powered by Scribe ✍</a></li>
     </ul>
 
@@ -146,8 +146,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"pfranecki@example.org\",
-    \"password\": \"veritatis\"
+    \"email\": \"moore.aracely@example.org\",
+    \"password\": \"blanditiis\"
 }"
 </code></pre></div>
 
@@ -163,8 +163,8 @@ const headers = {
 };
 
 let body = {
-    "email": "pfranecki@example.org",
-    "password": "veritatis"
+    "email": "moore.aracely@example.org",
+    "password": "blanditiis"
 };
 
 fetch(url, {
@@ -185,8 +185,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'pfranecki@example.org',
-            'password' =&gt; 'veritatis',
+            'email' =&gt; 'moore.aracely@example.org',
+            'password' =&gt; 'blanditiis',
         ],
     ]
 );
@@ -200,8 +200,8 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/login'
 payload = {
-    "email": "pfranecki@example.org",
-    "password": "veritatis"
+    "email": "moore.aracely@example.org",
+    "password": "blanditiis"
 }
 headers = {
   'Content-Type': 'application/json',
@@ -291,10 +291,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="email"                data-endpoint="POSTapi-v2-auth-login"
-               value="pfranecki@example.org"
+               value="moore.aracely@example.org"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>pfranecki@example.org</code></p>
+<p>Must be a valid email address. Example: <code>moore.aracely@example.org</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -302,10 +302,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-v2-auth-login"
-               value="veritatis"
+               value="blanditiis"
                data-component="body">
     <br>
-<p>Example: <code>veritatis</code></p>
+<p>Example: <code>blanditiis</code></p>
         </div>
         </form>
 
@@ -709,7 +709,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"meter_number\": \"eusgtmxkluwi\"
+    \"meter_number\": \"qltfxlceusocp\"
 }"
 </code></pre></div>
 
@@ -732,7 +732,7 @@ const headers = {
 };
 
 let body = {
-    "meter_number": "eusgtmxkluwi"
+    "meter_number": "qltfxlceusocp"
 };
 
 fetch(url, {
@@ -757,7 +757,7 @@ $response = $client-&gt;get(
             'meter_number' =&gt; 'MTR123456789',
         ],
         'json' =&gt; [
-            'meter_number' =&gt; 'eusgtmxkluwi',
+            'meter_number' =&gt; 'qltfxlceusocp',
         ],
     ]
 );
@@ -771,7 +771,7 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/meters/readings'
 payload = {
-    "meter_number": "eusgtmxkluwi"
+    "meter_number": "qltfxlceusocp"
 }
 params = {
   'meter_number': 'MTR123456789',
@@ -918,10 +918,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="meter_number"                data-endpoint="GETapi-v2-meters-readings"
-               value="eusgtmxkluwi"
+               value="qltfxlceusocp"
                data-component="body">
     <br>
-<p>Must not be greater than 20 characters. Example: <code>eusgtmxkluwi</code></p>
+<p>Must not be greater than 20 characters. Example: <code>qltfxlceusocp</code></p>
         </div>
         </form>
 
