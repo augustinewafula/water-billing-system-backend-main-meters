@@ -96,7 +96,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer cbPfe8g56E3Zkaa46Dv1dVh'
+      - 'Bearer d6hca3aeDg6ZkV4bP5fE8v1'
     controller: null
     method: null
     route: null
@@ -137,13 +137,13 @@ endpoints:
         name: meter_number
         description: 'Must not be greater than 20 characters.'
         required: true
-        example: eusgtmxkluwi
+        example: qltfxlceusocp
         type: string
         enumValues: []
         exampleWasSpecified: false
         custom: []
     cleanBodyParameters:
-      meter_number: eusgtmxkluwi
+      meter_number: qltfxlceusocp
     fileParameters: []
     responses:
       -
@@ -180,7 +180,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ZhgdaE43ck861vPfbeV5aD6'
+      - 'Bearer v1bf46dcP3VhkaeE86a5DgZ'
     controller: null
     method: null
     route: null
