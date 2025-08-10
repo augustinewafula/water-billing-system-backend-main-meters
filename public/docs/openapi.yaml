@@ -1,0 +1,290 @@
+openapi: 3.0.3
+info:
+  title: ProgressiveUtilities
+  description: ''
+  version: 1.0.0
+servers:
+  -
+    url: 'https://backend.buxton.progressiveutilities.com'
+paths:
+  /api/v2/auth/login:
+    post:
+      summary: ''
+      operationId: postApiV2AuthLogin
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: pfranecki@example.org
+                password:
+                  type: string
+                  description: ''
+                  example: veritatis
+              required:
+                - email
+                - password
+      security: []
+  /api/v2/logout:
+    post:
+      summary: ''
+      operationId: postApiV2Logout
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+  '/api/v2/meters/{meter_number}/valve':
+    post:
+      summary: 'Update Meter Valve Status'
+      operationId: updateMeterValveStatus
+      description: "Toggle a meter's valve to either open or closed state."
+      parameters: []
+      responses:
+        200:
+          description: 'Valve status updated successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Valve status updated successfully'
+                  data:
+                    meter_number: MTR123456789
+                    valve_status: CLOSED
+                    valve_last_switched_off_by: user
+                  errors: null
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Valve status updated successfully'
+                  data:
+                    type: object
+                    properties:
+                      meter_number:
+                        type: string
+                        example: MTR123456789
+                      valve_status:
+                        type: string
+                        example: CLOSED
+                      valve_last_switched_off_by:
+                        type: string
+                        example: user
+                  errors:
+                    type: string
+                    example: null
+        404:
+          description: 'Meter not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'No query results for model [Meter]'
+                  data: null
+                  errors:
+                    type: ModelNotFoundException
+                    details: null
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'No query results for model [Meter]'
+                  data:
+                    type: string
+                    example: null
+                  errors:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: ModelNotFoundException
+                      details:
+                        type: string
+                        example: null
+        422:
+          description: 'Valve operation failed'
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Failed, please contact website admin for help'
+                  data: null
+                  errors:
+                    type: ValveOperationError
+                    details: null
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Failed, please contact website admin for help'
+                  data:
+                    type: string
+                    example: null
+                  errors:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: ValveOperationError
+                      details:
+                        type: string
+                        example: null
+      tags:
+        - Meters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                valve_status:
+                  type: integer
+                  description: 'The desired valve status (1 for open, 0 for closed).'
+                  example: 1
+              required:
+                - valve_status
+    parameters:
+      -
+        in: path
+        name: meter_number
+        description: 'The meter number.'
+        example: MTR123456789
+        required: true
+        schema:
+          type: string
+  /api/v2/meters/readings:
+    get:
+      summary: 'Get Meter Readings'
+      operationId: getMeterReadings
+      description: 'Retrieve the latest meter readings for a given meter number.'
+      parameters:
+        -
+          in: query
+          name: meter_number
+          description: 'The unique meter number.'
+          example: MTR123456789
+          required: true
+          schema:
+            type: string
+            description: 'The unique meter number.'
+            example: MTR123456789
+      responses:
+        200:
+          description: 'Meter readings retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Current Meter Readings'
+                  data:
+                    current_meter_readings: 345.67
+                    last_reading_date: '2025-08-09 12:34:56'
+                  errors: null
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Current Meter Readings'
+                  data:
+                    type: object
+                    properties:
+                      current_meter_readings:
+                        type: number
+                        example: 345.67
+                      last_reading_date:
+                        type: string
+                        example: '2025-08-09 12:34:56'
+                  errors:
+                    type: string
+                    example: null
+        404:
+          description: 'Meter not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'No query results for model [Meter]'
+                  data: null
+                  errors:
+                    type: ModelNotFoundException
+                    details: null
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'No query results for model [Meter]'
+                  data:
+                    type: string
+                    example: null
+                  errors:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: ModelNotFoundException
+                      details:
+                        type: string
+                        example: null
+      tags:
+        - Meters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                meter_number:
+                  type: string
+                  description: 'Must not be greater than 20 characters.'
+                  example: eusgtmxkluwi
+              required:
+                - meter_number
+tags:
+  -
+    name: Endpoints
+    description: ''
+  -
+    name: Meters
+    description: ''
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'You can retrieve your token by logging via the login endpoint.'
+security:
+  -
+    default: []

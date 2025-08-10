@@ -1,0 +1,202 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "https:\/\/backend.buxton.progressiveutilities.com"
+        }
+    ],
+    "info": {
+        "name": "ProgressiveUtilities",
+        "_postman_id": "a0768485-218b-44af-9d23-e7082f8474a5",
+        "description": "",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "Endpoints",
+            "description": "",
+            "item": [
+                {
+                    "name": "POST api\/v2\/auth\/login",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v2\/auth\/login",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v2\/auth\/login"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"pfranecki@example.org\",\"password\":\"veritatis\"}"
+                        },
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST api\/v2\/logout",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v2\/logout",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v2\/logout"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Meters",
+            "description": "",
+            "item": [
+                {
+                    "name": "Update Meter Valve Status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v2\/meters\/:meter_number\/valve",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v2\/meters\/:meter_number\/valve",
+                            "variable": [
+                                {
+                                    "id": "meter_number",
+                                    "key": "meter_number",
+                                    "value": "MTR123456789",
+                                    "description": "The meter number."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"valve_status\":1}"
+                        },
+                        "description": "Toggle a meter's valve to either open or closed state."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Valve status updated successfully\",\n  \"data\": {\n    \"meter_number\": \"MTR123456789\",\n    \"valve_status\": \"CLOSED\",\n    \"valve_last_switched_off_by\": \"user\"\n  },\n  \"errors\": null\n}",
+                            "name": "Valve status updated successfully"
+                        },
+                        {
+                            "header": [],
+                            "code": 404,
+                            "body": "{\n  \"success\": false,\n  \"message\": \"No query results for model [Meter]\",\n  \"data\": null,\n  \"errors\": {\n    \"type\": \"ModelNotFoundException\",\n    \"details\": null\n  }\n}",
+                            "name": "Meter not found"
+                        },
+                        {
+                            "header": [],
+                            "code": 422,
+                            "body": "{\n  \"success\": false,\n  \"message\": \"Failed, please contact website admin for help\",\n  \"data\": null,\n  \"errors\": {\n    \"type\": \"ValveOperationError\",\n    \"details\": null\n  }\n}",
+                            "name": "Valve operation failed"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Meter Readings",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v2\/meters\/readings",
+                            "query": [
+                                {
+                                    "key": "meter_number",
+                                    "value": "MTR123456789",
+                                    "description": "The unique meter number.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v2\/meters\/readings?meter_number=MTR123456789"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"meter_number\":\"eusgtmxkluwi\"}"
+                        },
+                        "description": "Retrieve the latest meter readings for a given meter number."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Current Meter Readings\",\n  \"data\": {\n    \"current_meter_readings\": 345.67,\n    \"last_reading_date\": \"2025-08-09 12:34:56\"\n  },\n  \"errors\": null\n}",
+                            "name": "Meter readings retrieved successfully"
+                        },
+                        {
+                            "header": [],
+                            "code": 404,
+                            "body": "{\n  \"success\": false,\n  \"message\": \"No query results for model [Meter]\",\n  \"data\": null,\n  \"errors\": {\n    \"type\": \"ModelNotFoundException\",\n    \"details\": null\n  }\n}",
+                            "name": "Meter not found"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "Authorization",
+                "type": "string"
+            }
+        ]
+    }
+}
