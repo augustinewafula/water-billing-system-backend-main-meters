@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Jobs\SendSetPasswordEmail;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Support\Facades\Log;
 use Str;
 
 trait SendsSetPasswordEmail
@@ -24,6 +25,10 @@ trait SendsSetPasswordEmail
         ]);
 
         $url = env('APP_FRONTEND_URL') . "reset-password/$token?email=$email&action=set";
+        Log::info('Sending set password', [
+            'email' => $email,
+            'url' => $url
+        ]);
         SendSetPasswordEmail::dispatch($email, $url);
     }
 
