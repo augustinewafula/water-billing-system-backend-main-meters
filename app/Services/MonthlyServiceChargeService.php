@@ -146,8 +146,8 @@ class MonthlyServiceChargeService
                 ]);
 
                 $monthlyCharge->update(['status' => $status]);
+                //No need to update user account balance, monthly service charge debt is tracked separately
                 $user->update([
-                    'account_balance' => $newBalance,
                     'last_mpesa_transaction_id' => $mpesa_transaction->id
                 ]);
 
