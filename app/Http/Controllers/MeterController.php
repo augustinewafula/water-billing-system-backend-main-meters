@@ -353,4 +353,27 @@ class MeterController extends Controller
         }
         return $meters;
     }
+
+    /**
+     * Handle Hexing callback requests
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function hexingCallback(Request $request): JsonResponse
+    {
+        // Log the incoming request body
+        Log::info('Hexing callback received', [
+            'request_body' => $request->all(),
+            'headers' => $request->headers->all(),
+            'ip' => $request->ip(),
+            'timestamp' => now()
+        ]);
+
+        // Return successful response
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Callback received successfully'
+        ], 200);
+    }
 }
