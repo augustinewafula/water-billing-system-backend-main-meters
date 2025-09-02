@@ -358,12 +358,14 @@ class MeterController extends Controller
      * Handle Hexing callback requests
      *
      * @param Request $request
+     * @param string $action
      * @return JsonResponse
      */
-    public function hexingCallback(Request $request): JsonResponse
+    public function hexingCallback(Request $request, string $action): JsonResponse
     {
-        // Log the incoming request body
+        // Log the incoming request body with action
         Log::info('Hexing callback received', [
+            'action' => $action,
             'request_body' => $request->all(),
             'headers' => $request->headers->all(),
             'ip' => $request->ip(),
@@ -373,7 +375,8 @@ class MeterController extends Controller
         // Return successful response
         return response()->json([
             'status' => 'success',
-            'message' => 'Callback received successfully'
+            'message' => 'Callback received successfully',
+            'action' => $action
         ], 200);
     }
 }

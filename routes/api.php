@@ -136,7 +136,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('paybill-credentials', PaybillCredentialController::class);
     });
     Route::post('sms-callback', [SmsController::class, 'callback']);
-    Route::post('hexing-callback', [MeterController::class, 'hexingCallback']);
+    Route::post('hexing-callback/{action}', [MeterController::class, 'hexingCallback']);
     Route::post('transaction-confirmation', [MeterBillingController::class, 'mpesaConfirmation']);
 //    Route::post('pull-transactions', [MeterBillingController::class, 'mpesaPullTransactions']);
     Route::get('mspace-transaction-confirmation', [MeterBillingController::class, 'mspaceMpesaConfirmation']);
