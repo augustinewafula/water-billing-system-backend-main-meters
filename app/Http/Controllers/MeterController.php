@@ -363,20 +363,25 @@ class MeterController extends Controller
      */
     public function hexingCallback(Request $request, string $action): JsonResponse
     {
-        // Log the incoming request body with action
+        // Safely get raw JSON
+        $rawContent = $request->getContent();
+        $jsonData = $request->json()?->all();
+
+        // Log everything
         Log::info('Hexing callback received', [
-            'action' => $action,
-            'request_body' => $request->all(),
-            'headers' => $request->headers->all(),
-            'ip' => $request->ip(),
-            'timestamp' => now()
+            'action'       => $action,
+            'raw_body'     => $rawContent, // raw body string
+            'parsed_json'  => $jsonData,   // parsed json
+            'headers'      => $request->headers->all(),
+            'ip'           => $request->ip(),
+            'timestamp'    => now()
         ]);
 
-        // Return successful response
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'Callback received successfully',
-            'action' => $action
+            'action'  => $action
         ], 200);
     }
+
 }
