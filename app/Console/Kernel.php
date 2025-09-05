@@ -40,6 +40,8 @@ class Kernel extends ConsoleKernel
 //        $schedule->command('prune:daily-meter-readings')->daily();
         $schedule->command('activitylog:clean --force')->daily();
         $schedule->command('prune:failed-jobs')->daily();
+        $schedule->command('hexing:readings')->twiceDaily(9, 21);
+        $schedule->command('hexing:readings')->dailyAt('00:30');
     }
 
     public function meterReadingOn()

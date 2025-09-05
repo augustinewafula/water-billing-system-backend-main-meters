@@ -14,6 +14,7 @@ use App\Models\FaultyMeter;
 use App\Models\Meter;
 use App\Models\MeterType;
 use App\Services\ConcentratorService;
+use App\Services\HexingMeterService;
 use App\Services\PrepaidMeterService;
 use App\Traits\FiltersRequestQuery;
 use App\Traits\GetsUserConnectionFeeBalance;
@@ -363,25 +364,60 @@ class MeterController extends Controller
      */
     public function hexingCallback(Request $request, string $action): JsonResponse
     {
-        // Safely get raw JSON
-        $rawContent = $request->getContent();
-        $jsonData = $request->json()?->all();
+        try {
+            // Safely get raw JSON
+            $rawContent = $request->getContent();
+            $jsonData = $request->json()?->all();
 
-        // Log everything
-        Log::info('Hexing callback received', [
-            'action'       => $action,
-            'raw_body'     => $rawContent, // raw body string
-            'parsed_json'  => $jsonData,   // parsed json
-            'headers'      => $request->headers->all(),
-            'ip'           => $request->ip(),
-            'timestamp'    => now()
-        ]);
+            // Log everything
+            Log::info('Hexing callback received', [
+                'action'       => $action,
+                'raw_body'     => $rawContent,
+                'parsed_json'  => $jsonData,
+                'headers'      => $request->headers->all(),
+                'ip'           => $request->ip(),
+                'timestamp'    => now()
+            ]);
 
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'Callback received successfully',
-            'action'  => $action
-        ], 200);
+            // Process the callback based on action type
+            if ($jsonData && isset($jsonData['messageId'])) {
+                $hexingService = new HexingMeterService();
+                
+                match ($action) {
+                    'valve-control' => $hexingService->processValveCallback($jsonData),
+                    'meter-reading' => $hexingService->processReadingCallback($jsonData),
+                    'token' => $hexingService->processTokenCallback($jsonData),
+                    default => Log::warning('Unknown Hexing callback action', [
+                        'action' => $action,
+                        'data' => $jsonData
+                    ])
+                };
+                
+            } else {
+                Log::warning('Hexing callback missing messageId', [
+                    'action' => $action,
+                    'data' => $jsonData
+                ]);
+            }
+
+            // Return expected response format based on API documentation
+            return response()->json([
+                'result_code' => '0',
+                'message' => 'success'
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Hexing callback processing failed', [
+                'action' => $action,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'result_code' => '1',
+                'message' => 'Callback processing failed'
+            ], 500);
+        }
     }
 
 }
