@@ -55,6 +55,11 @@ class HexingMeterService
 
             $responseData = $response->json();
 
+            // Check if response data is valid
+            if ($responseData === null) {
+                throw new \Exception('Invalid or empty JSON response from Hexing API');
+            }
+
             // Log requests for each meter
             foreach ($meterNumbers as $meterNumber) {
                 $meter = Meter::where('number', $meterNumber)->first();
@@ -115,6 +120,11 @@ class HexingMeterService
 
             $responseData = $response->json();
 
+            // Check if response data is valid
+            if ($responseData === null) {
+                throw new \Exception('Invalid or empty JSON response from Hexing API');
+            }
+
             // Log requests for each meter
             foreach ($meterNumbers as $meterNumber) {
                 $meter = Meter::where('number', $meterNumber)->first();
@@ -174,6 +184,11 @@ class HexingMeterService
                 ->post($url . '?' . http_build_query($queryParams), $payload);
 
             $responseData = $response->json();
+
+            // Check if response data is valid
+            if ($responseData === null) {
+                throw new \Exception('Invalid or empty JSON response from Hexing API');
+            }
 
             // Log request
             $meter = Meter::where('number', $meterNumber)->first();
