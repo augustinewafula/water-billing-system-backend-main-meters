@@ -446,6 +446,8 @@ class PrepaidMeterService
 
     private function generatePrismToken(string $meter_number, float $amount, float $units, MeterCategory $meterCategory, bool $usePrismVend2 = false): ?string
     {
+        // Normalize meter number by removing preceding zeros
+        $meter_number = ltrim($meter_number, '0');
         $subclass = $meterCategory->value === MeterCategory::ENERGY ? '0' : '1';
 
         // Calculate the value: 1 unit = 10,000 values
