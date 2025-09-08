@@ -365,89 +365,72 @@ class MeterController extends Controller
     public function hexingCallback(Request $request, string $action): JsonResponse
     {
         try {
-            // Safely get raw JSON
+            // Get raw request body
             $rawContent = $request->getContent();
-            
-            // Try multiple JSON parsing approaches
-            $jsonData = null;
-            
-            // First try Laravel's built-in method
-            if ($request->isJson()) {
-                $jsonData = $request->json()?->all();
-            }
-            
-            // Always try manual JSON decode as the primary method
-            if (!empty($rawContent)) {
-                // Direct JSON decode
-                $jsonData = json_decode($rawContent, true);
-                
-                Log::info('Direct JSON decode test', [
-                    'json_error' => json_last_error_msg(),
-                    'json_error_code' => json_last_error(),
-                    'decoded_data_type' => gettype($jsonData),
-                    'is_array' => is_array($jsonData),
-                    'has_message_id' => is_array($jsonData) && isset($jsonData['messageId']),
-                    'message_id_value' => is_array($jsonData) && isset($jsonData['messageId']) ? $jsonData['messageId'] : 'NOT_FOUND'
+
+            // Decode JSON directly from raw content
+            $jsonData = json_decode($rawContent, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Hexing callback JSON decode failed', [
+                    'action'      => $action,
+                    'error'       => json_last_error_msg(),
+                    'raw_content' => $rawContent,
                 ]);
+
+                return response()->json([
+                    'result_code' => '1',
+                    'message'     => 'Invalid JSON format',
+                ], 400);
             }
 
-            // Debug logging to understand what's happening
-            Log::info('Hexing callback debug', [
-                'has_message_id' => isset($jsonData['messageId']),
-                'json_data_keys' => $jsonData ? array_keys($jsonData) : null,
-                'json_data_type' => gettype($jsonData),
-                'json_data_count' => is_array($jsonData) ? count($jsonData) : 0
-            ]);
-
-            // Log everything
+            // Log incoming request for traceability
             Log::info('Hexing callback received', [
-                'action'       => $action,
-                'raw_body'     => $rawContent,
-                'parsed_json'  => $jsonData,
-                'headers'      => $request->headers->all(),
-                'ip'           => $request->ip(),
-                'timestamp'    => now()
+                'action'      => $action,
+                'message_id'  => $jsonData['messageId'] ?? null,
+                'parsed_json' => $jsonData,
+                'headers'     => $request->headers->all(),
+                'ip'          => $request->ip(),
+                'timestamp'   => now(),
             ]);
 
-            // Process the callback based on action type
-            if ($jsonData && isset($jsonData['messageId'])) {
-                $hexingService = new HexingMeterService();
-                
+            // Ensure messageId exists before processing
+            if (!empty($jsonData['messageId'])) {
+                $hexingService = app(HexingMeterService::class); // Use DI container
+
                 match ($action) {
                     'valve-control' => $hexingService->processValveCallback($jsonData),
                     'meter-reading' => $hexingService->processReadingCallback($jsonData),
-                    'token' => $hexingService->processTokenCallback($jsonData),
-                    default => Log::warning('Unknown Hexing callback action', [
+                    'token'         => $hexingService->processTokenCallback($jsonData),
+                    default         => Log::warning('Unknown Hexing callback action', [
                         'action' => $action,
-                        'data' => $jsonData
-                    ])
+                        'data'   => $jsonData,
+                    ]),
                 };
-                
             } else {
                 Log::warning('Hexing callback missing messageId', [
-                    'action' => $action,
-                    'data' => $jsonData,
+                    'action'      => $action,
+                    'parsed_json' => $jsonData,
                     'raw_content' => $rawContent,
-                    'json_error' => json_last_error_msg()
                 ]);
             }
 
-            // Return expected response format based on API documentation
+            // Always respond with success (as per Hexing API spec)
             return response()->json([
                 'result_code' => '0',
-                'message' => 'success'
+                'message'     => 'success',
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Hexing callback processing failed', [
                 'action' => $action,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error'  => $e->getMessage(),
+                'trace'  => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'result_code' => '1',
-                'message' => 'Callback processing failed'
+                'message'     => 'Callback processing failed',
             ], 500);
         }
     }
