@@ -368,8 +368,17 @@ class MeterController extends Controller
             // Get raw request body
             $rawContent = $request->getContent();
 
-            // Decode JSON directly from raw content
-            $jsonData = json_decode($rawContent, true);
+            // Normalize encoding to UTF-8 (handles malformed characters)
+            $normalizedContent = mb_convert_encoding($rawContent, 'UTF-8', 'UTF-8, ISO-8859-1, GB2312');
+
+            // Decode JSON
+            $jsonData = json_decode($normalizedContent, true);
+
+            // If decoding still fails, try cleaning non-UTF8 bytes
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $cleanContent = preg_replace('/[^\x09\x0A\x0D\x20-\x7F]/u', '', $normalizedContent);
+                $jsonData = json_decode($cleanContent, true);
+            }
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('Hexing callback JSON decode failed', [
@@ -384,7 +393,7 @@ class MeterController extends Controller
                 ], 400);
             }
 
-            // Log incoming request for traceability
+            // Log incoming request
             Log::info('Hexing callback received', [
                 'action'      => $action,
                 'message_id'  => $jsonData['messageId'] ?? null,
@@ -396,7 +405,7 @@ class MeterController extends Controller
 
             // Ensure messageId exists before processing
             if (!empty($jsonData['messageId'])) {
-                $hexingService = app(HexingMeterService::class); // Use DI container
+                $hexingService = app(HexingMeterService::class);
 
                 match ($action) {
                     'valve-control' => $hexingService->processValveCallback($jsonData),
@@ -415,7 +424,7 @@ class MeterController extends Controller
                 ]);
             }
 
-            // Always respond with success (as per Hexing API spec)
+            // Always respond success
             return response()->json([
                 'result_code' => '0',
                 'message'     => 'success',
