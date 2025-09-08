@@ -55,6 +55,9 @@ class ConcentratorService
         if ($meter->prepaid_meter_type === PrepaidMeterType::CALIN) {
             return $this->sendCalinMeterToken($meterNumber, $token);
         }
+        if ($meter->prepaid_meter_type === PrepaidMeterType::HEXING) {
+            return $this->sendHexingMeterToken($meterNumber, $token);
+        }
         return $this->sendStronMeterToken($meterNumber, $token);
     }
 
@@ -97,6 +100,36 @@ class ConcentratorService
             return true;
         } catch (\Exception $e) {
             Log::error('Exception while sending Calin meter token:', ['error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    public function sendHexingMeterToken(string $meterNumber, string $token): bool
+    {
+        try {
+            $hexingMeterService = new HexingMeterService();
+            
+            // HexingMeterService expects tokens as an array
+            $tokens = [$token];
+            
+            $response = $hexingMeterService->sendToken($meterNumber, $tokens);
+            
+            Log::info('Hexing meter token sent', [
+                'meter_number' => $meterNumber,
+                'token' => $token,
+                'response' => $response
+            ]);
+            
+            // Check if the response indicates success
+            // Assuming success if no exception was thrown and we got a response
+            return !empty($response);
+            
+        } catch (\Exception $e) {
+            Log::error('Exception while sending Hexing meter token', [
+                'meter_number' => $meterNumber,
+                'token' => $token,
+                'error' => $e->getMessage()
+            ]);
             return false;
         }
     }

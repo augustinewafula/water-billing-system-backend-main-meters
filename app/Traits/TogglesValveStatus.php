@@ -2,11 +2,14 @@
 
 namespace App\Traits;
 
+use App\Enums\PrepaidMeterType;
 use App\Enums\ValveStatus;
 use App\Models\MeterType;
+use App\Services\HexingMeterService;
 use Http;
 use JsonException;
 use Log;
+use Throwable;
 
 trait TogglesValveStatus
 {
@@ -26,6 +29,19 @@ trait TogglesValveStatus
         }
         if ($meter_type->name === 'Changsha Nb-iot') {
             return $this->toggleChangshaNbIotMeter($meter->number, $command);
+        }
+        if ($meter_type->name === 'Prepaid' &&$meter->prepaid_meter_type === PrepaidMeterType::HEXING) {
+            $hexingMeterService = new HexingMeterService();
+            try {
+                // Convert ValveStatus enum to string format expected by HexingMeterService
+                $valveAction = $command === ValveStatus::OPEN ? 'open' : 'close';
+                $hexingMeterService->controlValve([$meter->number], $valveAction);
+                return true;
+
+            }catch (Throwable $e){
+                Log::error($e);
+                return false;
+            }
         }
         return false;
     }
