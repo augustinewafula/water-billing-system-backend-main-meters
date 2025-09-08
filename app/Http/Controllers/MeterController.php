@@ -376,13 +376,28 @@ class MeterController extends Controller
                 $jsonData = $request->json()?->all();
             }
             
-            // If that fails, try manual JSON decode
-            if (empty($jsonData) && !empty($rawContent)) {
-                $decodedData = json_decode($rawContent, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    $jsonData = $decodedData;
-                }
+            // Always try manual JSON decode as the primary method
+            if (!empty($rawContent)) {
+                // Direct JSON decode
+                $jsonData = json_decode($rawContent, true);
+                
+                Log::info('Direct JSON decode test', [
+                    'json_error' => json_last_error_msg(),
+                    'json_error_code' => json_last_error(),
+                    'decoded_data_type' => gettype($jsonData),
+                    'is_array' => is_array($jsonData),
+                    'has_message_id' => is_array($jsonData) && isset($jsonData['messageId']),
+                    'message_id_value' => is_array($jsonData) && isset($jsonData['messageId']) ? $jsonData['messageId'] : 'NOT_FOUND'
+                ]);
             }
+
+            // Debug logging to understand what's happening
+            Log::info('Hexing callback debug', [
+                'has_message_id' => isset($jsonData['messageId']),
+                'json_data_keys' => $jsonData ? array_keys($jsonData) : null,
+                'json_data_type' => gettype($jsonData),
+                'json_data_count' => is_array($jsonData) ? count($jsonData) : 0
+            ]);
 
             // Log everything
             Log::info('Hexing callback received', [
