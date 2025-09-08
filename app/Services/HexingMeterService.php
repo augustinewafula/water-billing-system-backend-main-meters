@@ -57,7 +57,7 @@ class HexingMeterService
 
             // Check if response data is valid
             if ($responseData === null) {
-                throw new \Exception('Invalid or empty JSON response from Hexing API');
+                throw new \Exception('Invalid or empty JSON response from Hexing API. Raw response: ' . $response->body());
             }
 
             // Log requests for each meter
@@ -89,6 +89,8 @@ class HexingMeterService
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
                 'error_code' => $e->getCode(),
+                'response_status' => isset($response) ? $response->status() : null,
+                'response_body' => isset($response) ? $response->body() : null,
                 'trace' => $e->getTraceAsString()
             ]);
             throw $e;
@@ -122,7 +124,7 @@ class HexingMeterService
 
             // Check if response data is valid
             if ($responseData === null) {
-                throw new \Exception('Invalid or empty JSON response from Hexing API');
+                throw new \Exception('Invalid or empty JSON response from Hexing API. Raw response: ' . $response->body());
             }
 
             // Log requests for each meter
@@ -154,6 +156,8 @@ class HexingMeterService
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
                 'error_code' => $e->getCode(),
+                'response_status' => isset($response) ? $response->status() : null,
+                'response_body' => isset($response) ? $response->body() : null,
                 'trace' => $e->getTraceAsString()
             ]);
             throw $e;
@@ -187,7 +191,7 @@ class HexingMeterService
 
             // Check if response data is valid
             if ($responseData === null) {
-                throw new \Exception('Invalid or empty JSON response from Hexing API');
+                throw new \Exception('Invalid or empty JSON response from Hexing API. Raw response: ' . $response->body());
             }
 
             // Log request
@@ -217,6 +221,8 @@ class HexingMeterService
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
                 'error_code' => $e->getCode(),
+                'response_status' => isset($response) ? $response->status() : null,
+                'response_body' => isset($response) ? $response->body() : null,
                 'trace' => $e->getTraceAsString()
             ]);
             throw $e;
