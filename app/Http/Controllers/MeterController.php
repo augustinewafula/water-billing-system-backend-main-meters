@@ -367,7 +367,22 @@ class MeterController extends Controller
         try {
             // Safely get raw JSON
             $rawContent = $request->getContent();
-            $jsonData = $request->json()?->all();
+            
+            // Try multiple JSON parsing approaches
+            $jsonData = null;
+            
+            // First try Laravel's built-in method
+            if ($request->isJson()) {
+                $jsonData = $request->json()?->all();
+            }
+            
+            // If that fails, try manual JSON decode
+            if (empty($jsonData) && !empty($rawContent)) {
+                $decodedData = json_decode($rawContent, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $jsonData = $decodedData;
+                }
+            }
 
             // Log everything
             Log::info('Hexing callback received', [
@@ -396,7 +411,9 @@ class MeterController extends Controller
             } else {
                 Log::warning('Hexing callback missing messageId', [
                     'action' => $action,
-                    'data' => $jsonData
+                    'data' => $jsonData,
+                    'raw_content' => $rawContent,
+                    'json_error' => json_last_error_msg()
                 ]);
             }
 
