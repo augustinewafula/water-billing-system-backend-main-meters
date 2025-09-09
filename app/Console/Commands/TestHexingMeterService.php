@@ -75,10 +75,13 @@ class TestHexingMeterService extends Command
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function testControlValve(string $meterNumber): int
     {
         $valveAction = $this->option('valve-action');
-        
+
         if (!$valveAction) {
             $valveAction = $this->choice(
                 'Select valve action:',
@@ -96,7 +99,8 @@ class TestHexingMeterService extends Command
         $this->info("Meter: {$meterNumber}");
         $this->info("Valve Action: {$valveAction}");
 
-        $response = $this->hexingService->controlValve([$meterNumber], $valveAction);
+        // Test with single meter number (new functionality)
+        $response = $this->hexingService->controlValve($meterNumber, $valveAction);
 
         $this->info("Response received:");
         $this->line(json_encode($response, JSON_PRETTY_PRINT));
@@ -109,7 +113,8 @@ class TestHexingMeterService extends Command
         $this->info("Testing getRealTimeReading method...");
         $this->info("Meter: {$meterNumber}");
 
-        $response = $this->hexingService->getRealTimeReading([$meterNumber]);
+        // Test with single meter number (new functionality)
+        $response = $this->hexingService->getRealTimeReading($meterNumber);
 
         $this->info("Response received:");
         $this->line(json_encode($response, JSON_PRETTY_PRINT));
@@ -120,16 +125,16 @@ class TestHexingMeterService extends Command
     private function testSendToken(string $meterNumber): int
     {
         $tokens = $this->option('tokens');
-        
+
         if (empty($tokens)) {
             $this->info("No tokens provided via --tokens option. Please enter tokens:");
             $tokensInput = $this->ask('Enter tokens (comma separated)');
-            
+
             if (empty($tokensInput)) {
                 $this->error("No tokens provided.");
                 return Command::FAILURE;
             }
-            
+
             $tokens = array_map('trim', explode(',', $tokensInput));
         }
 
