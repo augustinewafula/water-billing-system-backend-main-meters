@@ -17,7 +17,7 @@ class TestHexingMeterService extends Command
                             {method : The method to test (control-valve|real-time-reading|send-token)}
                             {meter_number : The meter number to test}
                             {--valve-action= : Valve action for control-valve method (open|close|exit)}
-                            {--tokens=* : Tokens array for send-token method}';
+                            {--token= : Single token for send-token method}';
 
     /**
      * The console command description.
@@ -124,25 +124,23 @@ class TestHexingMeterService extends Command
 
     private function testSendToken(string $meterNumber): int
     {
-        $tokens = $this->option('tokens');
+        $token = $this->option('token');
 
-        if (empty($tokens)) {
-            $this->info("No tokens provided via --tokens option. Please enter tokens:");
-            $tokensInput = $this->ask('Enter tokens (comma separated)');
+        if (empty($token)) {
+            $this->info("No token provided via --token option. Please enter a token:");
+            $token = $this->ask('Enter token');
 
-            if (empty($tokensInput)) {
-                $this->error("No tokens provided.");
+            if (empty($token)) {
+                $this->error("No token provided.");
                 return Command::FAILURE;
             }
-
-            $tokens = array_map('trim', explode(',', $tokensInput));
         }
 
         $this->info("Testing sendToken method...");
         $this->info("Meter: {$meterNumber}");
-        $this->info("Tokens: " . implode(', ', $tokens));
+        $this->info("Token: {$token}");
 
-        $response = $this->hexingService->sendToken($meterNumber, $tokens);
+        $response = $this->hexingService->sendToken($meterNumber, $token);
 
         $this->info("Response received:");
         $this->line(json_encode($response, JSON_PRETTY_PRINT));
