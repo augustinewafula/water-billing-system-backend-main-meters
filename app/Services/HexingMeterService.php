@@ -168,13 +168,13 @@ class HexingMeterService
      * Send token to meter
      * Based on ThirdTokenSet interface
      */
-    public function sendToken(string $meterNumber, array $tokens): array
+    public function sendToken(array $meterNumbers, string $value): array
     {
-        $url = $this->baseUrl . '/ThirdTokenSet/';
+        $url = $this->baseUrl . '/ThirdTokenSet';
 
         $payload = [
-            'meterCode' => $meterNumber,
-            'tokens' => $tokens,
+            'meterCodes' => $meterNumbers,
+            'value' => $value,
             'orgNo' => $this->orgNo
         ];
 
@@ -194,16 +194,18 @@ class HexingMeterService
                 throw new \Exception('Invalid or empty JSON response from Hexing API. Raw response: ' . $response->body());
             }
 
-            // Log request
-            $meter = Meter::where('number', $meterNumber)->first();
-            if ($meter) {
-                $messageId = $this->extractMessageIdFromResponse($responseData, $meterNumber);
-                $this->createCallbackLog($meter, $messageId, 'token', $payload);
+            // Log requests for each meter
+            foreach ($meterNumbers as $meterNumber) {
+                $meter = Meter::where('number', $meterNumber)->first();
+                if ($meter) {
+                    $messageId = $this->extractMessageIdFromResponse($responseData, $meterNumber);
+                    $this->createCallbackLog($meter, $messageId, 'token', array_merge($payload, ['meter_number' => $meterNumber]));
+                }
             }
 
             Log::info('Hexing token send request sent', [
-                'meter_code' => $meterNumber,
-                'tokens' => $tokens,
+                'meter_codes' => $meterNumbers,
+                'value' => $value,
                 'response' => $responseData
             ]);
 
@@ -216,8 +218,8 @@ class HexingMeterService
                 'method' => 'sendToken',
                 'request_url' => $fullUrl,
                 'request_payload' => $payload,
-                'meter_code' => $meterNumber,
-                'tokens' => $tokens,
+                'meter_codes' => $meterNumbers,
+                'value' => $value,
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
                 'error_code' => $e->getCode(),
