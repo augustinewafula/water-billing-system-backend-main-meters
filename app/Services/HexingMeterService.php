@@ -179,11 +179,14 @@ class HexingMeterService
         // Normalize meterNumbers to array
         $meterNumbers = is_array($meterNumbers) ? $meterNumbers : [$meterNumbers];
         
+        // Normalize token value by removing all non-numeric characters
+        $normalizedValue = preg_replace('/[^0-9]/', '', $value);
+        
         $url = $this->baseUrl . '/ThirdTokenSet';
 
         $payload = [
             'meterCodes' => $meterNumbers,
-            'value' => $value,
+            'value' => $normalizedValue,
             'orgNo' => $this->orgNo
         ];
 
@@ -214,7 +217,8 @@ class HexingMeterService
 
             Log::info('Hexing token send request sent', [
                 'meter_codes' => $meterNumbers,
-                'value' => $value,
+                'original_value' => $value,
+                'normalized_value' => $normalizedValue,
                 'response' => $responseData
             ]);
 
@@ -228,7 +232,8 @@ class HexingMeterService
                 'request_url' => $fullUrl,
                 'request_payload' => $payload,
                 'meter_codes' => $meterNumbers,
-                'value' => $value,
+                'original_value' => $value,
+                'normalized_value' => $normalizedValue,
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
                 'error_code' => $e->getCode(),
