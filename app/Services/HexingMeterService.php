@@ -25,8 +25,11 @@ class HexingMeterService
      * Control valve (open/close/exit)
      * Based on ThirdValveWrite interface
      */
-    public function controlValve(array $meterNumbers, string $valveAction): array
+    public function controlValve(array|string $meterNumbers, string $valveAction): array
     {
+        // Normalize meterNumbers to array
+        $meterNumbers = is_array($meterNumbers) ? $meterNumbers : [$meterNumbers];
+        
         $url = $this->baseUrl . '/ThirdValveWrite/';
 
         // Convert valve action to API format
@@ -101,8 +104,11 @@ class HexingMeterService
      * Get real-time meter reading
      * Based on ThirdRealTimeDataRead interface
      */
-    public function getRealTimeReading(array $meterNumbers): array
+    public function getRealTimeReading(array|string $meterNumbers): array
     {
+        // Normalize meterNumbers to array
+        $meterNumbers = is_array($meterNumbers) ? $meterNumbers : [$meterNumbers];
+        
         $url = $this->baseUrl . '/ThirdRealTimeDataRead/';
 
         $payload = [
@@ -168,8 +174,11 @@ class HexingMeterService
      * Send token to meter
      * Based on ThirdTokenSet interface
      */
-    public function sendToken(array $meterNumbers, string $value): array
+    public function sendToken(array|string $meterNumbers, string $value): array
     {
+        // Normalize meterNumbers to array
+        $meterNumbers = is_array($meterNumbers) ? $meterNumbers : [$meterNumbers];
+        
         $url = $this->baseUrl . '/ThirdTokenSet';
 
         $payload = [
