@@ -108,22 +108,19 @@ class ConcentratorService
     {
         try {
             $hexingMeterService = new HexingMeterService();
-            
-            // HexingMeterService expects tokens as an array
-            $tokens = [$token];
-            
-            $response = $hexingMeterService->sendToken($meterNumber, $tokens);
-            
+
+            $response = $hexingMeterService->sendToken($meterNumber, $token);
+
             Log::info('Hexing meter token sent', [
                 'meter_number' => $meterNumber,
                 'token' => $token,
                 'response' => $response
             ]);
-            
+
             // Check if the response indicates success
             // Assuming success if no exception was thrown and we got a response
             return !empty($response);
-            
+
         } catch (\Exception $e) {
             Log::error('Exception while sending Hexing meter token', [
                 'meter_number' => $meterNumber,
