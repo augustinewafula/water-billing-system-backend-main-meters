@@ -26,7 +26,7 @@ endpoints:
         name: email
         description: 'Must be a valid email address.'
         required: true
-        example: witting.rory@example.com
+        example: rogahn.nico@example.org
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -35,14 +35,14 @@ endpoints:
         name: password
         description: ''
         required: true
-        example: molestiae
+        example: placeat
         type: string
         enumValues: []
         exampleWasSpecified: false
         custom: []
     cleanBodyParameters:
-      email: witting.rory@example.com
-      password: molestiae
+      email: rogahn.nico@example.org
+      password: placeat
     fileParameters: []
     responses: []
     responseFields: []

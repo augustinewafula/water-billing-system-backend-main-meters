@@ -146,28 +146,28 @@ class MeterController extends Controller
     {
         $hexingService = app(HexingMeterService::class);
         $valveAction = $request->valve_status === ValveStatus::OPEN ? 'open' : 'close';
-        
+
         try {
             $response = $hexingService->controlValve([$meter->number], $valveAction);
-            
+
             // Extract message ID for this specific meter from Hexing response
             $messageId = $this->extractMessageIdFromHexingResponse($response, $meter->number);
-            
+
             if (!$messageId) {
                 throw new \Exception('No message ID received from Hexing API for meter: ' . $meter->number);
             }
-            
+
             // Store client request context for callback matching
             $this->storeClientCallbackContext($meter, $response, $request, $messageId);
-            
+
             return $this->successResponse('Valve control request initiated', [
                 'meter_number' => $meter->number,
                 'message_id' => $messageId,
-                'requested_valve_status' => ValveStatus::getKey($request->valve_status),
+                'requested_valve_status' => $valveAction,
                 'message' => 'Request submitted successfully. Result will be delivered via callback.',
                 'status' => 'pending'
             ]);
-            
+
         } catch (\Exception $e) {
             return $this->errorResponse(
                 'Failed to initiate valve control request',
@@ -192,10 +192,8 @@ class MeterController extends Controller
 
     private function storeClientCallbackContext(Meter $meter, array $hexingResponse, UpdateValveStatusRequest $request, string $messageId): void
     {
-        // For now, we'll use a simple client identification method
-        // In production, this should be extracted from authentication context
-        $clientId = $request->header('X-Client-ID', 'default-client');
-        
+        $clientId = auth()->user()->id;
+
         ClientRequestContext::create([
             'meter_id' => $meter->id,
             'client_id' => $clientId,

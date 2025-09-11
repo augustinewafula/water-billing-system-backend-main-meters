@@ -165,8 +165,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"witting.rory@example.com\",
-    \"password\": \"molestiae\"
+    \"email\": \"rogahn.nico@example.org\",
+    \"password\": \"placeat\"
 }"
 </code></pre></div>
 
@@ -182,8 +182,8 @@ const headers = {
 };
 
 let body = {
-    "email": "witting.rory@example.com",
-    "password": "molestiae"
+    "email": "rogahn.nico@example.org",
+    "password": "placeat"
 };
 
 fetch(url, {
@@ -204,8 +204,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'witting.rory@example.com',
-            'password' =&gt; 'molestiae',
+            'email' =&gt; 'rogahn.nico@example.org',
+            'password' =&gt; 'placeat',
         ],
     ]
 );
@@ -219,8 +219,8 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/login'
 payload = {
-    "email": "witting.rory@example.com",
-    "password": "molestiae"
+    "email": "rogahn.nico@example.org",
+    "password": "placeat"
 }
 headers = {
   'Content-Type': 'application/json',
@@ -310,10 +310,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="email"                data-endpoint="POSTapi-v2-auth-login"
-               value="witting.rory@example.com"
+               value="rogahn.nico@example.org"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>witting.rory@example.com</code></p>
+<p>Must be a valid email address. Example: <code>rogahn.nico@example.org</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -321,10 +321,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-v2-auth-login"
-               value="molestiae"
+               value="placeat"
                data-component="body">
     <br>
-<p>Example: <code>molestiae</code></p>
+<p>Example: <code>placeat</code></p>
         </div>
         </form>
 
