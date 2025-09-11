@@ -98,7 +98,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer d6hca3aeDg6ZkV4bP5fE8v1'
+      - 'Bearer fvhadVED486ckP36e1aZ5gb'
     controller: null
     method: null
     route: null
@@ -106,7 +106,7 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: api/v2/meters/readings
+    uri: 'api/v2/meters/{meter_number}/readings'
     metadata:
       groupName: Meters
       groupDescription: ''
@@ -120,9 +120,7 @@ endpoints:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
+    urlParameters:
       meter_number:
         name: meter_number
         description: 'The unique meter number.'
@@ -132,20 +130,12 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         custom: []
-    cleanQueryParameters:
+    cleanUrlParameters:
       meter_number: MTR123456789
-    bodyParameters:
-      meter_number:
-        name: meter_number
-        description: 'Must not be greater than 20 characters.'
-        required: true
-        example: qltfxlceusocp
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        custom: []
-    cleanBodyParameters:
-      meter_number: qltfxlceusocp
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
     fileParameters: []
     responses:
       -
@@ -182,7 +172,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v1bf46dcP3VhkaeE86a5DgZ'
+      - 'Bearer 3ZDvE5a616ba8Phkd4cVfge'
     controller: null
     method: null
     route: null

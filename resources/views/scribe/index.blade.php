@@ -70,16 +70,35 @@
                     <a href="#authenticating-requests">Authenticating requests</a>
                 </li>
                             </ul>
-                    <ul id="tocify-header-endpoints" class="tocify-header">
-                <li class="tocify-item level-1" data-unique="endpoints">
-                    <a href="#endpoints">Endpoints</a>
+                    <ul id="tocify-header-authentication" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="authentication">
+                    <a href="#authentication">Authentication</a>
                 </li>
-                                    <ul id="tocify-subheader-endpoints" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="endpoints-POSTapi-v2-auth-login">
-                                <a href="#endpoints-POSTapi-v2-auth-login">POST api/v2/auth/login</a>
+                                    <ul id="tocify-subheader-authentication" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="authentication-POSTapi-v2-auth-login">
+                                <a href="#authentication-POSTapi-v2-auth-login">POST api/v2/auth/login</a>
                             </li>
-                                                                                <li class="tocify-item level-2" data-unique="endpoints-POSTapi-v2-logout">
-                                <a href="#endpoints-POSTapi-v2-logout">POST api/v2/logout</a>
+                                                                                <li class="tocify-item level-2" data-unique="authentication-POSTapi-v2-auth-logout">
+                                <a href="#authentication-POSTapi-v2-auth-logout">POST api/v2/auth/logout</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
+                    <ul id="tocify-header-callbacks" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="callbacks">
+                    <a href="#callbacks">Callbacks</a>
+                </li>
+                                    <ul id="tocify-subheader-callbacks" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="callbacks-POSTapi-v2-callbacks">
+                                <a href="#callbacks-POSTapi-v2-callbacks">Register your callback URL</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="callbacks-GETapi-v2-callbacks">
+                                <a href="#callbacks-GETapi-v2-callbacks">Get current callback URL configuration</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="callbacks-PUTapi-v2-callbacks">
+                                <a href="#callbacks-PUTapi-v2-callbacks">Update existing callback URL configuration</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="callbacks-DELETEapi-v2-callbacks">
+                                <a href="#callbacks-DELETEapi-v2-callbacks">Delete callback URL registration</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -91,8 +110,8 @@
                                                     <li class="tocify-item level-2" data-unique="meters-POSTapi-v2-meters--meter_number--valve">
                                 <a href="#meters-POSTapi-v2-meters--meter_number--valve">Update Meter Valve Status</a>
                             </li>
-                                                                                <li class="tocify-item level-2" data-unique="meters-GETapi-v2-meters-readings">
-                                <a href="#meters-GETapi-v2-meters-readings">Get Meter Readings</a>
+                                                                                <li class="tocify-item level-2" data-unique="meters-GETapi-v2-meters--meter_number--readings">
+                                <a href="#meters-GETapi-v2-meters--meter_number--readings">Get Meter Readings</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -105,7 +124,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: August 10, 2025</li>
+        <li>Last updated: September 11, 2025</li>
     </ul>
 </div>
 
@@ -125,11 +144,11 @@ You can switch the language used with the tabs at the top right (or from the nav
 <p>All authenticated endpoints are marked with a <code>requires authentication</code> badge in the documentation below.</p>
 <p>You can retrieve your token by logging via the login endpoint.</p>
 
-        <h1 id="endpoints">Endpoints</h1>
+        <h1 id="authentication">Authentication</h1>
 
     
 
-                                <h2 id="endpoints-POSTapi-v2-auth-login">POST api/v2/auth/login</h2>
+                                <h2 id="authentication-POSTapi-v2-auth-login">POST api/v2/auth/login</h2>
 
 <p>
 </p>
@@ -146,8 +165,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"moore.aracely@example.org\",
-    \"password\": \"blanditiis\"
+    \"email\": \"witting.rory@example.com\",
+    \"password\": \"molestiae\"
 }"
 </code></pre></div>
 
@@ -163,8 +182,8 @@ const headers = {
 };
 
 let body = {
-    "email": "moore.aracely@example.org",
-    "password": "blanditiis"
+    "email": "witting.rory@example.com",
+    "password": "molestiae"
 };
 
 fetch(url, {
@@ -185,8 +204,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'moore.aracely@example.org',
-            'password' =&gt; 'blanditiis',
+            'email' =&gt; 'witting.rory@example.com',
+            'password' =&gt; 'molestiae',
         ],
     ]
 );
@@ -200,8 +219,8 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/login'
 payload = {
-    "email": "moore.aracely@example.org",
-    "password": "blanditiis"
+    "email": "witting.rory@example.com",
+    "password": "molestiae"
 }
 headers = {
   'Content-Type': 'application/json',
@@ -291,10 +310,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="email"                data-endpoint="POSTapi-v2-auth-login"
-               value="moore.aracely@example.org"
+               value="witting.rory@example.com"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>moore.aracely@example.org</code></p>
+<p>Must be a valid email address. Example: <code>witting.rory@example.com</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -302,34 +321,34 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-v2-auth-login"
-               value="blanditiis"
+               value="molestiae"
                data-component="body">
     <br>
-<p>Example: <code>blanditiis</code></p>
+<p>Example: <code>molestiae</code></p>
         </div>
         </form>
 
-                    <h2 id="endpoints-POSTapi-v2-logout">POST api/v2/logout</h2>
+                    <h2 id="authentication-POSTapi-v2-auth-logout">POST api/v2/auth/logout</h2>
 
 <p>
 </p>
 
 
 
-<span id="example-requests-POSTapi-v2-logout">
+<span id="example-requests-POSTapi-v2-auth-logout">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://backend.buxton.progressiveutilities.com/api/v2/logout" \
+    "https://backend.buxton.progressiveutilities.com/api/v2/auth/logout" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://backend.buxton.progressiveutilities.com/api/v2/logout"
+    "https://backend.buxton.progressiveutilities.com/api/v2/auth/logout"
 );
 
 const headers = {
@@ -345,7 +364,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://backend.buxton.progressiveutilities.com/api/v2/logout';
+$url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/logout';
 $response = $client-&gt;post(
     $url,
     [
@@ -363,7 +382,7 @@ print_r(json_decode((string) $body));</code></pre></div>
     <pre><code class="language-python">import requests
 import json
 
-url = 'https://backend.buxton.progressiveutilities.com/api/v2/logout'
+url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/logout'
 headers = {
   'Content-Type': 'application/json',
   'Accept': 'application/json'
@@ -374,45 +393,45 @@ response.json()</code></pre></div>
 
 </span>
 
-<span id="example-responses-POSTapi-v2-logout">
+<span id="example-responses-POSTapi-v2-auth-logout">
 </span>
-<span id="execution-results-POSTapi-v2-logout" hidden>
+<span id="execution-results-POSTapi-v2-auth-logout" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-POSTapi-v2-logout"></span>:
+                id="execution-response-status-POSTapi-v2-auth-logout"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-POSTapi-v2-logout"
+    <pre class="json"><code id="execution-response-content-POSTapi-v2-auth-logout"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-POSTapi-v2-logout" hidden>
+<span id="execution-error-POSTapi-v2-auth-logout" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-POSTapi-v2-logout">
+    <pre><code id="execution-error-message-POSTapi-v2-auth-logout">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-POSTapi-v2-logout" data-method="POST"
-      data-path="api/v2/logout"
+<form id="form-POSTapi-v2-auth-logout" data-method="POST"
+      data-path="api/v2/auth/logout"
       data-authed="0"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v2-logout', this);">
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v2-auth-logout', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-POSTapi-v2-logout"
-                    onclick="tryItOut('POSTapi-v2-logout');">Try it out ⚡
+                    id="btn-tryout-POSTapi-v2-auth-logout"
+                    onclick="tryItOut('POSTapi-v2-auth-logout');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-POSTapi-v2-logout"
-                    onclick="cancelTryOut('POSTapi-v2-logout');" hidden>Cancel 🛑
+                    id="btn-canceltryout-POSTapi-v2-auth-logout"
+                    onclick="cancelTryOut('POSTapi-v2-auth-logout');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-POSTapi-v2-logout"
+                    id="btn-executetryout-POSTapi-v2-auth-logout"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -420,7 +439,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-black">POST</small>
-            <b><code>api/v2/logout</code></b>
+            <b><code>api/v2/auth/logout</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -428,7 +447,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="POSTapi-v2-logout"
+                              name="Content-Type"                data-endpoint="POSTapi-v2-auth-logout"
                value="application/json"
                data-component="header">
     <br>
@@ -439,7 +458,800 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="POSTapi-v2-logout"
+                              name="Accept"                data-endpoint="POSTapi-v2-auth-logout"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        </form>
+
+                <h1 id="callbacks">Callbacks</h1>
+
+    
+
+                                <h2 id="callbacks-POSTapi-v2-callbacks">Register your callback URL</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+
+
+<span id="example-requests-POSTapi-v2-callbacks">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks" \
+    --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --data "{
+    \"callback_url\": \"https:\\/\\/client.example.com\\/webhooks\\/meter-updates\",
+    \"secret_token\": \"your-webhook-secret-token-min-32-chars\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks"
+);
+
+const headers = {
+    "Authorization": "Bearer {YOUR_AUTH_KEY}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+let body = {
+    "callback_url": "https:\/\/client.example.com\/webhooks\/meter-updates",
+    "secret_token": "your-webhook-secret-token-min-32-chars"
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks';
+$response = $client-&gt;post(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer {YOUR_AUTH_KEY}',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+        'json' =&gt; [
+            'callback_url' =&gt; 'https://client.example.com/webhooks/meter-updates',
+            'secret_token' =&gt; 'your-webhook-secret-token-min-32-chars',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="python-example">
+    <pre><code class="language-python">import requests
+import json
+
+url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks'
+payload = {
+    "callback_url": "https:\/\/client.example.com\/webhooks\/meter-updates",
+    "secret_token": "your-webhook-secret-token-min-32-chars"
+}
+headers = {
+  'Authorization': 'Bearer {YOUR_AUTH_KEY}',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
+
+response = requests.request('POST', url, headers=headers, json=payload)
+response.json()</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v2-callbacks">
+</span>
+<span id="execution-results-POSTapi-v2-callbacks" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v2-callbacks"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v2-callbacks"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v2-callbacks" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v2-callbacks">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v2-callbacks" data-method="POST"
+      data-path="api/v2/callbacks"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v2-callbacks', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v2-callbacks"
+                    onclick="tryItOut('POSTapi-v2-callbacks');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v2-callbacks"
+                    onclick="cancelTryOut('POSTapi-v2-callbacks');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v2-callbacks"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v2/callbacks</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="POSTapi-v2-callbacks"
+               value="Bearer {YOUR_AUTH_KEY}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {YOUR_AUTH_KEY}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>callback_url</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="callback_url"                data-endpoint="POSTapi-v2-callbacks"
+               value="https://client.example.com/webhooks/meter-updates"
+               data-component="body">
+    <br>
+<p>The HTTPS callback URL. Example: <code>https://client.example.com/webhooks/meter-updates</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>secret_token</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+                <input type="text" style="display: none"
+                              name="secret_token"                data-endpoint="POSTapi-v2-callbacks"
+               value="your-webhook-secret-token-min-32-chars"
+               data-component="body">
+    <br>
+<p>optional Secret token for webhook signature verification. Min 32 chars. Example: <code>your-webhook-secret-token-min-32-chars</code></p>
+        </div>
+        </form>
+
+                    <h2 id="callbacks-GETapi-v2-callbacks">Get current callback URL configuration</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+
+
+<span id="example-requests-GETapi-v2-callbacks">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://backend.buxton.progressiveutilities.com/api/v2/callbacks" \
+    --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks"
+);
+
+const headers = {
+    "Authorization": "Bearer {YOUR_AUTH_KEY}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks';
+$response = $client-&gt;get(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer {YOUR_AUTH_KEY}',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="python-example">
+    <pre><code class="language-python">import requests
+import json
+
+url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks'
+headers = {
+  'Authorization': 'Bearer {YOUR_AUTH_KEY}',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
+
+response = requests.request('GET', url, headers=headers)
+response.json()</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v2-callbacks">
+            <blockquote>
+            <p>Example response (200, Current callback configuration):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;message&quot;: &quot;Current callback configuration&quot;,
+    &quot;data&quot;: {
+        &quot;callback_url&quot;: &quot;https://client.example.com/webhooks/meter-updates&quot;,
+        &quot;secret_token&quot;: &quot;your-webhook-secret-token-min-32-chars&quot;,
+        &quot;registered_at&quot;: &quot;2025-09-11T10:30:45.000000Z&quot;,
+        &quot;last_updated&quot;: &quot;2025-09-11T14:22:15.000000Z&quot;
+    },
+    &quot;errors&quot;: null
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (404, Callback URL not found):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;No callback URL found for this client&quot;,
+    &quot;data&quot;: null,
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;CallbackNotFound&quot;,
+        &quot;details&quot;: null
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v2-callbacks" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v2-callbacks"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v2-callbacks"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v2-callbacks" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v2-callbacks">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v2-callbacks" data-method="GET"
+      data-path="api/v2/callbacks"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v2-callbacks', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v2-callbacks"
+                    onclick="tryItOut('GETapi-v2-callbacks');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v2-callbacks"
+                    onclick="cancelTryOut('GETapi-v2-callbacks');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v2-callbacks"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v2/callbacks</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v2-callbacks"
+               value="Bearer {YOUR_AUTH_KEY}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {YOUR_AUTH_KEY}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        </form>
+
+                    <h2 id="callbacks-PUTapi-v2-callbacks">Update existing callback URL configuration</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+
+
+<span id="example-requests-PUTapi-v2-callbacks">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request PUT \
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks" \
+    --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --data "{
+    \"callback_url\": \"https:\\/\\/client.example.com\\/webhooks\\/meter-updates\",
+    \"secret_token\": \"your-webhook-secret-token-min-32-chars\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks"
+);
+
+const headers = {
+    "Authorization": "Bearer {YOUR_AUTH_KEY}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+let body = {
+    "callback_url": "https:\/\/client.example.com\/webhooks\/meter-updates",
+    "secret_token": "your-webhook-secret-token-min-32-chars"
+};
+
+fetch(url, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks';
+$response = $client-&gt;put(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer {YOUR_AUTH_KEY}',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+        'json' =&gt; [
+            'callback_url' =&gt; 'https://client.example.com/webhooks/meter-updates',
+            'secret_token' =&gt; 'your-webhook-secret-token-min-32-chars',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="python-example">
+    <pre><code class="language-python">import requests
+import json
+
+url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks'
+payload = {
+    "callback_url": "https:\/\/client.example.com\/webhooks\/meter-updates",
+    "secret_token": "your-webhook-secret-token-min-32-chars"
+}
+headers = {
+  'Authorization': 'Bearer {YOUR_AUTH_KEY}',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
+
+response = requests.request('PUT', url, headers=headers, json=payload)
+response.json()</code></pre></div>
+
+</span>
+
+<span id="example-responses-PUTapi-v2-callbacks">
+            <blockquote>
+            <p>Example response (200, Callback URL updated successfully):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;message&quot;: &quot;Callback URL updated successfully&quot;,
+    &quot;data&quot;: {
+        &quot;callback_url&quot;: &quot;https://client.example.com/webhooks/meter-updates&quot;,
+        &quot;secret_token&quot;: &quot;your-webhook-secret-token-min-32-chars&quot;
+    },
+    &quot;errors&quot;: null
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (404, Callback URL not found):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;No callback URL found for this client. Please register first.&quot;,
+    &quot;data&quot;: null,
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;CallbackNotFound&quot;,
+        &quot;details&quot;: null
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-PUTapi-v2-callbacks" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-PUTapi-v2-callbacks"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-PUTapi-v2-callbacks"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-PUTapi-v2-callbacks" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-PUTapi-v2-callbacks">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-PUTapi-v2-callbacks" data-method="PUT"
+      data-path="api/v2/callbacks"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('PUTapi-v2-callbacks', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-PUTapi-v2-callbacks"
+                    onclick="tryItOut('PUTapi-v2-callbacks');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-PUTapi-v2-callbacks"
+                    onclick="cancelTryOut('PUTapi-v2-callbacks');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-PUTapi-v2-callbacks"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-darkblue">PUT</small>
+            <b><code>api/v2/callbacks</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="PUTapi-v2-callbacks"
+               value="Bearer {YOUR_AUTH_KEY}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {YOUR_AUTH_KEY}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="PUTapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="PUTapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>callback_url</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+                <input type="text" style="display: none"
+                              name="callback_url"                data-endpoint="PUTapi-v2-callbacks"
+               value="https://client.example.com/webhooks/meter-updates"
+               data-component="body">
+    <br>
+<p>optional The HTTPS callback URL. Example: <code>https://client.example.com/webhooks/meter-updates</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>secret_token</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+                <input type="text" style="display: none"
+                              name="secret_token"                data-endpoint="PUTapi-v2-callbacks"
+               value="your-webhook-secret-token-min-32-chars"
+               data-component="body">
+    <br>
+<p>optional Secret token for webhook signature verification. Min 32 chars. Example: <code>your-webhook-secret-token-min-32-chars</code></p>
+        </div>
+        </form>
+
+                    <h2 id="callbacks-DELETEapi-v2-callbacks">Delete callback URL registration</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+
+
+<span id="example-requests-DELETEapi-v2-callbacks">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request DELETE \
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks" \
+    --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://backend.buxton.progressiveutilities.com/api/v2/callbacks"
+);
+
+const headers = {
+    "Authorization": "Bearer {YOUR_AUTH_KEY}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "DELETE",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks';
+$response = $client-&gt;delete(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer {YOUR_AUTH_KEY}',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="python-example">
+    <pre><code class="language-python">import requests
+import json
+
+url = 'https://backend.buxton.progressiveutilities.com/api/v2/callbacks'
+headers = {
+  'Authorization': 'Bearer {YOUR_AUTH_KEY}',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
+
+response = requests.request('DELETE', url, headers=headers)
+response.json()</code></pre></div>
+
+</span>
+
+<span id="example-responses-DELETEapi-v2-callbacks">
+            <blockquote>
+            <p>Example response (200, Callback URL deleted successfully):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;message&quot;: &quot;Callback URL deleted successfully&quot;,
+    &quot;data&quot;: null,
+    &quot;errors&quot;: null
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (404, Callback URL not found):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;No callback URL found for this client&quot;,
+    &quot;data&quot;: null,
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;CallbackNotFound&quot;,
+        &quot;details&quot;: null
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-DELETEapi-v2-callbacks" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-DELETEapi-v2-callbacks"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-DELETEapi-v2-callbacks"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-DELETEapi-v2-callbacks" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-DELETEapi-v2-callbacks">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-DELETEapi-v2-callbacks" data-method="DELETE"
+      data-path="api/v2/callbacks"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('DELETEapi-v2-callbacks', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-DELETEapi-v2-callbacks"
+                    onclick="tryItOut('DELETEapi-v2-callbacks');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-DELETEapi-v2-callbacks"
+                    onclick="cancelTryOut('DELETEapi-v2-callbacks');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-DELETEapi-v2-callbacks"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-red">DELETE</small>
+            <b><code>api/v2/callbacks</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="DELETEapi-v2-callbacks"
+               value="Bearer {YOUR_AUTH_KEY}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {YOUR_AUTH_KEY}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="DELETEapi-v2-callbacks"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="DELETEapi-v2-callbacks"
                value="application/json"
                data-component="header">
     <br>
@@ -690,7 +1502,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
         </div>
         </form>
 
-                    <h2 id="meters-GETapi-v2-meters-readings">Get Meter Readings</h2>
+                    <h2 id="meters-GETapi-v2-meters--meter_number--readings">Get Meter Readings</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
@@ -698,32 +1510,22 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <p>Retrieve the latest meter readings for a given meter number.</p>
 
-<span id="example-requests-GETapi-v2-meters-readings">
+<span id="example-requests-GETapi-v2-meters--meter_number--readings">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://backend.buxton.progressiveutilities.com/api/v2/meters/readings?meter_number=MTR123456789" \
+    --get "https://backend.buxton.progressiveutilities.com/api/v2/meters/MTR123456789/readings" \
     --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
     --header "Content-Type: application/json" \
-    --header "Accept: application/json" \
-    --data "{
-    \"meter_number\": \"qltfxlceusocp\"
-}"
-</code></pre></div>
+    --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://backend.buxton.progressiveutilities.com/api/v2/meters/readings"
+    "https://backend.buxton.progressiveutilities.com/api/v2/meters/MTR123456789/readings"
 );
-
-const params = {
-    "meter_number": "MTR123456789",
-};
-Object.keys(params)
-    .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
     "Authorization": "Bearer {YOUR_AUTH_KEY}",
@@ -731,20 +1533,15 @@ const headers = {
     "Accept": "application/json",
 };
 
-let body = {
-    "meter_number": "qltfxlceusocp"
-};
-
 fetch(url, {
     method: "GET",
     headers,
-    body: JSON.stringify(body),
 }).then(response =&gt; response.json());</code></pre></div>
 
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://backend.buxton.progressiveutilities.com/api/v2/meters/readings';
+$url = 'https://backend.buxton.progressiveutilities.com/api/v2/meters/MTR123456789/readings';
 $response = $client-&gt;get(
     $url,
     [
@@ -752,12 +1549,6 @@ $response = $client-&gt;get(
             'Authorization' =&gt; 'Bearer {YOUR_AUTH_KEY}',
             'Content-Type' =&gt; 'application/json',
             'Accept' =&gt; 'application/json',
-        ],
-        'query' =&gt; [
-            'meter_number' =&gt; 'MTR123456789',
-        ],
-        'json' =&gt; [
-            'meter_number' =&gt; 'qltfxlceusocp',
         ],
     ]
 );
@@ -769,25 +1560,19 @@ print_r(json_decode((string) $body));</code></pre></div>
     <pre><code class="language-python">import requests
 import json
 
-url = 'https://backend.buxton.progressiveutilities.com/api/v2/meters/readings'
-payload = {
-    "meter_number": "qltfxlceusocp"
-}
-params = {
-  'meter_number': 'MTR123456789',
-}
+url = 'https://backend.buxton.progressiveutilities.com/api/v2/meters/MTR123456789/readings'
 headers = {
   'Authorization': 'Bearer {YOUR_AUTH_KEY}',
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
 
-response = requests.request('GET', url, headers=headers, json=payload, params=params)
+response = requests.request('GET', url, headers=headers)
 response.json()</code></pre></div>
 
 </span>
 
-<span id="example-responses-GETapi-v2-meters-readings">
+<span id="example-responses-GETapi-v2-meters--meter_number--readings">
             <blockquote>
             <p>Example response (200, Meter readings retrieved successfully):</p>
         </blockquote>
@@ -819,43 +1604,43 @@ response.json()</code></pre></div>
 }</code>
  </pre>
     </span>
-<span id="execution-results-GETapi-v2-meters-readings" hidden>
+<span id="execution-results-GETapi-v2-meters--meter_number--readings" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-GETapi-v2-meters-readings"></span>:
+                id="execution-response-status-GETapi-v2-meters--meter_number--readings"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-v2-meters-readings"
+    <pre class="json"><code id="execution-response-content-GETapi-v2-meters--meter_number--readings"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-GETapi-v2-meters-readings" hidden>
+<span id="execution-error-GETapi-v2-meters--meter_number--readings" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-v2-meters-readings">
+    <pre><code id="execution-error-message-GETapi-v2-meters--meter_number--readings">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-GETapi-v2-meters-readings" data-method="GET"
-      data-path="api/v2/meters/readings"
+<form id="form-GETapi-v2-meters--meter_number--readings" data-method="GET"
+      data-path="api/v2/meters/{meter_number}/readings"
       data-authed="1"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-v2-meters-readings', this);">
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v2-meters--meter_number--readings', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-v2-meters-readings"
-                    onclick="tryItOut('GETapi-v2-meters-readings');">Try it out ⚡
+                    id="btn-tryout-GETapi-v2-meters--meter_number--readings"
+                    onclick="tryItOut('GETapi-v2-meters--meter_number--readings');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-v2-meters-readings"
-                    onclick="cancelTryOut('GETapi-v2-meters-readings');" hidden>Cancel 🛑
+                    id="btn-canceltryout-GETapi-v2-meters--meter_number--readings"
+                    onclick="cancelTryOut('GETapi-v2-meters--meter_number--readings');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-v2-meters-readings"
+                    id="btn-executetryout-GETapi-v2-meters--meter_number--readings"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -863,7 +1648,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-green">GET</small>
-            <b><code>api/v2/meters/readings</code></b>
+            <b><code>api/v2/meters/{meter_number}/readings</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -871,7 +1656,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v2-meters-readings"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v2-meters--meter_number--readings"
                value="Bearer {YOUR_AUTH_KEY}"
                data-component="header">
     <br>
@@ -882,7 +1667,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-v2-meters-readings"
+                              name="Content-Type"                data-endpoint="GETapi-v2-meters--meter_number--readings"
                value="application/json"
                data-component="header">
     <br>
@@ -893,37 +1678,25 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-v2-meters-readings"
+                              name="Accept"                data-endpoint="GETapi-v2-meters--meter_number--readings"
                value="application/json"
                data-component="header">
     <br>
 <p>Example: <code>application/json</code></p>
             </div>
-                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
-                                    <div style="padding-left: 28px; clear: unset;">
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>meter_number</code></b>&nbsp;&nbsp;
 <small>string</small>&nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="meter_number"                data-endpoint="GETapi-v2-meters-readings"
+                              name="meter_number"                data-endpoint="GETapi-v2-meters--meter_number--readings"
                value="MTR123456789"
-               data-component="query">
+               data-component="url">
     <br>
 <p>The unique meter number. Example: <code>MTR123456789</code></p>
             </div>
-                        <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
-        <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>meter_number</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="meter_number"                data-endpoint="GETapi-v2-meters-readings"
-               value="qltfxlceusocp"
-               data-component="body">
-    <br>
-<p>Must not be greater than 20 characters. Example: <code>qltfxlceusocp</code></p>
-        </div>
-        </form>
+                    </form>
 
             
 

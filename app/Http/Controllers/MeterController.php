@@ -8,7 +8,9 @@ use App\Enums\ValveStatus;
 use App\Http\Requests\CreateMainMeterRequest;
 use App\Http\Requests\CreateMeterRequest;
 use App\Http\Requests\UpdateMeterRequest;
+use App\Jobs\ForwardCallbackToClientJob;
 use App\Jobs\GetMeterReadings;
+use App\Models\ClientRequestContext;
 use App\Models\Concentrator;
 use App\Models\FaultyMeter;
 use App\Models\Meter;
@@ -416,6 +418,9 @@ class MeterController extends Controller
                         'data'   => $jsonData,
                     ]),
                 };
+
+                // Forward callback to registered clients
+                $this->forwardCallbackToClients($jsonData, $action);
             } else {
                 Log::warning('Hexing callback missing messageId', [
                     'action'      => $action,
@@ -441,6 +446,42 @@ class MeterController extends Controller
                 'result_code' => '1',
                 'message'     => 'Callback processing failed',
             ], 500);
+        }
+    }
+
+    private function forwardCallbackToClients(array $callbackData, string $action): void
+    {
+        $messageId = $callbackData['messageId'] ?? null;
+        if (!$messageId) {
+            return;
+        }
+
+        // Find client contexts that match this callback
+        $contexts = ClientRequestContext::where('message_id', $messageId)
+            ->where('action_type', $action)
+            ->whereIn('status', ['pending', 'callback_received'])
+            ->get();
+
+        foreach ($contexts as $context) {
+            // Update context status to indicate callback received
+            $context->update(['status' => 'callback_received']);
+
+            // Dispatch job to forward callback to client
+            ForwardCallbackToClientJob::dispatch($context, $callbackData);
+
+            Log::info('Callback forwarding job dispatched', [
+                'context_id' => $context->id,
+                'client_id' => $context->client_id,
+                'message_id' => $messageId,
+                'action' => $action
+            ]);
+        }
+
+        if ($contexts->isEmpty()) {
+            Log::info('No client contexts found for callback forwarding', [
+                'message_id' => $messageId,
+                'action' => $action
+            ]);
         }
     }
 

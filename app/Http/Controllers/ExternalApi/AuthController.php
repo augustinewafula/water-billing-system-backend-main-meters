@@ -12,6 +12,9 @@ use Illuminate\Http\JsonResponse;
 class AuthController extends Controller
 {
 
+    /**
+     * @group Authentication
+     */
     public function login(Request $request): JsonResponse
     {
         $request->validate([
@@ -35,6 +38,9 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * @group Authentication
+     */
     public function logout(Request $request): JsonResponse
     {
         // Revoke current token

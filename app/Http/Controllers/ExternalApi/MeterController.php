@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\ExternalApi;
 
+use App\Enums\PrepaidMeterType;
 use App\Enums\ValveStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ExternalRequests\GetMeterReadingRequest;
 use App\Http\Requests\ExternalRequests\UpdateValveStatusRequest;
+use App\Models\ClientRequestContext;
 use App\Models\Meter;
+use App\Models\MeterType;
+use App\Services\HexingMeterService;
 use App\Traits\ApiResponse;
 use App\Traits\TogglesValveStatus;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +26,7 @@ class MeterController extends Controller
      *
      * @group Meters
      * @authenticated
-     * @queryParam meter_number string required The unique meter number. Example: MTR123456789
+     * @urlParam meter_number string required The unique meter number. Example: MTR123456789
      *
      * @response 200 scenario="Meter readings retrieved successfully" {
      *   "success": true,
@@ -45,9 +48,9 @@ class MeterController extends Controller
      *   }
      * }
      */
-    public function getMeterReadings(GetMeterReadingRequest $request): JsonResponse
+    public function getMeterReadings(string $meterNumber): JsonResponse
     {
-        $meterReadings = Meter::where('number', $request->meter_number)->firstOrFail();
+        $meterReadings = Meter::where('number', $meterNumber)->firstOrFail();
 
         return $this->successResponse('Current Meter Readings', [
             'current_meter_readings' => $meterReadings->last_reading,
@@ -102,6 +105,12 @@ class MeterController extends Controller
     {
         $meter = Meter::where('number', $meterNumber)->firstOrFail();
 
+        // Check if this is a Hexing meter
+        if ($this->isHexingMeter($meter)) {
+            return $this->handleHexingValveControl($meter, $request);
+        }
+
+        // Existing logic for non-Hexing meters
         if (!$this->toggleValve($meter, $request->valve_status)) {
             return $this->errorResponse(
                 'Failed, please contact website admin for help',
@@ -124,6 +133,81 @@ class MeterController extends Controller
             'meter_number' => $meter->number,
             'valve_status' => ValveStatus::getKey((int) $meter->valve_status),
             'valve_last_switched_off_by' => $meter->valve_last_switched_off_by
+        ]);
+    }
+
+    private function isHexingMeter(Meter $meter): bool
+    {
+        $meterType = MeterType::find($meter->type_id);
+        return $meterType && $meterType->name === 'Prepaid' && $meter->prepaid_meter_type === PrepaidMeterType::HEXING;
+    }
+
+    private function handleHexingValveControl(Meter $meter, UpdateValveStatusRequest $request): JsonResponse
+    {
+        $hexingService = app(HexingMeterService::class);
+        $valveAction = $request->valve_status === ValveStatus::OPEN ? 'open' : 'close';
+        
+        try {
+            $response = $hexingService->controlValve([$meter->number], $valveAction);
+            
+            // Extract message ID for this specific meter from Hexing response
+            $messageId = $this->extractMessageIdFromHexingResponse($response, $meter->number);
+            
+            if (!$messageId) {
+                throw new \Exception('No message ID received from Hexing API for meter: ' . $meter->number);
+            }
+            
+            // Store client request context for callback matching
+            $this->storeClientCallbackContext($meter, $response, $request, $messageId);
+            
+            return $this->successResponse('Valve control request initiated', [
+                'meter_number' => $meter->number,
+                'message_id' => $messageId,
+                'requested_valve_status' => ValveStatus::getKey($request->valve_status),
+                'message' => 'Request submitted successfully. Result will be delivered via callback.',
+                'status' => 'pending'
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Failed to initiate valve control request',
+                null,
+                422,
+                'ValveOperationError'
+            );
+        }
+    }
+
+    private function extractMessageIdFromHexingResponse(array $response, string $meterNumber): ?string
+    {
+        if (isset($response['data']) && is_array($response['data'])) {
+            foreach ($response['data'] as $item) {
+                if (isset($item['meterCode']) && $item['meterCode'] === $meterNumber) {
+                    return $item['messageId'] ?? null;
+                }
+            }
+        }
+        return null;
+    }
+
+    private function storeClientCallbackContext(Meter $meter, array $hexingResponse, UpdateValveStatusRequest $request, string $messageId): void
+    {
+        // For now, we'll use a simple client identification method
+        // In production, this should be extracted from authentication context
+        $clientId = $request->header('X-Client-ID', 'default-client');
+        
+        ClientRequestContext::create([
+            'meter_id' => $meter->id,
+            'client_id' => $clientId,
+            'message_id' => $messageId,
+            'action_type' => 'valve-control',
+            'original_request' => [
+                'meter_number' => $meter->number,
+                'valve_status' => $request->valve_status,
+                'requested_at' => now()->toISOString(),
+            ],
+            'hexing_response' => $hexingResponse,
+            'status' => 'pending'
         ]);
     }
 }
