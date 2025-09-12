@@ -107,12 +107,25 @@ class ForwardCallbackToClientJob implements ShouldQueue
             };
         }
 
-        // For meter reading callbacks
+        // For meter reading callbacks or general status callbacks
         if ($status !== null) {
-            return [
-                'success' => $status === '0',
-                'message' => $status === '0' ? 'Operation completed successfully' : 'Operation failed'
-            ];
+            return match($status) {
+                '0' => [
+                    'success' => true,
+                    'valve_status' => 'success',
+                    'message' => 'Operation completed successfully'
+                ],
+                '-1' => [
+                    'success' => false,
+                    'valve_status' => 'failed',
+                    'message' => 'Operation failed'
+                ],
+                default => [
+                    'success' => false,
+                    'valve_status' => 'unknown',
+                    'message' => 'Unknown status: ' . $status
+                ]
+            };
         }
 
         return [
