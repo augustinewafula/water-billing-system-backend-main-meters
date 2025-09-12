@@ -124,7 +124,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: September 11, 2025</li>
+        <li>Last updated: September 12, 2025</li>
     </ul>
 </div>
 
@@ -165,8 +165,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"rogahn.nico@example.org\",
-    \"password\": \"placeat\"
+    \"email\": \"jerde.tressie@example.net\",
+    \"password\": \"blanditiis\"
 }"
 </code></pre></div>
 
@@ -182,8 +182,8 @@ const headers = {
 };
 
 let body = {
-    "email": "rogahn.nico@example.org",
-    "password": "placeat"
+    "email": "jerde.tressie@example.net",
+    "password": "blanditiis"
 };
 
 fetch(url, {
@@ -204,8 +204,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'rogahn.nico@example.org',
-            'password' =&gt; 'placeat',
+            'email' =&gt; 'jerde.tressie@example.net',
+            'password' =&gt; 'blanditiis',
         ],
     ]
 );
@@ -219,8 +219,8 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/login'
 payload = {
-    "email": "rogahn.nico@example.org",
-    "password": "placeat"
+    "email": "jerde.tressie@example.net",
+    "password": "blanditiis"
 }
 headers = {
   'Content-Type': 'application/json',
@@ -310,10 +310,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="email"                data-endpoint="POSTapi-v2-auth-login"
-               value="rogahn.nico@example.org"
+               value="jerde.tressie@example.net"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>rogahn.nico@example.org</code></p>
+<p>Must be a valid email address. Example: <code>jerde.tressie@example.net</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -321,10 +321,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-v2-auth-login"
-               value="placeat"
+               value="blanditiis"
                data-component="body">
     <br>
-<p>Example: <code>placeat</code></p>
+<p>Example: <code>blanditiis</code></p>
         </div>
         </form>
 
@@ -1270,6 +1270,34 @@ You can check the Dev Tools console for debugging information.</code></pre>
 </p>
 
 <p>Toggle a meter's valve to either open or closed state.</p>
+<p><strong>Response Types:</strong></p>
+<ul>
+<li><strong>Request examples labeled &quot;(Direct operation)&quot;</strong> are returned immediately after the request</li>
+<li><strong>Request examples labeled &quot;(sent to your callback URL)&quot;</strong> represent payloads that will be delivered to your callback URL for asynchronous operations</li>
+</ul>
+<p><strong>Asynchronous Flow (for supported meter types):</strong></p>
+<ol>
+<li>Send the valve control request</li>
+<li>Receive immediate response with message_id and status: &quot;pending&quot;</li>
+<li>Wait for callback to your registered webhook URL with the final result</li>
+</ol>
+<p><strong>Callback URL Requirements:</strong></p>
+<ul>
+<li>Must accept HTTP POST requests</li>
+<li>Must respond with HTTP 200 status for successful delivery</li>
+<li>Should handle JSON payload as shown in callback examples below</li>
+</ul>
+<p><strong>Callback Security &amp; Headers:</strong>
+Callbacks are sent as HTTP POST requests with these headers:</p>
+<ul>
+<li>Content-Type: application/json</li>
+<li>User-Agent: Hydro-Pro-Webhook/1.0</li>
+<li>X-Webhook-Signature: sha256=[signature] (if secret token configured)</li>
+</ul>
+<p><strong>Security:</strong> If you've configured a secret token, verify the X-Webhook-Signature header using HMAC SHA256:
+sha256(hmac(json_payload, your_secret_token))</p>
+<p><strong>Retry Policy:</strong> Failed callback deliveries retry up to 3 times with intervals of 1 minute, 5 minutes, and 15 minutes.</p>
+<p><strong>Note:</strong> The callback response examples below show payloads that will be sent TO YOUR CALLBACK URL, not returned by this API.</p>
 
 <span id="example-requests-POSTapi-v2-meters--meter_number--valve">
 <blockquote>Example request:</blockquote>
@@ -1350,29 +1378,113 @@ response.json()</code></pre></div>
 
 <span id="example-responses-POSTapi-v2-meters--meter_number--valve">
             <blockquote>
-            <p>Example response (200, Valve status updated successfully):</p>
+            <p>Example response (200, Valve control request initiated successfully (Direct operation)):</p>
         </blockquote>
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;success&quot;: true,
-    &quot;message&quot;: &quot;Valve status updated successfully&quot;,
+    &quot;message&quot;: &quot;Valve control request initiated&quot;,
     &quot;data&quot;: {
         &quot;meter_number&quot;: &quot;MTR123456789&quot;,
-        &quot;valve_status&quot;: &quot;CLOSED&quot;,
-        &quot;valve_last_switched_off_by&quot;: &quot;user&quot;
+        &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;,
+        &quot;requested_valve_status&quot;: &quot;close&quot;,
+        &quot;message&quot;: &quot;Request submitted successfully. Result will be delivered via callback.&quot;,
+        &quot;status&quot;: &quot;pending&quot;
     },
     &quot;errors&quot;: null
 }</code>
  </pre>
             <blockquote>
-            <p>Example response (404, Meter not found):</p>
+            <p>Example response (200, Callback - Valve Closed Successfully (sent to your callback URL)):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;message&quot;: &quot;Valve closed successfully&quot;,
+    &quot;data&quot;: {
+        &quot;event_type&quot;: &quot;valve_status_update&quot;,
+        &quot;meter_number&quot;: &quot;MTR123456789&quot;,
+        &quot;requested_action&quot;: &quot;valve-control&quot;,
+        &quot;valve_status&quot;: &quot;closed&quot;,
+        &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
+        &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
+    },
+    &quot;errors&quot;: null
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (200, Callback - Valve Opened Successfully (sent to your callback URL)):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;message&quot;: &quot;Valve opened successfully&quot;,
+    &quot;data&quot;: {
+        &quot;event_type&quot;: &quot;valve_status_update&quot;,
+        &quot;meter_number&quot;: &quot;MTR123456789&quot;,
+        &quot;requested_action&quot;: &quot;valve-control&quot;,
+        &quot;valve_status&quot;: &quot;open&quot;,
+        &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
+        &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
+    },
+    &quot;errors&quot;: null
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (200, Callback - Operation Timeout (sent to your callback URL)):</p>
         </blockquote>
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;success&quot;: false,
-    &quot;message&quot;: &quot;No query results for model [Meter]&quot;,
+    &quot;message&quot;: &quot;Operation timed out&quot;,
+    &quot;data&quot;: {
+        &quot;event_type&quot;: &quot;valve_status_update&quot;,
+        &quot;meter_number&quot;: &quot;MTR123456789&quot;,
+        &quot;requested_action&quot;: &quot;valve-control&quot;,
+        &quot;valve_status&quot;: &quot;unknown&quot;,
+        &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
+        &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
+    },
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;CallbackError&quot;,
+        &quot;details&quot;: &quot;Operation timed out&quot;
+    }
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (200, Callback - Unknown Status (sent to your callback URL)):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;Unknown status: 999&quot;,
+    &quot;data&quot;: {
+        &quot;event_type&quot;: &quot;valve_status_update&quot;,
+        &quot;meter_number&quot;: &quot;MTR123456789&quot;,
+        &quot;requested_action&quot;: &quot;valve-control&quot;,
+        &quot;valve_status&quot;: &quot;unknown&quot;,
+        &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
+        &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
+    },
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;CallbackError&quot;,
+        &quot;details&quot;: &quot;Unknown status: 999&quot;
+    }
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (404, Meter not found (Direct operation)):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;Meter not found&quot;,
     &quot;data&quot;: null,
     &quot;errors&quot;: {
         &quot;type&quot;: &quot;ModelNotFoundException&quot;,
@@ -1381,7 +1493,7 @@ response.json()</code></pre></div>
 }</code>
  </pre>
             <blockquote>
-            <p>Example response (422, Valve operation failed):</p>
+            <p>Example response (422, Valve operation failed (Direct operation)):</p>
         </blockquote>
                 <pre>
 
@@ -1392,6 +1504,36 @@ response.json()</code></pre></div>
     &quot;errors&quot;: {
         &quot;type&quot;: &quot;ValveOperationError&quot;,
         &quot;details&quot;: null
+    }
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (422, Failed to initiate valve control request (Direct operation)):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;Failed to initiate valve control request&quot;,
+    &quot;data&quot;: null,
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;ValveOperationError&quot;,
+        &quot;details&quot;: null
+    }
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (500, Server error (Direct operation)):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;An unexpected error occurred while processing the valve control request&quot;,
+    &quot;data&quot;: null,
+    &quot;errors&quot;: {
+        &quot;type&quot;: &quot;ServerError&quot;,
+        &quot;details&quot;: &quot;Specific error message details&quot;
     }
 }</code>
  </pre>

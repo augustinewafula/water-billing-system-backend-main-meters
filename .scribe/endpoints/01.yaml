@@ -11,7 +11,35 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Update Meter Valve Status'
-      description: "Toggle a meter's valve to either open or closed state."
+      description: |-
+        Toggle a meter's valve to either open or closed state.
+
+        **Response Types:**
+        - **Request examples labeled "(Direct operation)"** are returned immediately after the request
+        - **Request examples labeled "(sent to your callback URL)"** represent payloads that will be delivered to your callback URL for asynchronous operations
+
+        **Asynchronous Flow (for supported meter types):**
+        1. Send the valve control request
+        2. Receive immediate response with message_id and status: "pending"
+        3. Wait for callback to your registered webhook URL with the final result
+
+        **Callback URL Requirements:**
+        - Must accept HTTP POST requests
+        - Must respond with HTTP 200 status for successful delivery
+        - Should handle JSON payload as shown in callback examples below
+
+        **Callback Security & Headers:**
+        Callbacks are sent as HTTP POST requests with these headers:
+        - Content-Type: application/json
+        - User-Agent: Hydro-Pro-Webhook/1.0
+        - X-Webhook-Signature: sha256=[signature] (if secret token configured)
+
+        **Security:** If you've configured a secret token, verify the X-Webhook-Signature header using HMAC SHA256:
+        sha256(hmac(json_payload, your_secret_token))
+
+        **Retry Policy:** Failed callback deliveries retry up to 3 times with intervals of 1 minute, 5 minutes, and 15 minutes.
+
+        **Note:** The callback response examples below show payloads that will be sent TO YOUR CALLBACK URL, not returned by this API.
       authenticated: true
       custom: []
     headers:
@@ -51,23 +79,107 @@ endpoints:
         content: |-
           {
             "success": true,
-            "message": "Valve status updated successfully",
+            "message": "Valve control request initiated",
             "data": {
               "meter_number": "MTR123456789",
-              "valve_status": "CLOSED",
-              "valve_last_switched_off_by": "user"
+              "message_id": "MSG-2025091212345678",
+              "requested_valve_status": "close",
+              "message": "Request submitted successfully. Result will be delivered via callback.",
+              "status": "pending"
             },
             "errors": null
           }
         headers: []
-        description: 'Valve status updated successfully'
+        description: 'Valve control request initiated successfully (Direct operation)'
+        custom: []
+      -
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Valve closed successfully",
+            "data": {
+              "event_type": "valve_status_update",
+              "meter_number": "MTR123456789",
+              "requested_action": "valve-control",
+              "valve_status": "closed",
+              "timestamp": "2025-09-12T10:30:00.000Z",
+              "message_id": "MSG-2025091212345678"
+            },
+            "errors": null
+          }
+        headers: []
+        description: 'Callback - Valve Closed Successfully (sent to your callback URL)'
+        custom: []
+      -
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Valve opened successfully",
+            "data": {
+              "event_type": "valve_status_update",
+              "meter_number": "MTR123456789",
+              "requested_action": "valve-control",
+              "valve_status": "open",
+              "timestamp": "2025-09-12T10:30:00.000Z",
+              "message_id": "MSG-2025091212345678"
+            },
+            "errors": null
+          }
+        headers: []
+        description: 'Callback - Valve Opened Successfully (sent to your callback URL)'
+        custom: []
+      -
+        status: 200
+        content: |-
+          {
+            "success": false,
+            "message": "Operation timed out",
+            "data": {
+              "event_type": "valve_status_update",
+              "meter_number": "MTR123456789",
+              "requested_action": "valve-control",
+              "valve_status": "unknown",
+              "timestamp": "2025-09-12T10:30:00.000Z",
+              "message_id": "MSG-2025091212345678"
+            },
+            "errors": {
+              "type": "CallbackError",
+              "details": "Operation timed out"
+            }
+          }
+        headers: []
+        description: 'Callback - Operation Timeout (sent to your callback URL)'
+        custom: []
+      -
+        status: 200
+        content: |-
+          {
+            "success": false,
+            "message": "Unknown status: 999",
+            "data": {
+              "event_type": "valve_status_update",
+              "meter_number": "MTR123456789",
+              "requested_action": "valve-control",
+              "valve_status": "unknown",
+              "timestamp": "2025-09-12T10:30:00.000Z",
+              "message_id": "MSG-2025091212345678"
+            },
+            "errors": {
+              "type": "CallbackError",
+              "details": "Unknown status: 999"
+            }
+          }
+        headers: []
+        description: 'Callback - Unknown Status (sent to your callback URL)'
         custom: []
       -
         status: 404
         content: |-
           {
             "success": false,
-            "message": "No query results for model [Meter]",
+            "message": "Meter not found",
             "data": null,
             "errors": {
               "type": "ModelNotFoundException",
@@ -75,7 +187,7 @@ endpoints:
             }
           }
         headers: []
-        description: 'Meter not found'
+        description: 'Meter not found (Direct operation)'
         custom: []
       -
         status: 422
@@ -90,13 +202,43 @@ endpoints:
             }
           }
         headers: []
-        description: 'Valve operation failed'
+        description: 'Valve operation failed (Direct operation)'
+        custom: []
+      -
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Failed to initiate valve control request",
+            "data": null,
+            "errors": {
+              "type": "ValveOperationError",
+              "details": null
+            }
+          }
+        headers: []
+        description: 'Failed to initiate valve control request (Direct operation)'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+            "success": false,
+            "message": "An unexpected error occurred while processing the valve control request",
+            "data": null,
+            "errors": {
+              "type": "ServerError",
+              "details": "Specific error message details"
+            }
+          }
+        headers: []
+        description: 'Server error (Direct operation)'
         custom: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer b153f6EgaavcPeVd6kZDh84'
+      - 'Bearer 4fd5Vc3hkve6Eabag8P16DZ'
     controller: null
     method: null
     route: null
@@ -170,7 +312,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Vf4bae1P6vc5hDZ6kga83Ed'
+      - 'Bearer kh3518VaEf4gZbcd6P6aDev'
     controller: null
     method: null
     route: null
