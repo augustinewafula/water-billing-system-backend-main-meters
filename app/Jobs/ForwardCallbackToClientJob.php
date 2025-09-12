@@ -42,10 +42,10 @@ class ForwardCallbackToClientJob implements ShouldQueue
 
         try {
             $this->deliverCallback($clientCallback, $formattedPayload);
-            
+
             // Mark context as client notified
             $this->context->update(['status' => 'client_notified']);
-            
+
         } catch (\Exception $e) {
             $this->handleCallbackFailure($clientCallback, $formattedPayload, $e);
         }
@@ -60,7 +60,6 @@ class ForwardCallbackToClientJob implements ShouldQueue
             'status' => $this->mapHexingStatusToClient($callbackData),
             'timestamp' => $callbackData['dateTime'] ?? now()->toISOString(),
             'message_id' => $callbackData['messageId'],
-            'raw_data' => $callbackData // For debugging/advanced clients
         ];
     }
 
@@ -79,7 +78,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
                 ],
                 '129' => [
                     'success' => true,
-                    'valve_status' => 'closed', 
+                    'valve_status' => 'closed',
                     'message' => 'Valve closed successfully'
                 ],
                 '400' => [
@@ -166,7 +165,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
         // If we've exceeded max retries for this callback URL, disable it
         if ($callback->retry_count >= $callback->max_retries) {
             $callback->update(['is_active' => false]);
-            
+
             Log::warning('Client callback URL disabled due to repeated failures', [
                 'client_id' => $callback->client_id,
                 'callback_url' => $callback->callback_url,
