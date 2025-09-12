@@ -102,9 +102,9 @@ endpoints:
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "status": "closed",
-              "timestamp": "2025-09-12T10:30:00.000Z",
-              "message_id": "MSG-2025091212345678"
+              "valve_status": "closed",
+              "timestamp": "2025-09-12 10:02:19",
+              "message_id": "17791"
             },
             "errors": null
           }
@@ -121,9 +121,9 @@ endpoints:
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "status": "open",
-              "timestamp": "2025-09-12T10:30:00.000Z",
-              "message_id": "MSG-2025091212345678"
+              "valve_status": "open",
+              "timestamp": "2025-09-12 10:02:19",
+              "message_id": "17791"
             },
             "errors": null
           }
@@ -140,9 +140,9 @@ endpoints:
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "status": "unknown",
-              "timestamp": "2025-09-12T10:30:00.000Z",
-              "message_id": "MSG-2025091212345678"
+              "valve_status": "unknown",
+              "timestamp": "2025-09-12 10:02:19",
+              "message_id": "17791"
             },
             "errors": {
               "type": "CallbackError",
@@ -157,22 +157,22 @@ endpoints:
         content: |-
           {
             "success": false,
-            "message": "Unknown status: 129",
+            "message": "Operation failed",
             "data": {
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "status": "unknown",
-              "timestamp": "2025-09-12T10:30:00.000Z",
-              "message_id": "MSG-2025091212345678"
+              "valve_status": "unknown",
+              "timestamp": "2025-09-12 10:02:19",
+              "message_id": "17791"
             },
             "errors": {
               "type": "CallbackError",
-              "details": "Unknown status: 129"
+              "details": "Operation failed"
             }
           }
         headers: []
-        description: 'Callback - Unknown Status (sent to your callback URL)'
+        description: 'Callback - Operation Failed (sent to your callback URL)'
         custom: []
       -
         status: 404
@@ -238,7 +238,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer PakcVf6bE43hgD1e658Zadv'
+      - 'Bearer 66EVakh8g14ZfD3Pvc5beda'
     controller: null
     method: null
     route: null
@@ -312,7 +312,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6kaZfcdDV1h8EPebav56g34'
+      - 'Bearer 3PeZ5fkgv4b6acVahE18D6d'
     controller: null
     method: null
     route: null

@@ -153,9 +153,9 @@ class MeterController extends Controller
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "status": "closed",
-     *     "timestamp": "2025-09-12T10:30:00.000Z",
-     *     "message_id": "MSG-2025091212345678"
+     *     "valve_status": "closed",
+     *     "timestamp": "2025-09-12 10:02:19",
+     *     "message_id": "17791"
      *   },
      *   "errors": null
      * }
@@ -167,9 +167,9 @@ class MeterController extends Controller
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "status": "open",
-     *     "timestamp": "2025-09-12T10:30:00.000Z",
-     *     "message_id": "MSG-2025091212345678"
+     *     "valve_status": "open",
+     *     "timestamp": "2025-09-12 10:02:19",
+     *     "message_id": "17791"
      *   },
      *   "errors": null
      * }
@@ -181,9 +181,9 @@ class MeterController extends Controller
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "status": "unknown",
-     *     "timestamp": "2025-09-12T10:30:00.000Z",
-     *     "message_id": "MSG-2025091212345678"
+     *     "valve_status": "unknown",
+     *     "timestamp": "2025-09-12 10:02:19",
+     *     "message_id": "17791"
      *   },
      *   "errors": {
      *     "type": "CallbackError",
@@ -191,20 +191,20 @@ class MeterController extends Controller
      *   }
      * }
      *
-     * @response 200 scenario="Callback - Unknown Status (sent to your callback URL)" {
+     * @response 200 scenario="Callback - Operation Failed (sent to your callback URL)" {
      *   "success": false,
-     *   "message": "Unknown status: 129",
+     *   "message": "Operation failed",
      *   "data": {
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "status": "unknown",
-     *     "timestamp": "2025-09-12T10:30:00.000Z",
-     *     "message_id": "MSG-2025091212345678"
+     *     "valve_status": "unknown",
+     *     "timestamp": "2025-09-12 10:02:19",
+     *     "message_id": "17791"
      *   },
      *   "errors": {
      *     "type": "CallbackError",
-     *     "details": "Unknown status: 129"
+     *     "details": "Operation failed"
      *   }
      * }
      *

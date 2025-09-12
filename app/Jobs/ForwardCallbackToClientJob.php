@@ -56,7 +56,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
 
     private function formatCallbackForClient(array $callbackData, ClientRequestContext $context): array
     {
-        $statusMapping = $this->mapHexingStatusToClient($callbackData);
+        $statusMapping = $this->mapHexingStatusToClient($callbackData, $context);
 
         return [
             'success' => $statusMapping['success'],
@@ -65,7 +65,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
                 'event_type' => 'valve_status_update',
                 'meter_number' => $context->original_request['meter_number'] ?? null,
                 'requested_action' => $context->action_type,
-                'status' => $statusMapping['status'] ?? null,
+                'valve_status' => $statusMapping['valve_status'] ?? null,
                 'timestamp' => $callbackData['dateTime'] ?? now()->toISOString(),
                 'message_id' => $callbackData['messageId'],
             ],
@@ -76,7 +76,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
         ];
     }
 
-    private function mapHexingStatusToClient(array $callbackData): array
+    private function mapHexingStatusToClient(array $callbackData, ClientRequestContext $context): array
     {
         $valveStatus = $callbackData['valve'] ?? null;
         $status = $callbackData['status'] ?? null;
@@ -86,22 +86,22 @@ class ForwardCallbackToClientJob implements ShouldQueue
             return match($valveStatus) {
                 '128' => [
                     'success' => true,
-                    'status' => 'open',
+                    'valve_status' => 'open',
                     'message' => 'Valve opened successfully'
                 ],
                 '129' => [
                     'success' => true,
-                    'status' => 'closed',
+                    'valve_status' => 'closed',
                     'message' => 'Valve closed successfully'
                 ],
                 '400' => [
                     'success' => false,
-                    'status' => 'unknown',
+                    'valve_status' => 'unknown',
                     'message' => 'Operation timed out'
                 ],
                 default => [
                     'success' => false,
-                    'status' => 'unknown',
+                    'valve_status' => 'unknown',
                     'message' => 'Unknown status: ' . $valveStatus
                 ]
             };
@@ -109,20 +109,28 @@ class ForwardCallbackToClientJob implements ShouldQueue
 
         // For meter reading callbacks or general status callbacks
         if ($status !== null) {
+            // Get the requested valve status from the original request
+            $requestedValveStatus = $context->original_request['valve_status'] ?? null;
+            $actualValveStatus = match($requestedValveStatus) {
+                '1', 1 => 'open',
+                '0', 0 => 'closed',
+                default => 'unknown'
+            };
+
             return match($status) {
                 '0' => [
                     'success' => true,
-                    'status' => 'success',
-                    'message' => 'Operation completed successfully'
+                    'valve_status' => $actualValveStatus,
+                    'message' => $actualValveStatus === 'open' ? 'Valve opened successfully' : 'Valve closed successfully'
                 ],
                 '-1' => [
                     'success' => false,
-                    'status' => 'failed',
+                    'valve_status' => 'unknown',
                     'message' => 'Operation failed'
                 ],
                 default => [
                     'success' => false,
-                    'status' => 'unknown',
+                    'valve_status' => 'unknown',
                     'message' => 'Unknown status: ' . $status
                 ]
             };
