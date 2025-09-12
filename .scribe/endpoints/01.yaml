@@ -100,7 +100,7 @@ endpoints:
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "valve_status": "closed",
+              "status": "closed",
               "timestamp": "2025-09-12T10:30:00.000Z",
               "message_id": "MSG-2025091212345678"
             },
@@ -119,7 +119,7 @@ endpoints:
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "valve_status": "open",
+              "status": "open",
               "timestamp": "2025-09-12T10:30:00.000Z",
               "message_id": "MSG-2025091212345678"
             },
@@ -138,7 +138,7 @@ endpoints:
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "valve_status": "unknown",
+              "status": "unknown",
               "timestamp": "2025-09-12T10:30:00.000Z",
               "message_id": "MSG-2025091212345678"
             },
@@ -155,18 +155,18 @@ endpoints:
         content: |-
           {
             "success": false,
-            "message": "Unknown status: 999",
+            "message": "Unknown status: 129",
             "data": {
               "event_type": "valve_status_update",
               "meter_number": "MTR123456789",
               "requested_action": "valve-control",
-              "valve_status": "unknown",
+              "status": "unknown",
               "timestamp": "2025-09-12T10:30:00.000Z",
               "message_id": "MSG-2025091212345678"
             },
             "errors": {
               "type": "CallbackError",
-              "details": "Unknown status: 999"
+              "details": "Unknown status: 129"
             }
           }
         headers: []
@@ -236,7 +236,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer E66PvdZb1c348ekfgVhaaD5'
+      - 'Bearer PakcVf6bE43hgD1e658Zadv'
     controller: null
     method: null
     route: null
@@ -310,7 +310,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer D8gvc15a6da4eVfZ63hPEbk'
+      - 'Bearer 6kaZfcdDV1h8EPebav56g34'
     controller: null
     method: null
     route: null

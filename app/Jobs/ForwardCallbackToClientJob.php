@@ -65,7 +65,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
                 'event_type' => 'valve_status_update',
                 'meter_number' => $context->original_request['meter_number'] ?? null,
                 'requested_action' => $context->action_type,
-                'valve_status' => $statusMapping['valve_status'] ?? null,
+                'status' => $statusMapping['status'] ?? null,
                 'timestamp' => $callbackData['dateTime'] ?? now()->toISOString(),
                 'message_id' => $callbackData['messageId'],
             ],
@@ -86,22 +86,22 @@ class ForwardCallbackToClientJob implements ShouldQueue
             return match($valveStatus) {
                 '128' => [
                     'success' => true,
-                    'valve_status' => 'open',
+                    'status' => 'open',
                     'message' => 'Valve opened successfully'
                 ],
                 '129' => [
                     'success' => true,
-                    'valve_status' => 'closed',
+                    'status' => 'closed',
                     'message' => 'Valve closed successfully'
                 ],
                 '400' => [
                     'success' => false,
-                    'valve_status' => 'unknown',
+                    'status' => 'unknown',
                     'message' => 'Operation timed out'
                 ],
                 default => [
                     'success' => false,
-                    'valve_status' => 'unknown',
+                    'status' => 'unknown',
                     'message' => 'Unknown status: ' . $valveStatus
                 ]
             };
@@ -112,17 +112,17 @@ class ForwardCallbackToClientJob implements ShouldQueue
             return match($status) {
                 '0' => [
                     'success' => true,
-                    'valve_status' => 'success',
+                    'status' => 'success',
                     'message' => 'Operation completed successfully'
                 ],
                 '-1' => [
                     'success' => false,
-                    'valve_status' => 'failed',
+                    'status' => 'failed',
                     'message' => 'Operation failed'
                 ],
                 default => [
                     'success' => false,
-                    'valve_status' => 'unknown',
+                    'status' => 'unknown',
                     'message' => 'Unknown status: ' . $status
                 ]
             };

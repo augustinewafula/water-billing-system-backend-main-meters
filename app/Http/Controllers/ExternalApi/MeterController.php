@@ -153,7 +153,7 @@ class MeterController extends Controller
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "valve_status": "closed",
+     *     "status": "closed",
      *     "timestamp": "2025-09-12T10:30:00.000Z",
      *     "message_id": "MSG-2025091212345678"
      *   },
@@ -167,7 +167,7 @@ class MeterController extends Controller
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "valve_status": "open",
+     *     "status": "open",
      *     "timestamp": "2025-09-12T10:30:00.000Z",
      *     "message_id": "MSG-2025091212345678"
      *   },
@@ -181,7 +181,7 @@ class MeterController extends Controller
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "valve_status": "unknown",
+     *     "status": "unknown",
      *     "timestamp": "2025-09-12T10:30:00.000Z",
      *     "message_id": "MSG-2025091212345678"
      *   },
@@ -193,18 +193,18 @@ class MeterController extends Controller
      *
      * @response 200 scenario="Callback - Unknown Status (sent to your callback URL)" {
      *   "success": false,
-     *   "message": "Unknown status: 999",
+     *   "message": "Unknown status: 129",
      *   "data": {
      *     "event_type": "valve_status_update",
      *     "meter_number": "MTR123456789",
      *     "requested_action": "valve-control",
-     *     "valve_status": "unknown",
+     *     "status": "unknown",
      *     "timestamp": "2025-09-12T10:30:00.000Z",
      *     "message_id": "MSG-2025091212345678"
      *   },
      *   "errors": {
      *     "type": "CallbackError",
-     *     "details": "Unknown status: 999"
+     *     "details": "Unknown status: 129"
      *   }
      * }
      *

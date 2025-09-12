@@ -165,8 +165,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"josianne11@example.org\",
-    \"password\": \"fugiat\"
+    \"email\": \"myron.klein@example.org\",
+    \"password\": \"soluta\"
 }"
 </code></pre></div>
 
@@ -182,8 +182,8 @@ const headers = {
 };
 
 let body = {
-    "email": "josianne11@example.org",
-    "password": "fugiat"
+    "email": "myron.klein@example.org",
+    "password": "soluta"
 };
 
 fetch(url, {
@@ -204,8 +204,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'josianne11@example.org',
-            'password' =&gt; 'fugiat',
+            'email' =&gt; 'myron.klein@example.org',
+            'password' =&gt; 'soluta',
         ],
     ]
 );
@@ -219,8 +219,8 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/login'
 payload = {
-    "email": "josianne11@example.org",
-    "password": "fugiat"
+    "email": "myron.klein@example.org",
+    "password": "soluta"
 }
 headers = {
   'Content-Type': 'application/json',
@@ -310,10 +310,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="email"                data-endpoint="POSTapi-v2-auth-login"
-               value="josianne11@example.org"
+               value="myron.klein@example.org"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>josianne11@example.org</code></p>
+<p>Must be a valid email address. Example: <code>myron.klein@example.org</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -321,10 +321,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-v2-auth-login"
-               value="fugiat"
+               value="soluta"
                data-component="body">
     <br>
-<p>Example: <code>fugiat</code></p>
+<p>Example: <code>soluta</code></p>
         </div>
         </form>
 
@@ -1406,7 +1406,7 @@ response.json()</code></pre></div>
         &quot;event_type&quot;: &quot;valve_status_update&quot;,
         &quot;meter_number&quot;: &quot;MTR123456789&quot;,
         &quot;requested_action&quot;: &quot;valve-control&quot;,
-        &quot;valve_status&quot;: &quot;closed&quot;,
+        &quot;status&quot;: &quot;closed&quot;,
         &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
         &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
     },
@@ -1425,7 +1425,7 @@ response.json()</code></pre></div>
         &quot;event_type&quot;: &quot;valve_status_update&quot;,
         &quot;meter_number&quot;: &quot;MTR123456789&quot;,
         &quot;requested_action&quot;: &quot;valve-control&quot;,
-        &quot;valve_status&quot;: &quot;open&quot;,
+        &quot;status&quot;: &quot;open&quot;,
         &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
         &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
     },
@@ -1444,7 +1444,7 @@ response.json()</code></pre></div>
         &quot;event_type&quot;: &quot;valve_status_update&quot;,
         &quot;meter_number&quot;: &quot;MTR123456789&quot;,
         &quot;requested_action&quot;: &quot;valve-control&quot;,
-        &quot;valve_status&quot;: &quot;unknown&quot;,
+        &quot;status&quot;: &quot;unknown&quot;,
         &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
         &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
     },
@@ -1461,18 +1461,18 @@ response.json()</code></pre></div>
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;success&quot;: false,
-    &quot;message&quot;: &quot;Unknown status: 999&quot;,
+    &quot;message&quot;: &quot;Unknown status: 129&quot;,
     &quot;data&quot;: {
         &quot;event_type&quot;: &quot;valve_status_update&quot;,
         &quot;meter_number&quot;: &quot;MTR123456789&quot;,
         &quot;requested_action&quot;: &quot;valve-control&quot;,
-        &quot;valve_status&quot;: &quot;unknown&quot;,
+        &quot;status&quot;: &quot;unknown&quot;,
         &quot;timestamp&quot;: &quot;2025-09-12T10:30:00.000Z&quot;,
         &quot;message_id&quot;: &quot;MSG-2025091212345678&quot;
     },
     &quot;errors&quot;: {
         &quot;type&quot;: &quot;CallbackError&quot;,
-        &quot;details&quot;: &quot;Unknown status: 999&quot;
+        &quot;details&quot;: &quot;Unknown status: 129&quot;
     }
 }</code>
  </pre>
