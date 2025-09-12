@@ -37,9 +37,7 @@ endpoints:
         **Security:** If you've configured a secret token, verify the X-Webhook-Signature header using HMAC SHA256:
         sha256(hmac(json_payload, your_secret_token))
 
-        **Retry Policy:** Failed callback deliveries retry up to 3 times with intervals of 1 minute, 5 minutes, and 15 minutes.
-
-        **Note:** The callback response examples below show payloads that will be sent TO YOUR CALLBACK URL, not returned by this API.
+        **Retry Policy:** Failed callback deliveries retry up to 3 times with intervals of 3 seconds, 10 seconds, and 30 seconds.
       authenticated: true
       custom: []
     headers:
@@ -238,7 +236,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 4fd5Vc3hkve6Eabag8P16DZ'
+      - 'Bearer E66PvdZb1c348ekfgVhaaD5'
     controller: null
     method: null
     route: null
@@ -312,7 +310,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer kh3518VaEf4gZbcd6P6aDev'
+      - 'Bearer D8gvc15a6da4eVfZ63hPEbk'
     controller: null
     method: null
     route: null

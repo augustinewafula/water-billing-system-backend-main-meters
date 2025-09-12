@@ -165,8 +165,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"jerde.tressie@example.net\",
-    \"password\": \"blanditiis\"
+    \"email\": \"josianne11@example.org\",
+    \"password\": \"fugiat\"
 }"
 </code></pre></div>
 
@@ -182,8 +182,8 @@ const headers = {
 };
 
 let body = {
-    "email": "jerde.tressie@example.net",
-    "password": "blanditiis"
+    "email": "josianne11@example.org",
+    "password": "fugiat"
 };
 
 fetch(url, {
@@ -204,8 +204,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'jerde.tressie@example.net',
-            'password' =&gt; 'blanditiis',
+            'email' =&gt; 'josianne11@example.org',
+            'password' =&gt; 'fugiat',
         ],
     ]
 );
@@ -219,8 +219,8 @@ import json
 
 url = 'https://backend.buxton.progressiveutilities.com/api/v2/auth/login'
 payload = {
-    "email": "jerde.tressie@example.net",
-    "password": "blanditiis"
+    "email": "josianne11@example.org",
+    "password": "fugiat"
 }
 headers = {
   'Content-Type': 'application/json',
@@ -310,10 +310,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="email"                data-endpoint="POSTapi-v2-auth-login"
-               value="jerde.tressie@example.net"
+               value="josianne11@example.org"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>jerde.tressie@example.net</code></p>
+<p>Must be a valid email address. Example: <code>josianne11@example.org</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -321,10 +321,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-v2-auth-login"
-               value="blanditiis"
+               value="fugiat"
                data-component="body">
     <br>
-<p>Example: <code>blanditiis</code></p>
+<p>Example: <code>fugiat</code></p>
         </div>
         </form>
 
@@ -1296,8 +1296,7 @@ Callbacks are sent as HTTP POST requests with these headers:</p>
 </ul>
 <p><strong>Security:</strong> If you've configured a secret token, verify the X-Webhook-Signature header using HMAC SHA256:
 sha256(hmac(json_payload, your_secret_token))</p>
-<p><strong>Retry Policy:</strong> Failed callback deliveries retry up to 3 times with intervals of 1 minute, 5 minutes, and 15 minutes.</p>
-<p><strong>Note:</strong> The callback response examples below show payloads that will be sent TO YOUR CALLBACK URL, not returned by this API.</p>
+<p><strong>Retry Policy:</strong> Failed callback deliveries retry up to 3 times with intervals of 3 seconds, 10 seconds, and 30 seconds.</p>
 
 <span id="example-requests-POSTapi-v2-meters--meter_number--valve">
 <blockquote>Example request:</blockquote>
