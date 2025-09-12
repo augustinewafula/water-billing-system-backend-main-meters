@@ -145,7 +145,7 @@ class MeterController extends Controller
     private function handleHexingValveControl(Meter $meter, UpdateValveStatusRequest $request): JsonResponse
     {
         $hexingService = app(HexingMeterService::class);
-        $valveAction = $request->valve_status === ValveStatus::OPEN ? 'open' : 'close';
+        $valveAction = (int) $request->valve_status === ValveStatus::OPEN ? 'open' : 'close';
 
         try {
             $response = $hexingService->controlValve([$meter->number], $valveAction);
