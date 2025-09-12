@@ -17,7 +17,7 @@ class ForwardCallbackToClientJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
-    public $backoff = [60, 300, 900]; // 1 minute, 5 minutes, 15 minutes
+    public $backoff = [3, 10, 30]; // 3 seconds, 10 seconds, 30 seconds
 
     public function __construct(
         private ClientRequestContext $context,
@@ -41,7 +41,10 @@ class ForwardCallbackToClientJob implements ShouldQueue
         $formattedPayload = $this->formatCallbackForClient($this->callbackData, $this->context);
 
         try {
-            $this->deliverCallback($clientCallback, $formattedPayload);
+            $response = $this->deliverCallback($clientCallback, $formattedPayload);
+
+            // Store response for debugging
+            $this->storeCallbackResponse($response, $formattedPayload);
 
             // Mark context as client notified
             $this->context->update(['status' => 'client_notified']);
@@ -53,13 +56,23 @@ class ForwardCallbackToClientJob implements ShouldQueue
 
     private function formatCallbackForClient(array $callbackData, ClientRequestContext $context): array
     {
+        $statusMapping = $this->mapHexingStatusToClient($callbackData);
+
         return [
-            'event_type' => 'valve_status_update',
-            'meter_number' => $context->original_request['meter_number'] ?? null,
-            'requested_action' => $context->action_type,
-            'status' => $this->mapHexingStatusToClient($callbackData),
-            'timestamp' => $callbackData['dateTime'] ?? now()->toISOString(),
-            'message_id' => $callbackData['messageId'],
+            'success' => $statusMapping['success'],
+            'message' => $statusMapping['message'],
+            'data' => [
+                'event_type' => 'valve_status_update',
+                'meter_number' => $context->original_request['meter_number'] ?? null,
+                'requested_action' => $context->action_type,
+                'valve_status' => $statusMapping['valve_status'] ?? null,
+                'timestamp' => $callbackData['dateTime'] ?? now()->toISOString(),
+                'message_id' => $callbackData['messageId'],
+            ],
+            'errors' => $statusMapping['success'] ? null : [
+                'type' => 'CallbackError',
+                'details' => $statusMapping['message']
+            ]
         ];
     }
 
@@ -108,11 +121,11 @@ class ForwardCallbackToClientJob implements ShouldQueue
         ];
     }
 
-    private function deliverCallback(ClientCallbackUrl $callback, array $payload): void
+    private function deliverCallback(ClientCallbackUrl $callback, array $payload)
     {
         $headers = [
             'Content-Type' => 'application/json',
-            'User-Agent' => 'Water-Billing-System-Webhook/1.0'
+            'User-Agent' => 'Hydro-Pro-Webhook/1.0'
         ];
 
         if ($callback->secret_token) {
@@ -128,6 +141,8 @@ class ForwardCallbackToClientJob implements ShouldQueue
         if (!$response->successful()) {
             throw new \Exception("Callback delivery failed with status: " . $response->status());
         }
+
+        return $response;
     }
 
     private function generateSignature(array $payload, string $secretToken): string
@@ -149,29 +164,43 @@ class ForwardCallbackToClientJob implements ShouldQueue
         ]);
     }
 
+    private function storeCallbackResponse($response, array $payload): void
+    {
+        $responseData = [
+            'status_code' => $response->status(),
+            'headers' => $response->headers(),
+            'body' => $response->body(),
+            'response_time' => $response->transferStats->getTransferTime() ?? null,
+            'sent_payload' => $payload,
+            'timestamp' => now()->toISOString(),
+            'attempt' => $this->attempts()
+        ];
+
+        // Update context with response data
+        $this->context->update([
+            'callback_response' => $responseData
+        ]);
+
+        Log::info('Callback response stored for debugging', [
+            'context_id' => $this->context->id,
+            'message_id' => $this->context->message_id,
+            'client_id' => $this->context->client_id,
+            'status_code' => $response->status(),
+            'response_size' => strlen($response->body()),
+            'attempt' => $this->attempts()
+        ]);
+    }
+
     private function handleCallbackFailure(ClientCallbackUrl $callback, array $payload, \Exception $e): void
     {
-        $callback->increment('retry_count');
-
         Log::error('Client callback delivery failed', [
             'client_id' => $callback->client_id,
             'callback_url' => $callback->callback_url,
-            'message_id' => $payload['message_id'] ?? null,
+            'message_id' => $payload['data']['message_id'] ?? null,
             'error' => $e->getMessage(),
             'attempt' => $this->attempts(),
             'max_attempts' => $this->tries
         ]);
-
-        // If we've exceeded max retries for this callback URL, disable it
-        if ($callback->retry_count >= $callback->max_retries) {
-            $callback->update(['is_active' => false]);
-
-            Log::warning('Client callback URL disabled due to repeated failures', [
-                'client_id' => $callback->client_id,
-                'callback_url' => $callback->callback_url,
-                'total_failures' => $callback->retry_count
-            ]);
-        }
 
         // Re-throw to trigger job retry
         throw $e;
@@ -189,5 +218,14 @@ class ForwardCallbackToClientJob implements ShouldQueue
 
         // Mark context as failed
         $this->context->update(['status' => 'failed']);
+
+        // Only increment callback retry count when job permanently fails
+        $clientCallback = ClientCallbackUrl::where('client_id', $this->context->client_id)
+            ->where('is_active', true)
+            ->first();
+
+        if ($clientCallback) {
+            $clientCallback->increment('retry_count');
+        }
     }
 }
