@@ -42,6 +42,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('prune:failed-jobs')->daily();
         $schedule->command('hexing:readings')->twiceDaily(9, 21);
         $schedule->command('hexing:readings')->dailyAt('00:30');
+        $schedule->command('hexing:process-csv --silent')->dailyAt('16:15');
+        $schedule->command('hexing:process-csv --silent')->dailyAt('18:00');
     }
 
     public function meterReadingOn()
