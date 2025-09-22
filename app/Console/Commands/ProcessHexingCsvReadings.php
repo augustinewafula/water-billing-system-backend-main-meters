@@ -220,34 +220,13 @@ class ProcessHexingCsvReadings extends Command
     }
 
     /**
-     * Find meter by number, handling leading zeros difference between DB and CSV
-     */
-    private function findMeterByNumber(string $meterNumber): ?Meter
-    {
-        // First try exact match
-        $meter = Meter::where('number', $meterNumber)->first();
-
-        if ($meter) {
-            return $meter;
-        }
-
-        // If no exact match, try with leading zeros removed from both sides
-        $normalizedCsvNumber = ltrim($meterNumber, '0');
-
-        // Find meter where the database number without leading zeros matches CSV number
-        $meter = Meter::whereRaw('LTRIM(number, "0") = ?', [$normalizedCsvNumber])->first();
-
-        return $meter;
-    }
-
-    /**
      * Process individual row data
      */
     private function processRowData(array $row, int $rowIndex, bool $silent = false): bool
     {
         $meterNumber = trim($row['meter_asset_no']);
 
-        $meter = $this->findMeterByNumber($meterNumber);
+        $meter = Meter::where('number', $meterNumber)->first();
 
         if (!$meter) {
             return false;
