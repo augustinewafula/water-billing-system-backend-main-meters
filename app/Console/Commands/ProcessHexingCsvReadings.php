@@ -226,17 +226,7 @@ class ProcessHexingCsvReadings extends Command
     {
         $meterNumber = trim($row['meter_asset_no']);
 
-        // First try exact match
         $meter = Meter::where('number', $meterNumber)->first();
-
-        // If no exact match found, try with leading zeros
-        if (!$meter) {
-            // Remove leading zeros from CSV meter number for comparison
-            $normalizedCsvNumber = ltrim($meterNumber, '0');
-
-            // Find meters where the number without leading zeros matches
-            $meter = Meter::whereRaw("LTRIM(number, '0') = ?", [$normalizedCsvNumber])->first();
-        }
 
         if (!$meter) {
             return false;

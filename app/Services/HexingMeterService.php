@@ -65,7 +65,7 @@ class HexingMeterService
 
             // Log requests for each meter
             foreach ($meterNumbers as $meterNumber) {
-                $meter = $this->findMeterByNumber($meterNumber);
+                $meter = Meter::where('number', $meterNumber)->first();
                 if ($meter) {
                     $messageId = $this->extractMessageIdFromResponse($responseData, $meterNumber);
                     $this->createCallbackLog($meter, $messageId, 'valve-control', array_merge($payload, ['meter_number' => $meterNumber]));
@@ -135,7 +135,7 @@ class HexingMeterService
 
             // Log requests for each meter
             foreach ($meterNumbers as $meterNumber) {
-                $meter = $this->findMeterByNumber($meterNumber);
+                $meter = Meter::where('number', $meterNumber)->first();
                 if ($meter) {
                     $messageId = $this->extractMessageIdFromResponse($responseData, $meterNumber);
                     $this->createCallbackLog($meter, $messageId, 'meter-reading', array_merge($payload, ['meter_number' => $meterNumber]));
@@ -208,7 +208,7 @@ class HexingMeterService
 
             // Log requests for each meter
             foreach ($meterNumbers as $meterNumber) {
-                $meter = $this->findMeterByNumber($meterNumber);
+                $meter = Meter::where('number', $meterNumber)->first();
                 if ($meter) {
                     $messageId = $this->extractMessageIdFromResponse($responseData, $meterNumber);
                     $this->createCallbackLog($meter, $messageId, 'token', array_merge($payload, ['meter_number' => $meterNumber]));
@@ -452,25 +452,5 @@ class HexingMeterService
             'status' => $status,
             'callback_data' => $callbackData
         ]);
-    }
-
-    /**
-     * Find meter by number, handling leading zeros in database vs CSV differences
-     */
-    private function findMeterByNumber(string $meterNumber): ?Meter
-    {
-        // First try exact match
-        $meter = Meter::where('number', $meterNumber)->first();
-
-        // If no exact match found, try with leading zeros normalization
-        if (!$meter) {
-            // Remove leading zeros from input meter number for comparison
-            $normalizedNumber = ltrim($meterNumber, '0');
-
-            // Find meters where the number without leading zeros matches
-            $meter = Meter::whereRaw("LTRIM(number, '0') = ?", [$normalizedNumber])->first();
-        }
-
-        return $meter;
     }
 }

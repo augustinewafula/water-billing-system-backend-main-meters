@@ -45,7 +45,7 @@ class TestHexingMeterService extends Command
         $meterNumber = $this->argument('meter_number');
 
         // Validate meter exists in database
-        $meter = $this->findMeterByNumber($meterNumber);
+        $meter = Meter::where('number', $meterNumber)->first();
         if (!$meter) {
             $this->error("Meter with number '{$meterNumber}' not found in database.");
             return Command::FAILURE;
@@ -146,25 +146,5 @@ class TestHexingMeterService extends Command
         $this->line(json_encode($response, JSON_PRETTY_PRINT));
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * Find meter by number, handling leading zeros in database vs CSV differences
-     */
-    private function findMeterByNumber(string $meterNumber): ?Meter
-    {
-        // First try exact match
-        $meter = Meter::where('number', $meterNumber)->first();
-
-        // If no exact match found, try with leading zeros normalization
-        if (!$meter) {
-            // Remove leading zeros from input meter number for comparison
-            $normalizedNumber = ltrim($meterNumber, '0');
-
-            // Find meters where the number without leading zeros matches
-            $meter = Meter::whereRaw("LTRIM(number, '0') = ?", [$normalizedNumber])->first();
-        }
-
-        return $meter;
     }
 }

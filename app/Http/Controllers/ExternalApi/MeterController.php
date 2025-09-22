@@ -50,11 +50,7 @@ class MeterController extends Controller
      */
     public function getMeterReadings(string $meterNumber): JsonResponse
     {
-        $meterReadings = $this->findMeterByNumber($meterNumber);
-
-        if (!$meterReadings) {
-            abort(404, 'Meter not found');
-        }
+        $meterReadings = Meter::where('number', $meterNumber)->firstOrFail();
 
         return $this->successResponse('Current Meter Readings', [
             'current_meter_readings' => $meterReadings->last_reading,
@@ -216,11 +212,7 @@ class MeterController extends Controller
     public function updateValveStatus(UpdateValveStatusRequest $request, string $meterNumber): JsonResponse
     {
         try {
-            $meter = $this->findMeterByNumber($meterNumber);
-
-            if (!$meter) {
-                abort(404, 'Meter not found');
-            }
+            $meter = Meter::where('number', $meterNumber)->firstOrFail();
 
             // Check if this is a Hexing meter
             if ($this->isHexingMeter($meter)) {
@@ -330,25 +322,5 @@ class MeterController extends Controller
             'hexing_response' => $hexingResponse,
             'status' => 'pending'
         ]);
-    }
-
-    /**
-     * Find meter by number, handling leading zeros in database vs CSV differences
-     */
-    private function findMeterByNumber(string $meterNumber): ?Meter
-    {
-        // First try exact match
-        $meter = Meter::where('number', $meterNumber)->first();
-
-        // If no exact match found, try with leading zeros normalization
-        if (!$meter) {
-            // Remove leading zeros from input meter number for comparison
-            $normalizedNumber = ltrim($meterNumber, '0');
-
-            // Find meters where the number without leading zeros matches
-            $meter = Meter::whereRaw("LTRIM(number, '0') = ?", [$normalizedNumber])->first();
-        }
-
-        return $meter;
     }
 }
