@@ -285,10 +285,23 @@ class ProcessHexingCsvReadings extends Command
      */
     private function updateMeterReading(Meter $meter, float $reading, Carbon $readingDate, array $rowData)
     {
-        DailyMeterReading::create([
-            'meter_id' => $meter->id,
-            'reading' => $reading
-        ]);
+        // Only create one record per day per meter
+        $today = $readingDate->format('Y-m-d');
+
+        $existingReading = DailyMeterReading::where('meter_id', $meter->id)
+            ->whereDate('created_at', $today)
+            ->first();
+
+        if ($existingReading) {
+            // Update existing reading for today
+            $existingReading->update(['reading' => $reading]);
+        } else {
+            // Create new reading for today
+            DailyMeterReading::create([
+                'meter_id' => $meter->id,
+                'reading' => $reading
+            ]);
+        }
 
         $meter->update([
             'last_reading' => $reading,
