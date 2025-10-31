@@ -41,7 +41,12 @@ class GetHexingMeterReadings extends Command
     {
         $this->info('Starting Hexing meter readings retrieval...');
 
-        $hexingMeters = Meter::where('prepaid_meter_type', PrepaidMeterType::HEXING)
+        $hexingMeters = Meter::where(function($query) {
+            $query->where('prepaid_meter_type', PrepaidMeterType::HEXING)
+                ->orWhereHas('type', function($q) {
+                    $q->where('name', 'Hexing');
+                });
+        })
             ->whereNotNull('number')
             ->get();
 
