@@ -43,6 +43,15 @@ class Handler extends ExceptionHandler
             }
         });
 
+        $this->renderable(function (Throwable $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => $e->getMessage() ?: 'An error occurred',
+                    'error' => class_basename($e)
+                ], method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500);
+            }
+        });
+
         $this->reportable(function (Throwable $exception) {
 //            if ($this->shouldReport($exception) && app()->bound('sentry')) {
 //                app('sentry')->captureException($exception);
