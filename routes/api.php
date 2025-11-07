@@ -161,7 +161,7 @@ Route::prefix('v2')->group(function () {
 
     Route::middleware('auth:api')->group(function () {
         Route::prefix('meters')->group(function () {
-            Route::post('{meter_number}/valve', [\App\Http\Controllers\ExternalApi\MeterController::class, 'updateValveStatus']);
+//            Route::post('{meter_number}/valve', [\App\Http\Controllers\ExternalApi\MeterController::class, 'updateValveStatus']);
             Route::get('{meter_number}/readings', [\App\Http\Controllers\ExternalApi\MeterController::class, 'getMeterReadings']);
 
 //            Route::prefix('prism')->group(function () {
@@ -170,12 +170,12 @@ Route::prefix('v2')->group(function () {
 //                Route::post('clear-token', [\App\Http\Controllers\ExternalApi\MeterTokenController::class, 'clearToken']);
 //            });
         });
-        Route::prefix('callbacks')->group(function () {
-            Route::post('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'store']);
-            Route::get('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'show']);
-            Route::put('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'update']);
-            Route::delete('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'destroy']);
-        });
+//        Route::prefix('callbacks')->group(function () {
+//            Route::post('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'store']);
+//            Route::get('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'show']);
+//            Route::put('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'update']);
+//            Route::delete('/', [\App\Http\Controllers\ExternalApi\CallbackController::class, 'destroy']);
+//        });
 
     });
 });
