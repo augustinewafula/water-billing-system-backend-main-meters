@@ -59,7 +59,7 @@ class MeterController extends Controller
 
         return $this->successResponse('Current Meter Readings', [
             'current_meter_readings' => $latestDailyReading?->reading,
-            'last_reading_date' => $latestDailyReading?->created_at
+            'last_reading_date' => $latestDailyReading?->created_at?->format('Y-m-d H:i:s')
         ]);
     }
 
