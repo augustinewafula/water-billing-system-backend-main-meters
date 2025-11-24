@@ -7,6 +7,7 @@ use App\Enums\ValveStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ExternalRequests\UpdateValveStatusRequest;
 use App\Models\ClientRequestContext;
+use App\Models\DailyMeterReading;
 use App\Models\Meter;
 use App\Models\MeterType;
 use App\Services\HexingMeterService;
@@ -50,11 +51,15 @@ class MeterController extends Controller
      */
     public function getMeterReadings(string $meterNumber): JsonResponse
     {
-        $meterReadings = Meter::where('number', $meterNumber)->firstOrFail();
+        $meter = Meter::where('number', $meterNumber)->firstOrFail();
+
+        $latestDailyReading = DailyMeterReading::where('meter_id', $meter->id)
+            ->latest()
+            ->first();
 
         return $this->successResponse('Current Meter Readings', [
-            'current_meter_readings' => $meterReadings->last_reading,
-            'last_reading_date' => $meterReadings->last_reading_date
+            'current_meter_readings' => $latestDailyReading?->reading,
+            'last_reading_date' => $latestDailyReading?->created_at
         ]);
     }
 
