@@ -51,7 +51,16 @@ class MeterController extends Controller
      */
     public function getMeterReadings(string $meterNumber): JsonResponse
     {
-        $meter = Meter::where('number', $meterNumber)->firstOrFail();
+        $meter = Meter::where('number', $meterNumber)->first();
+
+        if (!$meter) {
+            return $this->errorResponse(
+                'Meter not found',
+                null,
+                404,
+                'ModelNotFoundException'
+            );
+        }
 
         $latestDailyReading = DailyMeterReading::where('meter_id', $meter->id)
             ->latest()
