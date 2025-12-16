@@ -455,7 +455,7 @@ class PrepaidMeterService
 
         $url = $usePrismVend2
             ? 'http://197.248.114.147:8080/stsvend/VendCredit.xml' // URL for PrismVend2
-            : 'http://41.209.60.94:8080/stsvend/VendCredit.xml'; // Default URL
+            : 'http://217.199.146.230:8080/stsvend/VendCredit.xml'; // Default URL
 
         Log::info('Prism vending calculation:', [
             'meterId' => $meter_number,
@@ -536,7 +536,7 @@ class PrepaidMeterService
                 ->withBasicAuth(env('PRISM_USERNAME'), env('PRISM_PASSWORD'))
                 ->acceptJson()
                 ->asForm()
-                ->post('http://41.209.60.94:8080/stsvend/VendMse.xml', [
+                ->post('http://217.199.146.230:8080/stsvend/VendMse.xml', [
                     'meterId' => $meter_number,
                     'subclass' => $subclass,
                 ]);
